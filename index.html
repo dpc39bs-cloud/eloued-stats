@@ -171,21 +171,21 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    // منطق التاريخ الجديد: جلب أسبوع "ما قبل الأسبوع الحالي"
-    let now = new Date();
-    now.setDate(now.getDate() - 7); // الرجوع 7 أيام للخلف (ليصبح الأحد الماضي)
-    let y = now.getFullYear();
-    let weekNum = Math.ceil((((now - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
+    // تعديل مخصص: تثبيت البداية من الأسبوع 7 لعام 2026 (يبدأ من الأحد 08 فيفري)
+    let y = 2026;
+    let weekNum = 7; 
     currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
     
     document.getElementById("week-picker").value = currentWeek;
+    
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
-    setInterval(updateClock, 1000); loadArchive();
+    setInterval(updateClock, 1000); 
+    loadArchive();
 };
 
 function calculate() {
@@ -360,4 +360,5 @@ function setWeek(w) { document.getElementById("week-picker").value = w; changeWe
 </script>
 </body>
 </html>
+
 
