@@ -168,18 +168,34 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    let now = new Date(); let y = now.getFullYear();
-    let weekNum = Math.ceil((((now - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
-    currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
+    let now = new Date();
+    let y = now.getFullYear();
+    
+    // حساب رقم الأسبوع الحالي (المنطق الأصلي)
+    let weekNum = Math.ceil((((now - new Date(y, 0, 1)) / 86400000) + new Date(y, 0, 1).getDay() + 1) / 7);
+    
+    // تعديل خاص: إذا كان اليوم هو الأحد (0)، نقوم بالرجوع للأسبوع السابق تلقائياً
+    if (now.getDay() === 0) {
+        weekNum = weekNum - 1;
+    }
+    
+    // تثبيت الأسبوع السادس كبداية عمل (أو استخدام أحدث أسبوع بناءً على التاريخ الحالي)
+    // يمكنك تغيير "06" يدوياً هنا إذا كنت تريد تثبيته تماماً
+    currentWeek = `${y}-W${weekNum.toString().padStart(2, '0')}`;
+    
     document.getElementById("week-picker").value = currentWeek;
+    
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
+    
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
+
     setInterval(updateClock, 1000);
-    updateTicker(); loadArchive();
+    updateTicker(); 
+    loadArchive();
 };
 
 async function login(){
@@ -306,4 +322,5 @@ function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
 function loadArchive() { /* كود الأرشفة الأصلي */ const container = document.getElementById("archive-container"); container.innerHTML = "جاري جلب الأرشيف..."; db.ref('data').once('value').then(snap => { container.innerHTML = ""; const allData = snap.val() || {}; Object.keys(allData).reverse().forEach(weekKey => { container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`; }); }); }
 </script>
 </body>
+
 </html>
