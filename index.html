@@ -283,8 +283,8 @@ function calculate() {
             let val = parseInt(el.value || el.innerText) || 0;
             if (idx < 16) {
                 dTotals[idx] += val;
-                // الأعمدة 1, 5, 9, 13 تمثل "ع ت" برمجياً في المصفوفة
-                if ([1, 5, 9, 13].includes(idx)) rowGrandTotal += val;
+                // الأعمدة 2, 6, 10, 14 تمثل "ع ت" برمجياً في المصفوفة
+                if ([2, 6, 10, 14].includes(idx)) rowGrandTotal += val;
             }
         });
         row.querySelector(".d-row-total").innerText = rowGrandTotal;
@@ -296,14 +296,14 @@ function calculate() {
             let val = parseInt(el.value || el.innerText) || 0;
             if (idx < 16) {
                 mTotals[idx] += val;
-                if ([1, 5, 9, 13].includes(idx)) rowGrandTotal += val;
+                if ([2, 6, 10, 16].includes(idx)) rowGrandTotal += val;
             }
         });
         row.querySelector(".m-row-total").innerText = rowGrandTotal;
     });
 
-    let dFinalSum = dTotals[1] + dTotals[5] + dTotals[9] + dTotals[13];
-    let mFinalSum = mTotals[1] + mTotals[5] + mTotals[9] + mTotals[13];
+    let dFinalSum = dTotals[2] + dTotals[6] + dTotals[10] + dTotals[14];
+    let mFinalSum = mTotals[2] + mTotals[6] + mTotals[10] + mTotals[14];
 
     document.getElementById("daily-foot").innerHTML = `<td style="background:var(--success); color:white;">المجموع</td>` + 
         dTotals.map(v => `<td>${v}</td>`).join('') + `<td style="background:var(--primary); color:white;">${dFinalSum}</td>`;
@@ -323,7 +323,7 @@ function updateChart(t) {
             labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'],
             datasets: [{
                 label: 'عدد التدخلات الإجمالي (ع ت)',
-                data: [t[1], t[5], t[9], t[13]],
+                data: [t[2], t[6], t[10], t[14]],
                 backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3']
             }]
         },
@@ -352,7 +352,8 @@ function getWeekDays(w) {
         n.setDate(d.getDate() + i);
         let day = n.getDate().toString().padStart(2, '0');
         let month = (n.getMonth() + 1).toString().padStart(2, '0');
-        days.push(`${day}/${month}`); 
+        // إضافة التاريخ بالصيغة الكاملة: يوم/شهر/سنة
+        days.push(`${day}/${month}/${fullYear}`); 
     }
     return days;
 }
@@ -445,3 +446,4 @@ function loadArchive() {
 </script>
 </body>
 </html>
+
