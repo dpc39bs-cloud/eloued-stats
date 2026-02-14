@@ -170,49 +170,24 @@ let myChart = null;
 const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
 let currentUser = ""; let currentWeek = "";
 
-// 1. دالة البدء: لتثبيت الأسبوع السابع عند فتح المنظومة
 window.onload = function() {
-    // تثبيت الأسبوع السابع لعام 2026
-    currentWeek = "2026-W07"; 
-    document.getElementById("week-picker").value = currentWeek;
-    
-    const userSelect = document.getElementById("user-role");
-    const notifTarget = document.getElementById("notif-target");
-    Object.keys(unitConfig).forEach(u => {
-        userSelect.innerHTML += `<option value="${u}">${u}</option>`;
-        if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
-    });
-    setInterval(updateClock, 1000); 
-    loadArchive();
+    // منطق التاريخ الجديد: جلب أسبوع "ما قبل الأسبوع الحالي"
+    let now = new Date();
+    now.setDate(now.getDate() - 7); // الرجوع 7 أيام للخلف (ليصبح الأحد الماضي)
+    let y = now.getFullYear();
+    let weekNum = Math.ceil((((now - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
+    currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
+    
+    document.getElementById("week-picker").value = currentWeek;
+    const userSelect = document.getElementById("user-role");
+    const notifTarget = document.getElementById("notif-target");
+    Object.keys(unitConfig).forEach(u => {
+        userSelect.innerHTML += `<option value="${u}">${u}</option>`;
+        if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
+    });
+    setInterval(updateClock, 1000); loadArchive();
 };
 
-// 2. دالة حساب الأيام: لضمان مطابقة التواريخ لتقويم 2026 (الأحد هو البداية)
-function getWeekDays(w) { 
-    if(!w) return [];
-    let [year, week] = w.split('-W'); 
-    year = parseInt(year);
-    week = parseInt(week);
-
-    // حساب أول يوم أحد في سنة 2026
-    let jan1 = new Date(year, 0, 1);
-    let firstSunday = new Date(year, 0, 1 + (7 - jan1.getDay()) % 7);
-    
-    let targetSunday = new Date(firstSunday);
-    targetSunday.setDate(firstSunday.getDate() + (week - 1) * 7);
-    
-    let days = []; 
-    for(let i=0; i<7; i++) { 
-        let n = new Date(targetSunday); 
-        n.setDate(targetSunday.getDate() + i); 
-        
-        let dd = String(n.getDate()).padStart(2, '0');
-        let mm = String(n.getMonth() + 1).padStart(2, '0');
-        let yyyy = n.getFullYear();
-        
-        days.push(`${dd}/${mm}/${yyyy}`); 
-    } 
-    return days; 
-}
 function calculate() { 
     let dTotals = new Array(16).fill(0); 
     document.querySelectorAll("#daily-body tr").forEach(row => { 
@@ -363,4 +338,4 @@ function loadArchive() { const container = document.getElementById("archive-cont
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
 </script>
 </body>
-</html> 
+</html>
