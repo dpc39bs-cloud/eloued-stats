@@ -170,17 +170,33 @@ let myChart = null;
 const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
 let currentUser = ""; let currentWeek = "";
 
-window.onload = function() {
-    // الضبط الافتراضي: الأسبوع السادس لعام 2026
-    currentWeek = "2026-W06"; 
-    document.getElementById("week-picker").value = currentWeek;
+function getWeekDays(w) { 
+    if(!w) return [];
+    let [year, week] = w.split('-W'); 
+    year = parseInt(year);
+    week = parseInt(week);
+
+    // في سنة 2026: الأسبوع الأول يبدأ يوم 04 جانفي (أول أحد في السنة)
+    // الأسبوع 7 سيبدأ تلقائياً يوم 08 فيفري
+    let jan1 = new Date(year, 0, 1);
+    let firstSunday = new Date(year, 0, 1 + (7 - jan1.getDay()) % 7);
     
-    const userSelect = document.getElementById("user-role");
-    const notifTarget = document.getElementById("notif-target");
-    Object.keys(unitConfig).forEach(u => {
-        userSelect.innerHTML += `<option value="${u}">${u}</option>`;
-        if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
-    });
+    let targetSunday = new Date(firstSunday);
+    targetSunday.setDate(firstSunday.getDate() + (week - 1) * 7);
+    
+    let days = []; 
+    for(let i=0; i<7; i++) { 
+        let n = new Date(targetSunday); 
+        n.setDate(targetSunday.getDate() + i); 
+        
+        let dd = String(n.getDate()).padStart(2, '0');
+        let mm = String(n.getMonth() + 1).padStart(2, '0');
+        let yyyy = n.getFullYear();
+        
+        days.push(`${dd}/${mm}/${yyyy}`); 
+    } 
+    return days; 
+}
     setInterval(updateClock, 1000); 
     loadArchive();
 
@@ -356,6 +372,7 @@ function setWeek(w) { document.getElementById("week-picker").value = w; changeWe
 </script>
 </body>
 </html>
+
 
 
 
