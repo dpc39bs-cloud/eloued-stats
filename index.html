@@ -12,7 +12,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
-/* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
 .hidden { display: none !important; }
@@ -97,7 +96,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
             <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
         </div>
         <div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
-            <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
+            <label style="font-weight: 800; font-size: 18px;">أسبوع الحصيلة: </label>
             <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
         </div>
 
@@ -150,7 +149,6 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 </div>
 
 <script>
-// إعدادات Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY",
   authDomain: "eloued-system.firebaseapp.com",
@@ -170,50 +168,36 @@ let currentUser = ""; let currentWeek = "";
 window.onload = function() {
     let now = new Date();
     let y = now.getFullYear();
-    
-    // حساب رقم الأسبوع الحالي (المنطق الأصلي)
+    // حساب الأسبوع الحالي
     let weekNum = Math.ceil((((now - new Date(y, 0, 1)) / 86400000) + new Date(y, 0, 1).getDay() + 1) / 7);
     
-    // تعديل خاص: إذا كان اليوم هو الأحد (0)، نقوم بالرجوع للأسبوع السابق تلقائياً
-    if (now.getDay() === 0) {
-        weekNum = weekNum - 1;
-    }
-    
-    // تثبيت الأسبوع السادس كبداية عمل (أو استخدام أحدث أسبوع بناءً على التاريخ الحالي)
-    // يمكنك تغيير "06" يدوياً هنا إذا كنت تريد تثبيته تماماً
+    // تعديل استراتيجي: نرجع أسبوع للخلف لأن العمل يوم الأحد يكون على حصيلة الأسبوع الماضي
+    weekNum = weekNum - 1; 
+
     currentWeek = `${y}-W${weekNum.toString().padStart(2, '0')}`;
-    
     document.getElementById("week-picker").value = currentWeek;
     
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
-    
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
-
     setInterval(updateClock, 1000);
-    updateTicker(); 
-    loadArchive();
+    updateTicker(); loadArchive();
 };
 
 async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
-    
-    // جلب كلمة المرور من Firebase أولاً، إذا لم توجد نستخدم localStorage أو الافتراضي
     const snapshot = await db.ref('passwords/' + u).once('value');
-    const cloudPass = snapshot.val() || localStorage.getItem("pass_" + u) || "1111";
-
+    const cloudPass = snapshot.val() || "1111";
     if(p !== cloudPass) return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
-    
     currentUser = u;
     currentWeek = document.getElementById("week-picker").value;
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
-    
     if(currentUser === "المتحكم الرئيسي") {
         document.getElementById("status-panel").classList.remove("hidden");
         document.getElementById("master-clock-bar").classList.remove("hidden");
@@ -221,13 +205,10 @@ async function login(){
         document.getElementById("unit-clock-bar").classList.add("hidden");
         document.getElementById("master-reveal-btn").classList.remove("hidden");
         updateStatusPanel();
-    } else { 
-        checkNotifications(); 
-    }
+    } else { checkNotifications(); }
     renderSystem();
 }
 
-// دالة الحفظ السحابي الجديدة
 async function saveData(){
     let w = document.getElementById("week-picker").value;
     let daily = []; 
@@ -235,35 +216,24 @@ async function saveData(){
         if(!daily[el.dataset.day]) daily[el.dataset.day] = new Array(16).fill(0); 
         daily[el.dataset.day][el.dataset.col] = el.value; 
     });
-    
     let muni = {}; 
     document.querySelectorAll(".m-input").forEach(el => { 
         if(!muni[el.dataset.muni]) muni[el.dataset.muni] = new Array(16).fill(0); 
         muni[el.dataset.muni][el.dataset.col] = el.value; 
     });
-
     Swal.fire({ title: 'جاري الحفظ سحابياً...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
     try {
         await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
-        localStorage.setItem(w + "_daily_" + currentUser, JSON.stringify(daily));
-        localStorage.setItem(w + "_muni_" + currentUser, JSON.stringify(muni));
         Swal.fire("تم الحفظ بنجاح", "البيانات الآن متوفرة أونلاين", "success");
         updateStatusPanel(); updateTicker(); loadArchive();
-    } catch(e) {
-        Swal.fire("خطأ في الحفظ", e.message, "error");
-    }
+    } catch(e) { Swal.fire("خطأ في الحفظ", e.message, "error"); }
 }
 
-// دالة جلب البيانات السحابية
 async function renderSystem(){
     let days = getWeekDays(currentWeek);
     document.getElementById("week-info").innerText = `من الأحد ${days[0]} إلى السبت ${days[6]}`;
-    
-    // محاولة جلب البيانات من السحابة أولاً
     const snapshot = await db.ref('data/' + currentWeek).once('value');
     const cloudData = snapshot.val() || {};
-
     let dBody = document.getElementById("daily-body"); dBody.innerHTML = "";
     for(let i=0; i<7; i++){
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
@@ -274,7 +244,6 @@ async function renderSystem(){
         }
         tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
     }
-
     let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
     let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
     munis.forEach(m => {
@@ -304,23 +273,175 @@ function getUnitDataLocal(week, key, type, cloudData) {
     return res;
 }
 
-// باقي الدوال الأصلية كما هي تماماً
-function updateClock() { const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); document.getElementById('live-clock').innerText = timeStr; document.getElementById('live-date').innerText = dateStr; if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr; if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr; }
-function calculate() { let dTotals = new Array(16).fill(0); document.querySelectorAll("#daily-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { dTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".d-row-total").innerText = rSum; }); document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`; let mTotals = new Array(16).fill(0); document.querySelectorAll("#muni-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { mTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".m-row-total").innerText = rSum; }); document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`; updateChart(dTotals); }
-function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function getWeekDays(w) { if(!w) return ["-","-","-","-","-","-","-"]; let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i); days.push(n.toISOString().split('T')[0]); } return days; }
+function calculate() {
+    let dTotals = new Array(16).fill(0);
+    let mTotals = new Array(16).fill(0);
+
+    document.querySelectorAll("#daily-body tr").forEach(row => {
+        let rowGrandTotal = 0;
+        row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
+            let val = parseInt(el.value || el.innerText) || 0;
+            if (idx < 16) {
+                dTotals[idx] += val;
+                // الأعمدة 1, 5, 9, 13 تمثل "ع ت" برمجياً في المصفوفة
+                if ([1, 5, 9, 13].includes(idx)) rowGrandTotal += val;
+            }
+        });
+        row.querySelector(".d-row-total").innerText = rowGrandTotal;
+    });
+
+    document.querySelectorAll("#muni-body tr").forEach(row => {
+        let rowGrandTotal = 0;
+        row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
+            let val = parseInt(el.value || el.innerText) || 0;
+            if (idx < 16) {
+                mTotals[idx] += val;
+                if ([1, 5, 9, 13].includes(idx)) rowGrandTotal += val;
+            }
+        });
+        row.querySelector(".m-row-total").innerText = rowGrandTotal;
+    });
+
+    let dFinalSum = dTotals[1] + dTotals[5] + dTotals[9] + dTotals[13];
+    let mFinalSum = mTotals[1] + mTotals[5] + mTotals[9] + mTotals[13];
+
+    document.getElementById("daily-foot").innerHTML = `<td style="background:var(--success); color:white;">المجموع</td>` + 
+        dTotals.map(v => `<td>${v}</td>`).join('') + `<td style="background:var(--primary); color:white;">${dFinalSum}</td>`;
+
+    document.getElementById("muni-foot").innerHTML = `<td style="background:#ef6c00; color:white;">المجموع</td>` + 
+        mTotals.map(v => `<td>${v}</td>`).join('') + `<td style="background:var(--primary); color:white;">${mFinalSum}</td>`;
+
+    updateChart(dTotals);
+}
+
+function updateChart(t) {
+    const ctx = document.getElementById('mainChart').getContext('2d');
+    if(myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'],
+            datasets: [{
+                label: 'عدد التدخلات الإجمالي (ع ت)',
+                data: [t[1], t[5], t[9], t[13]],
+                backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3']
+            }]
+        },
+        options: { responsive: true, maintainAspectRatio: false }
+    });
+}
+
+function updateClock() {
+    const now = new Date();
+    const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0');
+    const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    document.getElementById('live-clock').innerText = timeStr;
+    document.getElementById('live-date').innerText = dateStr;
+    if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr;
+    if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr;
+}
+
+function getWeekDays(w) {
+    if(!w) return ["-","-","-","-","-","-","-"];
+    let [year, week] = w.split('-W');
+    let d = new Date(year, 0, 1 + (week - 1) * 7);
+    while (d.getDay() !== 0) d.setDate(d.getDate() - 1);
+    let days = [];
+    for(let i=0; i<7; i++) {
+        let n = new Date(d);
+        n.setDate(d.getDate() + i);
+        let day = n.getDate().toString().padStart(2, '0');
+        let month = (n.getMonth() + 1).toString().padStart(2, '0');
+        days.push(`${day}/${month}`); 
+    }
+    return days;
+}
+
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
-async function updateStatusPanel() { if(currentUser !== "المتحكم الرئيسي") return; const grid = document.getElementById("status-grid"); grid.innerHTML = ""; const snapshot = await db.ref('data/' + currentWeek).once('value'); const cloudData = snapshot.val() || {}; Object.keys(unitConfig).forEach(u => { if(u === "المتحكم الرئيسي") return; let isSent = !!cloudData[u]; grid.innerHTML += `<div style="background:${isSent ? 'var(--success)' : 'var(--danger)'}; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:12px;">${u}<br>${isSent ? '✓' : '✘'}</div>`; }); }
-async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
-async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
-function updateTicker() { let total = 0; db.ref('data/' + currentWeek).once('value').then(snap => { const data = snap.val() || {}; Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); }); document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`; }); }
-function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
-function sendNotif() { let target = document.getElementById("notif-target").value; let msg = document.getElementById("notif-msg").value; if(!msg) return; db.ref('notifications/' + target).set(msg); Swal.fire("تم الإرسال سحابياً", "", "success"); document.getElementById("notif-msg").value = ""; }
-function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
+
+async function updateStatusPanel() {
+    if(currentUser !== "المتحكم الرئيسي") return;
+    const grid = document.getElementById("status-grid");
+    grid.innerHTML = "";
+    const snapshot = await db.ref('data/' + currentWeek).once('value');
+    const cloudData = snapshot.val() || {};
+    Object.keys(unitConfig).forEach(u => {
+        if(u === "المتحكم الرئيسي") return;
+        let isSent = !!cloudData[u];
+        grid.innerHTML += `<div style="background:${isSent ? 'var(--success)' : 'var(--danger)'}; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:12px;">${u}<br>${isSent ? '✓' : '✘'}</div>`;
+    });
+}
+
+async function changeMyPassword() {
+    const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' });
+    if(p) { await db.ref('passwords/' + currentUser).set(p); Swal.fire("تم التحديث", "", "success"); }
+}
+
+async function revealUnitPass() {
+    let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; });
+    const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts });
+    if(unit) {
+        const snap = await db.ref('passwords/' + unit).once('value');
+        Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info');
+    }
+}
+
+function updateTicker() {
+    let total = 0;
+    db.ref('data/' + currentWeek).once('value').then(snap => {
+        const data = snap.val() || {};
+        Object.values(data).forEach(u => {
+            if(u.daily) u.daily.forEach(row => {
+                total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0);
+            });
+        });
+        document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`;
+    });
+}
+
+function getAllMunis() {
+    let a = [];
+    Object.keys(unitConfig).forEach(u => {
+        if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); });
+    });
+    return a;
+}
+
+function sendNotif() {
+    let target = document.getElementById("notif-target").value;
+    let msg = document.getElementById("notif-msg").value;
+    if(!msg) return;
+    db.ref('notifications/' + target).set(msg);
+    Swal.fire("تم الإرسال سحابياً", "", "success");
+    document.getElementById("notif-msg").value = "";
+}
+
+function checkNotifications() {
+    db.ref('notifications/' + currentUser).on('value', (snap) => {
+        let msg = snap.val();
+        if(msg) {
+            document.getElementById("notif-text").innerText = msg;
+            document.getElementById("unit-notification").classList.remove("hidden");
+        } else {
+            document.getElementById("unit-notification").classList.add("hidden");
+        }
+    });
+}
+
 function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
-function loadArchive() { /* كود الأرشفة الأصلي */ const container = document.getElementById("archive-container"); container.innerHTML = "جاري جلب الأرشيف..."; db.ref('data').once('value').then(snap => { container.innerHTML = ""; const allData = snap.val() || {}; Object.keys(allData).reverse().forEach(weekKey => { container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`; }); }); }
+
+function loadArchive() {
+    const container = document.getElementById("archive-container");
+    container.innerHTML = "جاري جلب الأرشيف...";
+    db.ref('data').once('value').then(snap => {
+        container.innerHTML = "";
+        const allData = snap.val() || {};
+        Object.keys(allData).reverse().forEach(weekKey => {
+            container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`;
+        });
+    });
+}
 </script>
 </body>
-
 </html>
