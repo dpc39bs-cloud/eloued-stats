@@ -188,38 +188,59 @@ window.onload = function() {
     setInterval(updateClock, 1000); loadArchive();
 };
 
-function calculate() { 
-    let dTotals = new Array(16).fill(0); 
-    document.querySelectorAll("#daily-body tr").forEach(row => { 
-        let rSum = 0; 
-        row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { 
-            let v = parseInt(el.value || el.innerText) || 0; 
-            if(idx < 16) { 
-                dTotals[idx] += v; 
-                if([1,5,9,13].includes(idx)) rSum += v; 
-            } 
-        }); 
-        row.querySelector(".d-row-total").innerText = rSum; 
-    }); 
-    document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`; 
+function calculate() {
+    let dColTotals = new Array(16).fill(0);
+    let mColTotals = new Array(16).fill(0);
 
-    let mTotals = new Array(16).fill(0); 
-    document.querySelectorAll("#muni-body tr").forEach(row => { 
-        let rSum = 0; 
-        row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { 
-            let v = parseInt(el.value || el.innerText) || 0; 
-            if(idx < 16) { 
-                mTotals[idx] += v; 
-                if([1,5,9,13].includes(idx)) rSum += v; 
-            } 
-        }); 
-        row.querySelector(".m-row-total").innerText = rSum; 
-    }); 
-    document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`; 
-    updateChart(dTotals); 
-    updateTicker(dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]);
+    // حساب جدول النشاط اليومي (جمع الصفوف أفقياً والأعمدة عمودياً)
+    document.querySelectorAll("#daily-body tr").forEach(row => {
+        let rowSum = 0;
+        let inputs = row.querySelectorAll(".d-input");
+        inputs.forEach((input, idx) => {
+            let val = parseInt(input.value) || 0;
+            dColTotals[idx] += val; // المجموع العمودي للعمود الحالي
+            
+            // جمع "ع ت" فقط (الأعمدة رقم 1، 5، 9، 13) لتحديد إجمالي اليوم أفقياً
+            if ([1, 5, 9, 13].includes(idx)) rowSum += val; 
+        });
+        row.querySelector(".d-row-total").innerText = rowSum;
+    });
+
+    // حساب جدول البلديات (جمع الصفوف أفقياً والأعمدة عمودياً)
+    document.querySelectorAll("#muni-body tr").forEach(row => {
+        let rowSum = 0;
+        let inputs = row.querySelectorAll(".m-input");
+        inputs.forEach((input, idx) => {
+            let val = parseInt(input.value) || 0;
+            mColTotals[idx] += val; // المجموع العمودي للعمود الحالي
+            
+            // جمع "ع ت" فقط أفقياً
+            if ([1, 5, 9, 13].includes(idx)) rowSum += val;
+        });
+        row.querySelector(".m-row-total").innerText = rowSum;
+    });
+
+    // تحديث تذييل الجداول (السطر الأخير الملون) بالمجاميع النهائية
+    updateFooter("daily-foot", dColTotals);
+    updateFooter("muni-foot", mColTotals);
+    
+    // تحديث الرسم البياني بناءً على مجاميع "ع ت"
+    if (typeof updateChart === "function") updateChart(dColTotals);
 }
 
+function updateFooter(id, totals) {
+    // حساب المجموع الكلي النهائي (جمع خانات ع ت الكلية)
+    let grandTotal = totals[1] + totals[5] + totals[9] + totals[13];
+    
+    let html = `<td style="background:var(--primary); color:white;">المجموع</td>`;
+    totals.forEach(v => {
+        html += `<td>${v}</td>`;
+    });
+    // إضافة خانة المجموع العام في آخر خلية بلون مميز
+    html += `<td style="background:red; color:white;">${grandTotal}</td>`;
+    
+    document.getElementById(id).innerHTML = html;
+}
 async function login(){
     let p = document.getElementById("pass-code").value; let u = document.getElementById("user-role").value;
     const snap = await db.ref('passwords/' + u).once('value');
@@ -339,3 +360,4 @@ function setWeek(w) { document.getElementById("week-picker").value = w; changeWe
 </script>
 </body>
 </html>
+
