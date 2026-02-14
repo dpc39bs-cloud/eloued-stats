@@ -171,11 +171,8 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    // تعديل مخصص: تثبيت البداية من الأسبوع 7 لعام 2026 (يبدأ من الأحد 08 فيفري)
-    let y = 2026;
-    let weekNum = 7; 
-    currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
-    
+    // الضبط الافتراضي: الأسبوع السادس لعام 2026
+    currentWeek = "2026-W06"; 
     document.getElementById("week-picker").value = currentWeek;
     
     const userSelect = document.getElementById("user-role");
@@ -186,7 +183,6 @@ window.onload = function() {
     });
     setInterval(updateClock, 1000); 
     loadArchive();
-};
 
 function calculate() {
     let dColTotals = new Array(16).fill(0);
@@ -360,5 +356,6 @@ function setWeek(w) { document.getElementById("week-picker").value = w; changeWe
 </script>
 </body>
 </html>
+
 
 
