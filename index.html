@@ -39,7 +39,11 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 .stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #ffd700; padding: 12px 0; font-weight: 700; z-index: 9999; }
 .ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
 @keyframes ticker { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-
+/* إخفاء هيدر الطباعة في الشاشة العادية وإظهاره فقط عند الطباعة */
+.only-print { display: none; }
+@media print {
+    .only-print { display: block !important; }
+}
 @media print {
     @page { size: A4 landscape; margin: 1mm !important; }
     
@@ -530,6 +534,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
