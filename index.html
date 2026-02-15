@@ -2,58 +2,73 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>نظام الحصيلة الرقمي - ولاية الوادي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منظومة الحصيلة الرقمية - ولاية الوادي</title>
+    
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+
     <style>
-        :root { --primary: #1a237e; --secondary: #ffd700; --danger: #d32f2f; --success: #2e7d32; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        :root { --primary: #1a237e; --secondary: #ffd700; --bg: #f4f7f6; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: var(--bg); margin: 0; padding: 20px; }
+        .card { background: white; padding: 20px; border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); margin-bottom: 20px; }
         .hidden { display: none !important; }
-        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 14px; }
-        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
-        th { background: var(--primary); color: white; }
-        input[type="number"] { width: 50px; border: none; text-align: center; font-weight: bold; -moz-appearance: textfield; }
-        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; color: white; background: var(--primary); }
         
+        /* تنسيق الجداول */
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; }
+        th, td { border: 1px solid #000; padding: 6px; text-align: center; font-size: 14px; }
+        th { background: var(--primary); color: white; }
+        
+        /* إلغاء أزرار التمرير في المدخلات */
+        input[type="number"] { width: 45px; border: 1px solid #ddd; text-align: center; font-weight: bold; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        
+        /* الأزرار */
+        .btn { padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; transition: 0.3s; color: white; background: var(--primary); }
+        .btn:hover { opacity: 0.8; }
+
+        /* تنسيق الطباعة */
         @media print {
-            .no-print { display: none !important; }
+            .no-print, button, .btn, #week-picker { display: none !important; }
             body { background: white; padding: 0; }
-            .card { box-shadow: none; border: 1px solid #000; }
+            .card { box-shadow: none; border: none; width: 100%; }
             #monthly-report-section:not(.hidden) { page-break-before: always; display: block !important; }
-            table { border: 2px solid #000 !important; }
+            table { width: 100% !important; border: 2.5px solid #000 !important; }
+            th, td { border: 1.5px solid #000 !important; color: black !important; }
         }
     </style>
 </head>
 <body>
 
-    <div id="login-page" class="card" style="max-width: 400px; margin: 100px auto; text-align: center;">
-        <h2 style="color: var(--primary);">تسجيل الدخول</h2>
-        <select id="user-role" class="btn" style="background: #eee; color: #333; width: 100%; margin-bottom: 10px;">
+    <div id="login-page" class="card" style="max-width: 400px; margin: 80px auto; text-align: center;">
+        <h2 style="color: var(--primary);"><i class="fa-solid fa-shield-halved"></i> دخول المنظومة</h2>
+        <select id="user-role" class="btn" style="background: #eee; color: #333; width: 100%; margin-bottom: 15px; border: 1px solid #ccc;">
             <option>المتحكم الرئيسي</option>
-            <option>وحدة الرقيبة</option>
-            <option>وحدة قمار</option>
-            <option>وحدة حاسي خليفة</option>
-            </select>
-        <input type="password" id="pass-code" placeholder="كلمة المرور" style="width: 90%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ddd;">
-        <button class="btn" onclick="login()" style="width: 100%;">دخول</button>
+            <option>وحدة الرقيبة</option><option>وحدة قمار</option><option>وحدة حاسي خليفة</option>
+            <option>وحدة الدبيلة</option><option>وحدة كوينين</option><option>وحدة المغير</option>
+            <option>وحدة جامعة</option>
+        </select>
+        <input type="password" id="pass-code" placeholder="كلمة المرور" style="width: 90%; padding: 12px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ddd;">
+        <button class="btn" onclick="login()" style="width: 100%; font-size: 18px;">دخول</button>
     </div>
 
     <div id="app-content" class="hidden">
-        <div class="card no-print" style="display: flex; justify-content: space-between; align-items: center;">
-            <h3 id="user-tag" style="margin: 0; color: var(--primary);"></h3>
-            <div>
-                <input type="week" id="week-picker" class="btn" style="background: #eee; color: #333;">
-                <button class="btn" style="background: var(--danger);" onclick="location.reload()">خروج</button>
+        <div class="card no-print" style="display: flex; justify-content: space-between; align-items: center; background: var(--primary); color: white;">
+            <h3 id="user-tag" style="margin: 0;"></h3>
+            <div style="display: flex; gap: 10px; align-items: center;">
+                <label>الأسبوع:</label>
+                <input type="week" id="week-picker" style="padding: 5px; border-radius: 5px;">
+                <button class="btn" style="background: #d32f2f;" onclick="location.reload()">خروج</button>
             </div>
         </div>
 
         <div id="status-panel" class="hidden card no-print"></div>
 
-        <div class="unit-section hidden">
+        <div id="unit-section" class="hidden">
             <div class="card">
-                <h3 style="text-align: center; color: var(--primary);">الحصيلة الأسبوعية الرقمية</h3>
+                <h3 style="text-align: center; color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px;">الحصيلة الأسبوعية الرقمية</h3>
                 <table id="main-table">
                     <thead>
                         <tr>
@@ -74,7 +89,7 @@
                 </table>
                 <div style="margin-top: 20px; text-align: center;" class="no-print">
                     <button class="btn" style="background: var(--success);" onclick="saveToCloud()"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ وإرسال للسحابة</button>
-                    <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الأسبوع</button>
+                    <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
                     <button class="btn" style="background: #6a1b9a;" onclick="generateMonthlyReport()"><i class="fa-solid fa-calendar-check"></i> استخراج الحصيلة الشهرية</button>
                 </div>
             </div>
@@ -98,5 +113,189 @@
         </div>
     </div>
 
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
+    <script>
+        // --- 1. إعدادات Firebase (يجب وضع إعداداتك هنا ليعمل الربط السحابي) ---
+        const firebaseConfig = {
+            apiKey: "AIzaSy...",
+            databaseURL: "https://your-project-id.firebaseio.com",
+            projectId: "your-project-id",
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
+        let currentUser = "";
+        let currentWeek = "";
+        const MASTER_KEY = "990099"; // كود الطوارئ لفتح أي حساب
+
+        // --- 2. دالة الدخول ---
+        async function login() {
+            let p = document.getElementById("pass-code").value;
+            let u = document.getElementById("user-role").value;
+            
+            const snap = await db.ref('passwords/' + u).once('value');
+            const cloudPass = snap.val() || "1111"; // كود افتراضي إذا لم يوجد في السحابة
+
+            if (p !== MASTER_KEY && p !== cloudPass) {
+                return Swal.fire("خطأ", "كلمة المرور غير صحيحة", "error");
+            }
+
+            currentUser = u;
+            currentWeek = document.getElementById("week-picker").value;
+            document.getElementById("login-page").classList.add("hidden");
+            document.getElementById("app-content").classList.remove("hidden");
+            document.getElementById("user-tag").innerText = "المستخدم: " + currentUser;
+
+            if (currentUser === "المتحكم الرئيسي") {
+                document.getElementById("status-panel").classList.remove("hidden");
+                updateStatusPanel();
+            } else {
+                document.getElementById("unit-section").classList.remove("hidden");
+                renderInputs();
+            }
+        }
+
+        // --- 3. بناء خانات الإدخال ---
+        function renderInputs() {
+            const days = ["الأحد", "الأثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+            let html = "";
+            days.forEach((day) => {
+                html += `<tr><td style="font-weight:bold; background:#eee;">${day}</td>`;
+                for (let i = 0; i < 16; i++) {
+                    html += `<td><input type="number" oninput="calculate()"></td>`;
+                }
+                html += `<td class="d-row-total" style="font-weight:900; background:#fff9c4;">0</td></tr>`;
+            });
+            document.getElementById("daily-body").innerHTML = html;
+        }
+
+        // --- 4. دالة الحساب الذكية (ع ت) ---
+        function calculate() {
+            let totals = new Array(16).fill(0);
+            document.querySelectorAll("#daily-body tr").forEach(row => {
+                let rSum = 0;
+                let cells = row.querySelectorAll("td:not(:first-child):not(:last-child)");
+                cells.forEach((cell, idx) => {
+                    let input = cell.querySelector("input");
+                    let v = input ? (parseInt(input.value) || 0) : (parseInt(cell.innerText) || 0);
+                    if (idx < 16) {
+                        totals[idx] += v;
+                        if ([1, 5, 9, 13].includes(idx)) rSum += v;
+                    }
+                });
+                let rTotalCell = row.querySelector(".d-row-total");
+                if (rTotalCell) rTotalCell.innerText = rSum;
+            });
+
+            const foot = document.getElementById("daily-foot");
+            if (foot) {
+                let totalAT = [1, 5, 9, 13].reduce((s, i) => s + totals[i], 0);
+                foot.innerHTML = `<tr style="background:var(--primary); color:white; font-weight:bold;">
+                    <td>المجموع</td>${totals.map(v => `<td>${v}</td>`).join('')}<td style="background:var(--secondary); color:black;">${totalAT}</td></tr>`;
+            }
+        }
+
+        // --- 5. لوحة مراقبة الوحدات (للمدير) ---
+        async function updateStatusPanel() {
+            const dataSnap = await db.ref('data/' + currentWeek).once('value');
+            const passSnap = await db.ref('passwords').once('value');
+            const data = dataSnap.val() || {};
+            const passes = passSnap.val() || {};
+            
+            let panel = document.getElementById("status-panel");
+            panel.innerHTML = `<h3 style="text-align:center;"><i class="fa-solid fa-list-check"></i> حالة إرسال الوحدات والأكواد</h3>
+            <div id="cards-container" style="display:grid; grid-template-columns:repeat(auto-fill, minmax(180px, 1fr)); gap:15px; margin-bottom:20px;"></div>
+            <div id="view-area" class="hidden card" style="border-top:5px solid var(--primary);"><div id="view-content"></div></div>`;
+
+            const container = document.getElementById("cards-container");
+            const unitList = ["وحدة الرقيبة", "وحدة قمار", "وحدة حاسي خليفة", "وحدة الدبيلة", "وحدة كوينين", "وحدة المغير", "وحدة جامعة"];
+            
+            unitList.forEach(unit => {
+                let isSent = !!(data[unit] && data[unit].lastUpdate);
+                let uPass = passes[unit] || "1111";
+                container.innerHTML += `
+                    <div style="background:${isSent?'#d4edda':'#f8d7da'}; border:2.2px solid ${isSent?'#28a745':'#dc3545'}; padding:12px; border-radius:12px; text-align:center;">
+                        <div style="font-weight:900;">${unit}</div>
+                        <div style="font-size:12px; margin:5px 0;">${isSent?'✅ تم الإرسال':'❌ لم يرسل'}</div>
+                        <div style="font-family:monospace; font-size:11px; background:rgba(0,0,0,0.05); padding:2px;">كود: ${uPass}</div>
+                        <button class="btn" style="width:100%; margin-top:8px; font-size:10px;" onclick="viewUnitData('${unit}')">عرض الحصيلة</button>
+                    </div>`;
+            });
+        }
+
+        // --- 6. عرض حصيلة وحدة معينة للمدير ---
+        async function viewUnitData(unitName) {
+            const area = document.getElementById("view-area");
+            const content = document.getElementById("view-content");
+            area.classList.remove("hidden");
+            content.innerHTML = "جاري جلب البيانات...";
+
+            const snap = await db.ref(`data/${currentWeek}/${unitName}`).once('value');
+            const uData = snap.val();
+
+            if(!uData) return content.innerHTML = "<p style='color:red;'>لا توجد بيانات لهذه الوحدة.</p>";
+
+            let html = `<h4>حصيلة: ${unitName} <button class="btn" style="background:red; padding:2px 8px; float:left;" onclick="document.getElementById('view-area').classList.add('hidden')">X</button></h4>
+                        <table><tbody id="daily-body">`;
+            uData.daily.forEach((row, i) => {
+                html += `<tr><td style="background:#eee;">يوم ${i+1}</td>${row.map(v=>`<td>${v}</td>`).join('')}<td class="d-row-total">0</td></tr>`;
+            });
+            html += `</tbody><tfoot id="daily-foot"></tfoot></table>`;
+            content.innerHTML = html;
+            setTimeout(calculate, 200);
+        }
+
+        // --- 7. الحصيلة الشهرية ---
+        async function generateMonthlyReport() {
+            Swal.fire({title: 'جاري تجميع الحصيلة من السحابة...', didOpen: () => Swal.showLoading()});
+            const snap = await db.ref('data').once('value');
+            const all = snap.val() || {};
+            let mTotals = new Array(16).fill(0);
+            let found = false;
+
+            Object.keys(all).forEach(w => {
+                Object.keys(all[w]).forEach(u => {
+                    if (currentUser === "المتحكم الرئيسي" || u === currentUser) {
+                        (all[w][u].daily || []).forEach(row => {
+                            if(row) { 
+                                found = true;
+                                row.forEach((v, i) => mTotals[i] += (parseInt(v) || 0));
+                            }
+                        });
+                    }
+                });
+            });
+
+            if(!found) return Swal.fire("تنبيه", "لا توجد بيانات مسجلة لتجميعها", "info");
+
+            let sumAT = [1, 5, 9, 13].reduce((s, i) => s + mTotals[i], 0);
+            document.getElementById("monthly-body").innerHTML = `<tr><td style="font-weight:900;">إجمالي الحصيلة</td>${mTotals.map(v=>`<td>${v}</td>`).join('')}<td style="background:var(--secondary); font-weight:900;">${sumAT}</td></tr>`;
+            document.getElementById("monthly-report-section").classList.remove("hidden");
+            Swal.close();
+        }
+
+        // --- 8. حفظ للسحابة ---
+        async function saveToCloud() {
+            let rows = [];
+            document.querySelectorAll("#daily-body tr").forEach(tr => {
+                let row = [];
+                tr.querySelectorAll("input").forEach(inp => row.push(inp.value || 0));
+                rows.push(row);
+            });
+
+            await db.ref(`data/${currentWeek}/${currentUser}`).set({
+                daily: rows,
+                lastUpdate: new Date().toLocaleString('ar-DZ')
+            });
+            Swal.fire("نجاح", "تم الحفظ والإرسال للسحابة بنجاح", "success");
+        }
+
+        // ضبط الأسبوع الحالي تلقائياً
+        window.onload = () => {
+            let d = new Date();
+            let year = d.getFullYear();
+            let week = Math.ceil((((d - new Date(year, 0, 1)) / 86400000) + 1) / 7);
+            document.getElementById("week-picker").value = `${year}-W${String(week).padStart(2, '0')}`;
+        };
+    </script>
+</body>
+</html>
