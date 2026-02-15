@@ -39,20 +39,13 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 .stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #ffd700; padding: 12px 0; font-weight: 700; z-index: 9999; }
 .ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
 @keyframes ticker { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-/* إخفاء هيدر الطباعة في الشاشة العادية وإظهاره فقط عند الطباعة */
-.only-print { display: none; }
+
 @media print {
-    .only-print { display: block !important; }
-}
-@media print {
-    /* السماح لقسم الحصيلة الشهرية بالظهور إذا لم يكن مخفياً */
-    #monthly-report-section:not(.hidden) { 
-        display: block !important; 
-        page-break-before: always; /* يجعل الحصيلة الشهرية تبدأ في صفحة جديدة عند الطباعة */
-    }
-    
-    /* تنسيق جدول الشهر ليملأ الورقة */
-    #monthly-table { width: 100% !important; border: 2.5px solid #000 !important; }
+    @page { size: A4 landscape; margin: 1mm !important; }
+    .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #master-notif-panel, #unit-notification { display: none !important; }
+    .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; }
+    .print-section { page-break-after: always; display: block; width: 100% !important; }
+    .editable { border: none !important; background: transparent !important; box-shadow: none !important; width: 100% !important; font-size: 18px !important; color: black !important; }
 }
 </style>
 </head>
@@ -236,23 +229,12 @@ async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
     
-    // الكود الرئيسي للطوارئ (Master Key)
-    const MASTER_KEY = "990099";
-
-    // جلب كلمة المرور من Firebase أو استخدام الافتراضي
+    // جلب كلمة المرور من Firebase أولاً، إذا لم توجد نستخدم localStorage أو الافتراضي
     const snapshot = await db.ref('passwords/' + u).once('value');
     const cloudPass = snapshot.val() || localStorage.getItem("pass_" + u) || "1111";
 
-    // التحقق: إذا كان الكود المدخل هو الكود الرئيسي أو الكود الخاص بالوحدة
-    if(p !== MASTER_KEY && p !== cloudPass) {
-        return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
-    }
+    if(p !== cloudPass) return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
     
-    // في حال نجاح الدخول بالكود الرئيسي، يظهر تنبيه بسيط (اختياري)
-    if(p === MASTER_KEY) {
-        console.log("تم الدخول بواسطة كود الطوارئ الرئيسي");
-    }
-
     currentUser = u;
     currentWeek = document.getElementById("week-picker").value;
     document.getElementById("login-page").classList.add("hidden");
@@ -415,58 +397,7 @@ function updateChart(t) { const ctx = document.getElementById('mainChart').getCo
 function getWeekDays(w) { if(!w) return ["-","-","-","-","-","-","-"]; let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i); days.push(n.toISOString().split('T')[0]); } return days; }
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
-async function updateStatusPanel() {
-    const snapshot = await db.ref('data/' + currentWeek).once('value');
-    const data = snapshot.val() || {};
-    const tbody = document.getElementById("status-body");
-    tbody.innerHTML = "";
-
-    // مصفوفة لتخزين المجموع العام للولاية (16 عمود)
-    let grandTotals = new Array(16).fill(0);
-
-    Object.keys(unitConfig).forEach(unit => {
-        if(unit === "المتحكم الرئيسي") return;
-        
-        let unitData = data[unit] || {};
-        let status = unitData.lastUpdate ? `<span style="color:green">تم الإرسال (${unitData.lastUpdate})</span>` : `<span style="color:red">انتظار...</span>`;
-        
-        // حساب مجموع الوحدة لهذه الأسبوع
-        let unitSums = new Array(16).fill(0);
-        if(unitData.daily) {
-            unitData.daily.forEach(row => {
-                if(row) row.forEach((val, idx) => {
-                    let v = parseInt(val) || 0;
-                    unitSums[idx] += v;
-                    grandTotals[idx] += v; // إضافة للمجموع الكلي للولاية
-                });
-            });
-        }
-
-        // حساب "ع ت" للوحدة (الأعمدة 2، 6، 10، 14 برمجياً)
-        let unitTotalAT = [1, 5, 9, 13].reduce((s, i) => s + unitSums[i], 0);
-
-        tbody.innerHTML += `
-            <tr>
-                <td style="font-weight:bold">${unit}</td>
-                <td>${status}</td>
-                <td style="background:#e3f2fd; font-weight:bold">${unitTotalAT}</td>
-                <td class="no-print">
-                    <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="viewUnitData('${unit}')">عرض</button>
-                </td>
-            </tr>
-        `;
-    });
-
-    // إضافة صف "المجموع الكلي للولاية" في أسفل جدول المراقبة
-    let stateTotalAT = [1, 5, 9, 13].reduce((s, i) => s + grandTotals[i], 0);
-    tbody.innerHTML += `
-        <tr style="background:#fff9c4; border-top: 2px solid #fbc02d;">
-            <td colspan="2" style="font-weight:900; text-align:center;">مجموع الولاية الإجمالي</td>
-            <td style="font-weight:900; color:#d32f2f; font-size:18px;">${stateTotalAT}</td>
-            <td class="no-print">---</td>
-        </tr>
-    `;
-}
+async function updateStatusPanel() { if(currentUser !== "المتحكم الرئيسي") return; const grid = document.getElementById("status-grid"); grid.innerHTML = ""; const snapshot = await db.ref('data/' + currentWeek).once('value'); const cloudData = snapshot.val() || {}; Object.keys(unitConfig).forEach(u => { if(u === "المتحكم الرئيسي") return; let isSent = !!cloudData[u]; grid.innerHTML += `<div style="background:${isSent ? 'var(--success)' : 'var(--danger)'}; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:12px;">${u}<br>${isSent ? '✓' : '✘'}</div>`; }); }
 async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
 async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
 function updateTicker() { let total = 0; db.ref('data/' + currentWeek).once('value').then(snap => { const data = snap.val() || {}; Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); }); document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`; }); }
@@ -477,58 +408,73 @@ function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
 function loadArchive() { /* كود الأرشفة الأصلي */ const container = document.getElementById("archive-container"); container.innerHTML = "جاري جلب الأرشيف..."; db.ref('data').once('value').then(snap => { container.innerHTML = ""; const allData = snap.val() || {}; Object.keys(allData).reverse().forEach(weekKey => { container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`; }); }); }
 // دالة تجميع الحصيلة الشهرية من السحابة
 async function generateMonthlyReport() {
-    const snap = await db.ref('data').once('value');
-    const all = snap.val() || {};
-    let mTotals = new Array(16).fill(0);
-    
-    // تجميع البيانات
-    Object.keys(all).forEach(w => {
-        Object.keys(all[w]).forEach(u => {
-            if (currentUser === "المتحكم الرئيسي" || u === currentUser) {
-                (all[w][u].daily || []).forEach(row => { 
-                    if(row) row.forEach((v, i) => mTotals[i] += parseInt(v) || 0); 
-                });
-            }
-        });
+    // 1. إظهار رسالة انتظار للمستخدم
+    Swal.fire({
+        title: 'جاري تجميع البيانات...',
+        text: 'يتم الآن سحب وإحصاء كافة الأسابيع المخزنة في السحابة',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
     });
-
-    let totalAT = [1, 5, 9, 13].reduce((s, i) => s + mTotals[i], 0);
     
-    // 1. تحديد قسم التقرير الشهري
-    const reportSection = document.getElementById('monthly-report-section');
-    
-    // 2. إضافة الهيدر الخاص بالطباعة (نمسح القديم أولاً لكي لا يتكرر)
-    const existingHeader = reportSection.querySelector('.print-header');
-    if (existingHeader) existingHeader.remove();
+    try {
+        // 2. جلب كافة البيانات من قسم data في Firebase
+        const snapshot = await db.ref('data').once('value');
+        const allWeeks = snapshot.val() || {};
+        
+        // مصفوفة لتخزين المجاميع (16 خانة)
+        let monthlyTotals = new Array(16).fill(0);
+        let hasData = false;
 
-    let reportHeader = `
-        <div class="print-header only-print" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
-            <div>الحماية المدنية<br>ولاية الوادي</div>
-            <div><h2 style="margin:0; font-weight: 900;">إجمالي الحصيلة الشهرية الرقمية</h2></div>
-            <div>مكتب الإحصائيات</div>
-        </div>
-    `;
+        // 3. الدوران على كل الأسابيع الموجودة في قاعدة البيانات
+        Object.keys(allWeeks).forEach(weekKey => {
+            let unitsInData = allWeeks[weekKey];
+            
+            // الدوران على الوحدات داخل كل أسبوع
+            Object.keys(unitsInData).forEach(unitName => {
+                // شرط: إذا كان المستخدم "المتحكم الرئيسي" يجمع الكل، وإذا كانت وحدة تجمع حصتها فقط
+                if (currentUser === "المتحكم الرئيسي" || unitName === currentUser) {
+                    let unitData = unitsInData[unitName].daily || [];
+                    
+                    unitData.forEach(row => {
+                        if (row) {
+                            hasData = true;
+                            row.forEach((val, idx) => {
+                                monthlyTotals[idx] += parseInt(val) || 0;
+                            });
+                        }
+                    });
+                }
+            });
+        });
 
-    // 3. وضع الهيدر في بداية القسم
-    reportSection.insertAdjacentHTML('afterbegin', reportHeader);
+        if (!hasData) {
+            Swal.fire("تنبيه", "لا توجد بيانات مسجلة في السحابة حتى الآن لتجميعها.", "warning");
+            return;
+        }
 
-    // 4. ملء جدول البيانات
-    document.getElementById("monthly-body").innerHTML = `
-        <tr style="background: #fff;">
-            <td style="font-weight:900; border: 2px solid #000;">المجموع الإجمالي الشهري</td>
-            ${mTotals.map(v => `<td style="font-weight:bold; font-size:18px; border: 2px solid #000;">${v}</td>`).join('')}
-            <td style="background:#eee; font-weight:900; font-size:20px; border: 2px solid #000; color:black;">${totalAT}</td>
-        </tr>
-    `;
+        // 4. بناء سطر النتائج في الجدول السفلي
+        let mBody = document.getElementById("monthly-body");
+        // حساب المجموع الأفقي (ع ت) بناءً على الأعمدة [1, 5, 9, 13] كما اتفقنا سابقاً
+        let totalAT = [1, 5, 9, 13].reduce((sum, idx) => sum + monthlyTotals[idx], 0);
+        
+        mBody.innerHTML = `
+            <tr style="background: #f8f9fa;">
+                <td style="font-weight:900; color:var(--primary);">إجمالي الحصيلة الشهرية</td>
+                ${monthlyTotals.map(v => `<td style="font-weight:bold; font-size:16px;">${v}</td>`).join('')}
+                <td style="background:#ffd700; font-weight:900; font-size:18px; color:black;">${totalAT}</td>
+            </tr>
+        `;
 
-    // 5. إظهار القسم
-    reportSection.classList.remove("hidden");
-    
-    // تنبيه بسيط بنجاح العملية
-    Swal.fire({ icon: 'success', title: 'تم تجميع الحصيلة', timer: 1500, showConfirmButton: false });
+        // 5. إظهار القسم والنزول إليه بسلاسة
+        document.getElementById('monthly-report-section').classList.remove('hidden');
+        Swal.close();
+        document.getElementById('monthly-report-section').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
+    }
 }
 </script>
 </body>
 </html>
-
-
