@@ -1,85 +1,66 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>منظومة الحصيلة الرقمية - ولاية الوادي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <meta charset="UTF-8">
+    <title>منظومة الحصيلة الرقمية - ولاية الوادي</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
+    <style>
+        /* 1. الإعدادات العامة */
+        :root { --primary:#1a237e; --accent:#c62828; --gold: #ffd700; --soft-gold: #ffecb3; --bg:#f4f7f9; }
+        body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; }
+        .hidden { display: none !important; }
+        
+        /* منع أزرار الزيادة والنقصان في كل الحقول */
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        input[type=number] { -moz-appearance: textfield; }
 
-<style>
-:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; --gold: #ffd700; --soft-gold: #ffecb3; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
-.hidden { display: none !important; }
+        /* 2. تنسيق واجهة الدخول (مصغرة وذهبية) */
+        #login-page { 
+            background: linear-gradient(rgba(10, 15, 50, 0.85), rgba(26, 35, 126, 0.9)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); 
+            background-size: cover; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
+        }
+        .header-official h1 { color: var(--soft-gold); font-size: 1.4rem; margin: 0; }
+        .header-official h2 { color: white; font-size: 1.1rem; margin: 5px 0; }
+        .clock-box { margin: 10px 0; background: rgba(255,255,255,0.05); padding: 5px 25px; border-radius: 30px; border: 1px solid rgba(255,255,255,0.1); }
+        #live-clock { font-size: 2.5rem; font-weight: 900; color: white; margin:0; }
+        .login-card { background: white; padding: 20px; border-radius: 12px; width: 280px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
+        .login-card h2 { font-size: 1.1rem; color: var(--primary); border-bottom: 2px solid var(--accent); display: inline-block; padding-bottom: 5px; margin-bottom: 15px; }
+        .input-field { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: 'Cairo'; font-weight: 700; text-align: center; box-sizing: border-box; }
+        .btn-login { width: 100%; padding: 10px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; }
+        .dev-credit { color: var(--soft-gold); font-size: 0.8rem; margin-top: 15px; opacity: 0.8; }
 
-/* إزالة أزرار الزيادة والنقصان نهائياً */
-input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
+        /* 3. تنسيق صفحات العمل (واسعة وواضحة) */
+        .container { width: 98%; margin: 20px auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 0 20px rgba(0,0,0,0.1); }
+        .internal-clock-bar { background: var(--primary); color: white; padding: 15px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+        
+        /* الجداول الحقيقية */
+        .table-title-box { background: #222; color: var(--gold); padding: 12px; text-align: center; font-weight: 900; font-size: 22px; border: 3px solid #000; margin-top: 25px; }
+        table { width: 100%; border-collapse: collapse; border: 3px solid #000; }
+        th, td { border: 2px solid #000; padding: 8px 4px; text-align: center; }
+        th { background: var(--primary); color: white; font-size: 15px; }
+        .sub-head th { background: #eee; color: black; font-size: 13px; }
+        
+        /* خانات الإدخال الكبيرة */
+        .editable { font-family: 'Cairo'; width: 90%; border: 1px solid #bbb; text-align: center; font-weight: 800; font-size: 20px; background: #fffde7; padding: 5px 0; }
+        .editable:focus { background: #fff59d; outline: none; border: 2px solid var(--primary); }
 
-/* واجهة الدخول المدمجة (التي اعتمدناها) */
-#login-page { 
-    background: linear-gradient(rgba(10, 15, 50, 0.85), rgba(26, 35, 126, 0.9)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); 
-    background-size: cover; background-position: center; height: 100vh; width: 100vw; 
-    display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;
-}
-.header-official h1 { color: var(--soft-gold); font-size: 1.5rem; font-weight: 800; margin: 0; }
-.header-official h2 { color: white; font-size: 1.2rem; font-weight: 700; margin: 2px 0; }
-.clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.03); padding: 8px 30px; border-radius: 40px; border: 1px solid rgba(255, 255, 255, 0.15); }
-#live-clock { font-size: 2.8rem; font-weight: 900; color: white; margin:0; line-height: 1; }
-.login-card { background: rgba(255, 255, 255, 0.98); padding: 15px 25px; border-radius: 12px; width: 280px; box-shadow: 0 10px 20px rgba(0,0,0,0.4); }
-.dev-credit { color: var(--soft-gold); font-size: 0.8rem; font-weight: 600; margin-top: 15px; opacity: 0.7; }
+        .d-row-total, .m-row-total { background: #fff3e0; font-weight: 900; font-size: 20px; color: #e65100; }
+        tfoot td { background: #cfd8dc; font-weight: 900; font-size: 20px; }
 
-/* --- العودة لتنسيق الجداول القوي --- */
-.container { padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
+        /* شريط الإحصائيات المتحرك */
+        .stats-ticker { position: fixed; bottom: 0; width: 100%; background: #000; color: var(--gold); padding: 10px 0; font-weight: 700; z-index: 1000; }
+        
+        /* أزرار التحكم */
+        .btn { font-family: 'Cairo'; padding: 10px 25px; border: none; border-radius: 6px; cursor: pointer; font-weight: 800; margin: 5px; color: white; }
 
-.table-title-box { 
-    background: #222; color: var(--gold); padding: 12px; 
-    text-align: center; font-weight: 900; font-size: 22px; 
-    border: 3px solid #000; margin-top: 20px;
-}
-
-table { width: 100%; border-collapse: collapse; border: 3px solid #000; table-layout: fixed; }
-th, td { border: 2px solid #000; padding: 8px 2px; text-align: center; word-wrap: break-word; }
-th { background: var(--primary) !important; color: white !important; font-size: 15px; font-weight: 700; }
-.sub-head th { background: #eeeeee !important; color: #000 !important; font-size: 13px; }
-
-/* مدخلات البيانات - تكبير الخط ووضوح الإدخال */
-.editable { 
-    font-family: 'Cairo'; width: 95%; border: 1px solid #bbb; 
-    text-align: center; font-weight: 800; font-size: 20px; 
-    background: #fffde7; border-radius: 4px; padding: 4px 0;
-}
-.editable:focus { background: #fff59d; border: 2px solid var(--primary); outline: none; }
-
-/* الألوان الإحصائية */
-.d-row-total, .m-row-total { background: #fff3e0; font-weight: 900; font-size: 20px; color: #e65100; }
-tfoot td { background: #cfd8dc; font-weight: 900; font-size: 20px; border-top: 3px solid #000; }
-
-/* شريط المعلومات الداخلي */
-.internal-clock-bar { background: #1a237e; color: white; padding: 15px; border-radius: 10px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; font-size: 1.1rem; }
-
-/* لوحة تحكم الإدارة */
-#admin-tools { background: #0d47a1; padding: 20px; border-radius: 15px; color: white; margin-bottom: 20px; border: 2px solid var(--gold); }
-#status-panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; margin-top: 15px; }
-.unit-badge { padding: 8px; border-radius: 8px; font-size: 12px; font-weight: 700; text-align: center; background: rgba(255,255,255,0.2); }
-.unit-badge.sent { background: #4caf50; border: 1px solid #fff; }
-.unit-badge.not-sent { background: #f44336; opacity: 0.8; }
-
-.stats-ticker { position: fixed; bottom: 0; width: 100%; background: #000; color: var(--gold); padding: 10px 0; font-weight: 700; z-index: 9999; }
-
-.btn { font-family: 'Cairo'; padding: 12px 25px; border: none; border-radius: 8px; cursor: pointer; font-weight: 800; margin: 5px; color: white; font-size: 16px; }
-
-@media print { 
-    .no-print, .btn, .stats-ticker, #archive-section, #mainChart, #admin-tools, .internal-clock-bar { display: none !important; } 
-    body { background: white; }
-    .container { width: 100% !important; padding: 0 !important; zoom: 100%; }
-    .editable { border: none !important; background: transparent !important; }
-}
-</style>
+        @media print { .no-print { display: none !important; } .container { width: 100%; zoom: 100%; } .editable { border: none; background: transparent; } }
+    </style>
 </head>
 <body>
 
@@ -87,44 +68,42 @@ tfoot td { background: #cfd8dc; font-weight: 900; font-size: 20px; border-top: 3
     <div class="header-official no-print">
         <h1>الجمهورية الجزائرية الديمقراطية الشعبية</h1>
         <h2>مديرية الحماية المدنية لولاية الوادي</h2>
-        <h3>مصلحة الوقايـــــــــة</h3>
     </div>
     <div class="clock-box no-print">
         <p id="live-clock"></p>
-        <p id="live-date"></p>
+        <p id="live-date" style="color: var(--soft-gold); font-size: 0.9rem;"></p>
     </div>
     <div class="login-card no-print">
         <h2>تسجيل الدخول</h2>
-        <select id="user-role" class="input-field" style="width: 100%; padding: 10px; margin-bottom: 10px; font-family: 'Cairo'; font-weight: 700;"></select>
-        <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور" style="width: 100%; padding: 10px; margin-bottom: 10px; text-align: center;">
-        <button onclick="login()" class="btn-login" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; font-weight: 800; cursor: pointer;">دخول</button>
+        <select id="user-role" class="input-field"></select>
+        <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور">
+        <button onclick="login()" class="btn-login">دخول النظام</button>
     </div>
-    <div class="dev-credit no-print">إعداد الملازم الأول: بن خليفة بدر الدين</div>
+    <div class="dev-credit no-print">إعداد الملازم أول: بن خليفة بدر الدين</div>
 </div>
 
 <div id="app-content" class="hidden">
     <div class="container">
         
-        <div id="admin-tools" class="no-print hidden">
-            <h3 style="margin: 0; border-bottom: 1px solid var(--gold); padding-bottom: 10px; color: var(--gold);"> <i class="fas fa-shield-alt"></i> لوحة الرقابة الولائية</h3>
-            <div id="status-panel"></div>
-            <div style="margin-top: 15px;">
-                <button class="btn" style="background:var(--gold); color:#000;" onclick="showAllPasswords()">كشف الشفرات</button>
-                <button class="btn" style="background:#ff5722;" onclick="adminChangePassword()">تغيير كود وحدة</button>
-            </div>
+        <div id="admin-tools" class="no-print hidden" style="background:#0d47a1; color:white; padding:20px; border-radius:10px; margin-bottom:20px; border: 2px solid var(--gold);">
+            <h3 style="margin:0 0 10px 0; color:var(--gold);">لوحة الرقابة والتحكم</h3>
+            <div id="status-panel" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+            <hr>
+            <button class="btn" style="background:var(--gold); color:black;" onclick="showAllPasswords()">كشف الشفرات</button>
+            <button class="btn" style="background:#ff5722;" onclick="adminChangePassword()">تغيير كود وحدة</button>
         </div>
 
         <div class="internal-clock-bar no-print">
-            <div id="user-display" style="font-weight:900; color:var(--gold);"><i class="fas fa-user-shield"></i> </div>
-            <div id="u-time-box" style="font-weight:900; letter-spacing: 2px;"></div>
+            <div id="user-display" style="font-weight:900; color:var(--gold);"></div>
+            <div id="u-time-box" style="font-weight:900;"></div>
         </div>
 
-        <div class="no-print" style="text-align:center; margin-bottom: 25px; background: #fff; padding: 15px; border: 2px solid var(--primary); border-radius: 10px;">
-            <label style="font-weight: 900; font-size: 1.1rem;">إختر الأسبوع المراد معالجته: </label>
-            <input type="week" id="week-picker" onchange="changeWeek()" style="font-family:'Cairo'; padding: 8px; font-weight: 700; border-radius: 5px;">
+        <div class="no-print" style="text-align:center; margin: 20px 0; padding:15px; background:#e3f2fd; border-radius:8px;">
+            <label style="font-weight: 900;">إختر الأسبوع: </label>
+            <input type="week" id="week-picker" onchange="changeWeek()" style="padding:8px; font-family:'Cairo'; font-weight:700;">
         </div>
 
-        <div id="capture-area">
+        <div id="main-tables-area">
             <div class="table-title-box">1. حصيلة النشاط الأسبوعي حسب الأيام</div>
             <table id="daily-table">
                 <thead>
@@ -146,27 +125,22 @@ tfoot td { background: #cfd8dc; font-weight: 900; font-size: 20px; border-top: 3
             </table>
         </div>
 
-        <div class="no-print" style="width:100%; height:400px; margin: 40px auto; border: 1px solid #ddd; padding: 10px;"><canvas id="mainChart"></canvas></div>
+        <div class="no-print" style="width:100%; height:350px; margin:30px 0;"><canvas id="mainChart"></canvas></div>
 
-        <div id="archive-section" class="no-print" style="margin-top: 30px; background: #f1f1f1; padding: 20px; border-radius: 10px;">
-            <h3 style="margin-top:0; border-right: 5px solid var(--primary); padding-right: 10px;">أرشيف الأسابيع المحفوظة</h3>
-            <div id="archive-container" style="display: flex; flex-wrap: wrap; gap: 10px;"></div>
-        </div>
-
-        <div class="no-print" style="text-align:center; padding: 40px 0 100px 0;">
-            <button class="btn" style="background:var(--success)" onclick="saveData()"><i class="fas fa-cloud-upload-alt"></i> حفظ وإرسال البيانات</button>
-            <button class="btn" style="background:#e67e22" onclick="window.print()"><i class="fas fa-print"></i> طباعة الحصيلة</button>
-            <button class="btn" style="background:#546e7a" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> خروج</button>
+        <div class="no-print" style="text-align:center; padding: 40px 0 80px 0;">
+            <button class="btn" style="background:#2e7d32" onclick="saveData()">حفظ وإرسال</button>
+            <button class="btn" style="background:#e67e22" onclick="window.print()">طباعة</button>
+            <button class="btn" style="background:#546e7a" onclick="location.reload()">خروج</button>
         </div>
     </div>
 </div>
 
 <div class="stats-ticker no-print">
-    <div class="ticker-content" id="ticker-text" style="padding-right: 100%;">جاري جلب إحصائيات ولاية الوادي...</div>
+    <div id="ticker-text" style="text-align:center;">جاري تحميل البيانات...</div>
 </div>
 
 <script>
-// المنطق البرمجي (نفس الكود الوظيفي السابق لضمان استقرار النظام)
+// الكود البرمجي الثابت والناجح
 const firebaseConfig = { apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY", authDomain: "eloued-system.firebaseapp.com", projectId: "eloued-system", storageBucket: "eloued-system.firebasestorage.app", messagingSenderId: "215124234121", appId: "1:215124234121:web:01536290ef78a417a71b58" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -180,8 +154,15 @@ window.onload = function() {
     const userSelect = document.getElementById("user-role");
     Object.keys(unitConfig).forEach(u => userSelect.innerHTML += `<option value="${u}">${u}</option>`);
     setInterval(updateClock, 1000);
-    loadArchive();
 };
+
+function updateClock() {
+    const now = new Date();
+    const t = now.toLocaleTimeString('ar-DZ');
+    if(document.getElementById('live-clock')) document.getElementById('live-clock').innerText = t;
+    if(document.getElementById('live-date')) document.getElementById('live-date').innerText = now.toLocaleDateString('ar-DZ', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+    if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = t;
+}
 
 function autoCalculateWeek() {
     const now = new Date();
@@ -193,14 +174,6 @@ function autoCalculateWeek() {
     return `${y}-W${weekNum.toString().padStart(2,'0')}`;
 }
 
-function updateClock() {
-    const now = new Date();
-    const timeStr = now.toLocaleTimeString('ar-DZ');
-    if(document.getElementById('live-clock')) document.getElementById('live-clock').innerText = timeStr;
-    if(document.getElementById('live-date')) document.getElementById('live-date').innerText = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
-    if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr;
-}
-
 async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
@@ -209,11 +182,8 @@ async function login(){
     currentUser = u;
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("app-content").classList.remove("hidden");
-    document.getElementById("user-display").innerHTML = `<i class="fas fa-user-shield"></i> الوحدة: ${currentUser}`;
-    if(currentUser === "المتحكم الرئيسي") {
-        document.getElementById("admin-tools").classList.remove("hidden");
-        checkUnitsStatus();
-    }
+    document.getElementById("user-display").innerText = "الوحدة المفعّلة: " + currentUser;
+    if(currentUser === "المتحكم الرئيسي") document.getElementById("admin-tools").classList.remove("hidden");
     renderSystem();
 }
 
@@ -221,11 +191,9 @@ function getWeekDays(w) {
     let [year, week] = w.split('-W');
     let d = new Date(year, 0, 1 + (week - 1) * 7);
     while (d.getDay() !== 0) d.setDate(d.getDate() - 1);
-    let days = [];
-    const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    let days = []; const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
     for(let i=0; i<7; i++) {
-        let n = new Date(d);
-        n.setDate(d.getDate() + i + 1); 
+        let n = new Date(d); n.setDate(d.getDate() + i + 1); 
         days.push({ name: names[i], date: n.toISOString().split('T')[0] });
     }
     return days;
@@ -239,9 +207,9 @@ async function renderSystem(){
     let dBody = document.getElementById("daily-body"); dBody.innerHTML = "";
     for(let i=0; i<7; i++){
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
-        let tr = `<tr><td style="font-weight:900; background:#f9f9f9;">${days[i].name}<br>${days[i].date}</td>`;
+        let tr = `<tr><td style="font-weight:900;">${days[i].name}<br>${days[i].date}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800; font-size:20px;">${data[j] || 0}</td>`;
+            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800; font-size:18px;">${data[j] || 0}</td>`;
             else tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
         }
         tr += `<td class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
@@ -251,14 +219,14 @@ async function renderSystem(){
     let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
     munis.forEach(m => {
         let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
-        let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
+        let tr = `<tr><td style="font-weight:900;">${m}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800; font-size:20px;">${data[j] || 0}</td>`;
+            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800; font-size:18px;">${data[j] || 0}</td>`;
             else tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
         }
         tr += `<td class="m-row-total">0</td></tr>`; mBody.innerHTML += tr;
     });
-    calculate(); updateTicker();
+    calculate();
 }
 
 function getUnitDataLocal(week, key, type, cloudData) {
@@ -285,7 +253,7 @@ function calculate() {
         });
         row.querySelector(".d-row-total").innerText = rSum;
     });
-    document.getElementById("daily-foot").innerHTML = `<td style="background:#222; color:white;">المجموع العام</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`;
+    document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`;
     
     let mTotals = new Array(16).fill(0);
     document.querySelectorAll("#muni-body tr").forEach(row => {
@@ -296,67 +264,32 @@ function calculate() {
         });
         row.querySelector(".m-row-total").innerText = rSum;
     });
-    document.getElementById("muni-foot").innerHTML = `<td style="background:#222; color:white;">المجموع الجغرافي</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`;
+    document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`;
     updateChart(dTotals);
 }
 
 function updateChart(t) {
     const ctx = document.getElementById('mainChart').getContext('2d');
     if(myChart) myChart.destroy();
-    myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث المرور', 'الحرائق', 'مختلفة'], datasets: [{ label: 'مجموع التدخلات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'], borderWidth: 2, borderColor: '#000' }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { labels: { font: { family: 'Cairo', size: 14, weight: 'bold' } } } } } });
-}
-
-function updateTicker() {
-    db.ref('data/' + currentWeek).once('value').then(snap => {
-        let total = 0; const data = snap.val() || {};
-        Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); });
-        document.getElementById('ticker-text').innerText = `إحصائيات ولاية الوادي للأسبوع المختار: إجمالي التدخلات (${total}) تدخل • مصلحة الوقاية ترحب بكم •`;
-    });
+    myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'تدخلات الأسبوع', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } });
 }
 
 async function saveData(){
     let w = document.getElementById("week-picker").value;
     let daily = []; document.querySelectorAll(".d-input").forEach(el => { if(!daily[el.dataset.day]) daily[el.dataset.day] = new Array(16).fill(0); daily[el.dataset.day][el.dataset.col] = el.value; });
     let muni = {}; document.querySelectorAll(".m-input").forEach(el => { if(!muni[el.dataset.muni]) muni[el.dataset.muni] = new Array(16).fill(0); muni[el.dataset.muni][el.dataset.col] = el.value; });
-    Swal.fire({ title: 'جاري الحفظ في السحابة...', didOpen: () => Swal.showLoading() });
     await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
-    Swal.fire("ممتاز", "تم حفظ وإرسال البيانات بنجاح", "success");
-    updateTicker(); loadArchive();
+    Swal.fire("تم الحفظ", "تم إرسال البيانات للسحابة", "success");
 }
 
-function loadArchive() {
-    db.ref('data').once('value').then(snap => {
-        const container = document.getElementById("archive-container"); container.innerHTML = "";
-        const keys = Object.keys(snap.val() || {}).sort().reverse();
-        keys.forEach(wk => { container.innerHTML += `<button class="btn" style="background:#fff; color:var(--primary); border:2px solid var(--primary); font-size:12px;" onclick="setWeek('${wk}')"><i class="fas fa-calendar-alt"></i> ${wk}</button>`; });
-    });
-}
-function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
-function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); if(currentUser === "المتحكم الرئيسي") checkUnitsStatus(); }
+function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); }
 function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
 
-async function checkUnitsStatus() {
-    const snap = await db.ref('data/' + currentWeek).once('value');
-    const data = snap.val() || {};
-    const panel = document.getElementById("status-panel"); panel.innerHTML = "";
-    Object.keys(unitConfig).forEach(u => {
-        if(u === "المتحكم الرئيسي") return;
-        let isSent = data[u] ? "sent" : "not-sent";
-        panel.innerHTML += `<div class="unit-badge ${isSent}">${u}</div>`;
-    });
-}
-
-async function adminChangePassword() {
-    const { value: v } = await Swal.fire({ title: 'تغيير كلمة مرور وحدة', html: `<select id="sw-u" class="swal2-input">${Object.keys(unitConfig).map(u=>`<option>${u}</option>`).join('')}</select><input id="sw-p" class="swal2-input" placeholder="الكود الجديد">`, preConfirm: () => [document.getElementById('sw-u').value, document.getElementById('sw-p').value] });
-    if (v && v[1]) await db.ref('passwords/' + v[0]).set(v[1]);
-}
-
 async function showAllPasswords() {
-    const snap = await db.ref('passwords').once('value');
-    const p = snap.val() || {};
-    let list = '<table style="width:100%; font-size:14px;">';
-    Object.keys(unitConfig).forEach(u => { list += `<tr><td>${u}</td><td style="color:red; font-weight:bold;">${p[u] || '1111'}</td></tr>`; });
-    Swal.fire({ title: 'شفرات الدخول', html: list + '</table>' });
+    const snap = await db.ref('passwords').once('value'); const p = snap.val() || {};
+    let list = '<table style="width:100%">';
+    Object.keys(unitConfig).forEach(u => { list += `<tr><td>${u}</td><td>${p[u] || '1111'}</td></tr>`; });
+    Swal.fire({ title: 'كلمات المرور', html: list + '</table>' });
 }
 </script>
 </body>
