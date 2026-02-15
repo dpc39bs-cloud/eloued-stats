@@ -396,8 +396,25 @@ function updateTableFoot(id, totals, targetIndices) {
     foot.innerHTML = html;
 }
 function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function getWeekDays(w) { if(!w) return ["-","-","-","-","-","-","-"]; let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i); days.push(n.toISOString().split('T')[0]); } return days; }
-function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
+function getWeekDays(w) { 
+    if(!w) return ["-","-","-","-","-","-","-"]; 
+    let [year, week] = w.split('-W'); 
+    // تحديد تاريخ بداية الأسبوع (الأحد)
+    let d = new Date(year, 0, 1 + (week - 1) * 7); 
+    while (d.getDay() !== 0) d.setDate(d.getDate() - 1); 
+    
+    let days = []; 
+    const dayNames = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    
+    for(let i=0; i<7; i++) { 
+        let n = new Date(d); 
+        n.setDate(d.getDate() + i); 
+        let dateStr = n.toISOString().split('T')[0]; // التاريخ YYYY-MM-DD
+        // دمج اسم اليوم مع التاريخ لشكل أجمل في الجدول
+        days.push(dayNames[i] + " " + dateStr); 
+    } 
+    return days; 
+}
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
 async function updateStatusPanel() { if(currentUser !== "المتحكم الرئيسي") return; const grid = document.getElementById("status-grid"); grid.innerHTML = ""; const snapshot = await db.ref('data/' + currentWeek).once('value'); const cloudData = snapshot.val() || {}; Object.keys(unitConfig).forEach(u => { if(u === "المتحكم الرئيسي") return; let isSent = !!cloudData[u]; grid.innerHTML += `<div style="background:${isSent ? 'var(--success)' : 'var(--danger)'}; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:12px;">${u}<br>${isSent ? '✓' : '✘'}</div>`; }); }
 async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
@@ -480,5 +497,6 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
