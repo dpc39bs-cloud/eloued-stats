@@ -493,12 +493,21 @@ async function updateStatusPanel() {
     const passwords = passSnapshot.val() || {};
     
     const statusPanel = document.getElementById("status-panel");
-    // سنستخدم الحاوية مباشرة لعرض البطاقات
+    
+    // وضع الهيكل: البطاقات في الأعلى، ومكان للعرض في الأسفل
     statusPanel.innerHTML = `
         <h3 style="text-align:center; color:#1a237e; margin-bottom:20px;">
-            <i class="fa-solid fa-monitors-direct"></i> حالة إرسال حصيلة الوحدات
+            <i class="fa-solid fa-monitors-direct"></i> مراقبة إرسال الوحدات
         </h3>
-        <div id="cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px;"></div>
+        <div id="cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;"></div>
+        
+        <div id="unit-view-area" class="hidden" style="border-top: 4px solid #ffd700; padding-top: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <h4 id="viewing-unit-name" style="color:#1a237e; margin:0;"></h4>
+                <button class="btn" style="background:#d32f2f; padding:5px 10px;" onclick="document.getElementById('unit-view-area').classList.add('hidden')">إغلاق العرض ×</button>
+            </div>
+            <div id="unit-table-content"></div> 
+        </div>
     `;
 
     const container = document.getElementById("cards-container");
@@ -510,22 +519,17 @@ async function updateStatusPanel() {
         let unitPass = passwords[unit] || "1111";
         let isSent = !!unitData.lastUpdate;
 
-        // تحديد اللون بناءً على الحالة
         let bgColor = isSent ? "#d4edda" : "#f8d7da";
         let borderColor = isSent ? "#28a745" : "#dc3545";
-        let textColor = isSent ? "#155724" : "#721c24";
-        let statusLabel = isSent ? `تم الإرسال ✓<br><small>${unitData.lastUpdate}</small>` : "لم يتم الإرسال ✗";
 
         container.innerHTML += `
-            <div style="background:${bgColor}; border: 2px solid ${borderColor}; color:${textColor}; padding:15px; border-radius:12px; text-align:center; position:relative; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
-                <div style="font-weight:900; font-size:18px; margin-bottom:10px;">${unit}</div>
-                <div style="font-size:14px; font-weight:bold; margin-bottom:10px;">${statusLabel}</div>
-                <div style="font-family:monospace; font-size:12px; background:rgba(255,255,255,0.5); border-radius:4px; padding:2px; margin-bottom:10px;">
-                    كود: ${unitPass}
-                </div>
-                <button class="btn" style="padding:5px 10px; font-size:11px; background:${isSent ? '#28a745' : '#6c757d'}; width:100%;" 
+            <div style="background:${bgColor}; border: 2px solid ${borderColor}; padding:12px; border-radius:12px; text-align:center;">
+                <div style="font-weight:900; font-size:16px;">${unit}</div>
+                <div style="font-size:12px; margin:5px 0;">${isSent ? '✅ تم الإرسال' : '❌ لم يرسل'}</div>
+                <div style="font-family:monospace; font-size:11px; margin-bottom:8px;">كود: ${unitPass}</div>
+                <button class="btn" style="padding:4px; font-size:11px; width:100%; background:#1a237e;" 
                         onclick="viewUnitData('${unit}')">
-                    <i class="fa-solid fa-eye"></i> عرض الحصيلة
+                    عرض الحصيلة
                 </button>
             </div>
         `;
@@ -608,20 +612,75 @@ async function generateMonthlyReport() {
         Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
     }
 }
+async function viewUnitData(unitName) {
+    // 1. إظهار منطقة العرض وتحديد العنوان
+    const viewArea = document.getElementById("unit-view-area");
+    const contentArea = document.getElementById("unit-table-content");
+    const nameLabel = document.getElementById("viewing-unit-name");
+    
+    viewArea.classList.remove("hidden");
+    nameLabel.innerHTML = `<i class="fa-solid fa-file-invoice"></i> حصيلة: ${unitName} للأسبوع ${currentWeek}`;
+    contentArea.innerHTML = "<p style='text-align:center'>جاري تحميل البيانات...</p>";
+
+    try {
+        // 2. جلب بيانات الوحدة المختارة من Firebase
+        const snapshot = await db.ref(`data/${currentWeek}/${unitName}`).once('value');
+        const unitData = snapshot.val();
+
+        if (!unitData || !unitData.daily) {
+            contentArea.innerHTML = "<div style='color:red; text-align:center; padding:20px;'>لا توجد بيانات مسجلة لهذه الوحدة في هذا الأسبوع.</div>";
+            return;
+        }
+
+        // 3. بناء الجدول (للقراءة فقط للمتحكم الرئيسي)
+        let tableHtml = `
+            <table style="width:100%; margin-top:10px; border-collapse: collapse;">
+                <thead>
+                    <tr style="background:#4527a0; color:white;">
+                        <th rowspan="2">اليوم</th>
+                        <th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th>
+                        <th colspan="4">الحرائق</th><th colspan="4">مختلفة</th>
+                        <th rowspan="2">ع ت</th>
+                    </tr>
+                    <tr style="background:#5e35b1; color:white; font-size:11px;">
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                    </tr>
+                </thead>
+                <tbody id="daily-body">
+        `;
+
+        const days = ["الأحد", "الأثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+        unitData.daily.forEach((row, i) => {
+            tableHtml += `<tr><td style="font-weight:bold; background:#f0f0f0;">${days[i]}</td>`;
+            row.forEach(val => {
+                tableHtml += `<td style="font-weight:bold;">${val || 0}</td>`;
+            });
+            tableHtml += `<td class="d-row-total" style="background:#fff9c4; font-weight:900;">0</td></tr>`;
+        });
+
+        tableHtml += `
+                </tbody>
+                <tfoot id="daily-foot" style="background:#eee; font-weight:900;"></tfoot>
+            </table>
+        `;
+
+        contentArea.innerHTML = tableHtml;
+
+        // 4. تشغيل دالة الحساب لتعبئة المجاميع تلقائياً
+        setTimeout(() => { 
+            calculate(); 
+            viewArea.scrollIntoView({ behavior: 'smooth' });
+        }, 300);
+
+    } catch (error) {
+        console.error(error);
+        contentArea.innerHTML = "خطأ في جلب البيانات.";
+    }
+}
+
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
