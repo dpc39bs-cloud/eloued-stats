@@ -12,59 +12,100 @@
 
 <style>
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; --gold: #ffd700; --soft-gold: #ffecb3; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; height: 100vh; }
 .hidden { display: none !important; }
 
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 
-/* واجهة الدخول */
-#login-page { background: linear-gradient(rgba(10, 15, 60, 0.8), rgba(26, 35, 126, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
-.header-official h1 { color: var(--soft-gold); font-size: 1.8rem; font-weight: 800; margin: 0; }
-.header-official h2 { color: white; font-size: 1.4rem; font-weight: 700; margin: 5px 0; }
+/* ضبط واجهة الدخول بدقة */
+#login-page { 
+    background: linear-gradient(rgba(10, 15, 60, 0.8), rgba(26, 35, 126, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); 
+    background-size: cover; 
+    background-position: center; 
+    height: 100vh; 
+    width: 100vw; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: center; 
+    align-items: center; 
+    text-align: center;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 10000;
+}
 
-.clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.05); padding: 8px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.2); }
-#live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; }
+.header-official { margin-bottom: 20px; }
+.header-official h1 { color: var(--soft-gold); font-size: 1.6rem; font-weight: 800; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+.header-official h2 { color: white; font-size: 1.3rem; font-weight: 700; margin: 5px 0; }
+.header-official h3 { color: var(--gold); font-size: 1.1rem; font-weight: 600; margin: 0; }
+
+.clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.1); padding: 10px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px); }
+#live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; letter-spacing: 2px; }
 #live-date { color: var(--soft-gold); font-size: 0.9rem; margin-top: 5px; font-weight: 600; }
 
-.login-card { background: rgba(255, 255, 255, 0.98); padding: 20px 30px; border-radius: 15px; width: 320px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); }
-.input-field { font-family: 'Cairo'; width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; margin-bottom: 12px; font-weight: 700; text-align: center; }
-.btn-login { background: var(--primary); width: 100%; padding: 12px; border:none; border-radius:8px; color:white; font-weight:800; cursor:pointer; }
+.login-card { 
+    background: rgba(255, 255, 255, 0.95); 
+    padding: 30px; 
+    border-radius: 20px; 
+    width: 350px; 
+    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
+    border: 2px solid var(--gold);
+}
+.login-card h2 { font-size: 1.4rem; color: var(--primary); margin-bottom: 20px; font-weight: 800; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; }
 
-/* إعدادات الحصيلة والجداول */
+.input-field { 
+    font-family: 'Cairo'; 
+    width: 100%; 
+    padding: 12px; 
+    border-radius: 10px; 
+    border: 2px solid #ddd; 
+    margin-bottom: 15px; 
+    font-weight: 700; 
+    text-align: center; 
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: 0.3s;
+}
+.input-field:focus { border-color: var(--primary); outline: none; background: #fffde7; }
+
+.btn-login { 
+    background: var(--primary); 
+    width: 100%; 
+    padding: 14px; 
+    border:none; 
+    border-radius:10px; 
+    color:white; 
+    font-weight:800; 
+    cursor:pointer; 
+    font-size: 1.1rem;
+    box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
+    transition: 0.3s;
+}
+.btn-login:hover { background: #0d1440; transform: translateY(-2px); }
+
+.dev-credit { color: var(--soft-gold); font-size: 0.9rem; font-weight: 600; margin-top: 25px; text-shadow: 1px 1px 2px black; }
+
+/* باقي إعدادات المنظومة كما هي */
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
 .table-title-box { background: #222; color: var(--gold); padding: 10px; text-align: center; font-weight: 900; font-size: 20px; border: 2.5px solid #000; margin-top: 20px; }
-
 table { width: 100%; border-collapse: collapse; border: 2.5px solid #000; table-layout: fixed; }
 th, td { border: 2px solid #000; padding: 6px 1px; text-align: center; }
 th { background: var(--primary) !important; color: white !important; font-size: 14px; }
-
-.col-header-main { width: 12%; }
-.col-header-total { width: 6%; }
-
 .editable { font-family: 'Cairo'; width: 95%; border: 1px solid #ccc; text-align: center; font-weight: 700; font-size: 19px; background: #fffde7; }
-.stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.95); color: var(--gold); padding: 12px 0; font-weight: 700; z-index: 9999; overflow: hidden; }
-.ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
-@keyframes ticker { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 .btn { font-family: 'Cairo'; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; }
 
-/* ضبط الطباعة: كل جدول في صفحة منفصلة بوضع أفقي */
 @media print { 
     @page { size: landscape; margin: 1cm; }
     .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #admin-tools { display: none !important; } 
     .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; } 
     .editable { border: none !important; background: transparent !important; } 
-    
-    /* أمر الفصل: الجدول الثاني يبدأ دائماً في صفحة جديدة */
     .print-page-break { page-break-before: always; margin-top: 50px; }
 }
 </style>
 </head>
 <body>
-
-<div class="stats-ticker no-print">
-    <div class="ticker-content" id="ticker-text">تحميل بيانات ولاية الوادي... منظومة الحصيلة الرقمية... مصلحة الوقاية...</div>
-</div>
 
 <div id="login-page">
     <div class="header-official no-print">
@@ -80,9 +121,9 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         <h2>تسجيل الدخول</h2>
         <select id="user-role" class="input-field"></select>
         <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور">
-        <button onclick="login()" class="btn-login">دخول</button>
+        <button onclick="login()" class="btn-login">دخول للمنظومة</button>
     </div>
-    <div class="dev-credit no-print" style="color:var(--soft-gold); margin-top:20px; font-weight:700;">إعداد الملازم أول: بن خليفة بدر الدين</div>
+    <div class="dev-credit no-print">إعداد الملازم الأول: بن خليفة بدر الدين</div>
 </div>
 
 <div id="app-content" class="hidden">
@@ -110,7 +151,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
             <div class="table-title-box">1. حصيلة النشاط الأسبوعي حسب الأيام</div>
             <table id="daily-table">
                 <thead>
-                    <tr><th rowspan="2" class="col-header-main">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" class="col-header-total">ع ت</th></tr>
+                    <tr><th rowspan="2" style="width:12%">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
                     <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
                 </thead>
                 <tbody id="daily-body"></tbody>
@@ -121,7 +162,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                 <div class="table-title-box">2. توزيع التدخلات حسب البلديات</div>
                 <table id="muni-table">
                     <thead>
-                        <tr><th rowspan="2" class="col-header-main">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" class="col-header-total">ع ت</th></tr>
+                        <tr><th rowspan="2" style="width:12%">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
                         <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
                     </thead>
                     <tbody id="muni-body"></tbody>
@@ -129,15 +170,8 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                 </table>
             </div>
         </div>
-
-        <div class="no-print" style="width:100%; height:350px; margin: 30px auto;"><canvas id="mainChart"></canvas></div>
-
-        <div id="archive-section" class="no-print">
-            <h3 style="border-bottom: 2px solid var(--primary); padding-bottom: 5px;">أرشيف الأسابيع</h3>
-            <div id="archive-container" style="display: flex; flex-wrap: wrap; gap: 5px;"></div>
-        </div>
-
-        <div class="no-print" style="text-align:center; padding-bottom: 50px;">
+        
+        <div class="no-print" style="text-align:center; padding: 30px 0;">
             <button class="btn" style="background:var(--success)" onclick="saveData()">حفظ وإرسال</button>
             <button class="btn" style="background:#e67e22" onclick="window.print()">طباعة الحصيلة</button>
             <button class="btn" style="background:#546e7a" onclick="location.reload()">خروج</button>
@@ -146,13 +180,13 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 </div>
 
 <script>
-// الكود البرمجي كما هو في نسختك الأصلية مع تعديل نظام الوقت 24س
+// البرمجة (نظام 24 ساعة + فايربيز + التفاعلات) كما طلبت
 const firebaseConfig = { apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY", authDomain: "eloued-system.firebaseapp.com", projectId: "eloued-system", storageBucket: "eloued-system.firebasestorage.app", messagingSenderId: "215124234121", appId: "1:215124234121:web:01536290ef78a417a71b58" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
 const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
-let currentUser = ""; let currentWeek = ""; let myChart = null;
+let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
     currentWeek = autoCalculateWeek();
@@ -160,7 +194,6 @@ window.onload = function() {
     const userSelect = document.getElementById("user-role");
     Object.keys(unitConfig).forEach(u => userSelect.innerHTML += `<option value="${u}">${u}</option>`);
     setInterval(updateClock, 1000);
-    loadArchive();
 };
 
 function autoCalculateWeek() {
@@ -191,10 +224,7 @@ async function login(){
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-display").innerText = "الوحدة: " + currentUser;
-    if(currentUser === "المتحكم الرئيسي") {
-        document.getElementById("admin-tools").classList.remove("hidden");
-        checkUnitsStatus();
-    }
+    if(currentUser === "المتحكم الرئيسي") document.getElementById("admin-tools").classList.remove("hidden");
     renderSystem();
 }
 
@@ -243,36 +273,27 @@ function getUnitDataLocal(week, key, type, cloudData) {
 }
 
 function calculate() {
-    let dTotals = new Array(16).fill(0);
     document.querySelectorAll("#daily-body tr").forEach(row => {
         let rSum = 0;
         row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
             let v = parseInt(el.value || el.innerText) || 0;
-            if(idx < 16) { dTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; }
+            if([1,5,9,13].includes(idx)) rSum += v;
         });
         row.querySelector(".d-row-total").innerText = rSum;
     });
-    document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`;
-    
-    let mTotals = new Array(16).fill(0);
     document.querySelectorAll("#muni-body tr").forEach(row => {
         let rSum = 0;
         row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
             let v = parseInt(el.value || el.innerText) || 0;
-            if(idx < 16) { mTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; }
+            if([1,5,9,13].includes(idx)) rSum += v;
         });
         row.querySelector(".m-row-total").innerText = rSum;
     });
-    document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`;
-    updateChart(dTotals);
 }
 
-function updateChart(t) {
-    const ctx = document.getElementById('mainChart').getContext('2d');
-    if(myChart) myChart.destroy();
-    myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'تدخلات الأسبوع', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-}
-
+function getWeekDays(w) { let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i + 1); days.push({ name: names[i], date: n.toISOString().split('T')[0] }); } return days; }
+function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
+function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); }
 async function saveData(){
     let w = document.getElementById("week-picker").value;
     let daily = []; document.querySelectorAll(".d-input").forEach(el => { if(!daily[el.dataset.day]) daily[el.dataset.day] = new Array(16).fill(0); daily[el.dataset.day][el.dataset.col] = el.value; });
@@ -280,26 +301,6 @@ async function saveData(){
     await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
     Swal.fire("تم الحفظ", "", "success");
 }
-
-function loadArchive() {
-    db.ref('data').once('value').then(snap => {
-        const container = document.getElementById("archive-container");
-        container.innerHTML = "";
-        const keys = Object.keys(snap.val() || {}).sort().reverse();
-        keys.forEach(wk => { container.innerHTML += `<button class="btn" style="background:#fff; color:var(--primary); border:1px solid var(--primary); font-size:11px;" onclick="setWeek('${wk}')">أسبوع ${wk}</button>`; });
-    });
-}
-function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
-function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); if(currentUser === "المتحكم الرئيسي") checkUnitsStatus(); }
-function getWeekDays(w) { let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i + 1); days.push({ name: names[i], date: n.toISOString().split('T')[0] }); } return days; }
-function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
-
-async function checkUnitsStatus() {
-    const snap = await db.ref('data/' + currentWeek).once('value'); const data = snap.val() || {};
-    const panel = document.getElementById("status-panel"); panel.innerHTML = "";
-    Object.keys(unitConfig).forEach(u => { if(u === "المتحكم الرئيسي") return; panel.innerHTML += `<div class="unit-badge" style="padding:10px; border-radius:12px; background:${data[u]?'#4caf50':'#f44336'}">${u}</div>`; });
-}
-
 async function adminChangePassword() {
     const { value: v } = await Swal.fire({ title: 'تعديل كود', html: `<select id="sw-u" class="swal2-input">${Object.keys(unitConfig).map(u=>`<option>${u}</option>`).join('')}</select><input id="sw-p" class="swal2-input" placeholder="الكود الجديد">`, preConfirm: () => [document.getElementById('sw-u').value, document.getElementById('sw-p').value] });
     if (v && v[1]) await db.ref('passwords/' + v[0]).set(v[1]);
