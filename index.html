@@ -141,20 +141,20 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 
         <div class="no-print" style="width:100%; height:320px; margin: 20px auto;"><canvas id="mainChart"></canvas></div>
         <div id="archive-section" class="no-print" style="background:#fff; padding:20px; border-radius:15px; border:2px solid var(--primary); margin-bottom: 80px;">
-    <h3 style="margin:0 0 15px 0; color:var(--primary); font-weight: 900; border-bottom: 2px solid #eee; padding-bottom: 10px;">
+    <h3 style="margin:0 0 15px 0; color:var(--primary); font-weight: 900;">
         <i class="fa-solid fa-box-archive"></i> أرشيف الحصائل الرقمية
     </h3>
     <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
         <div>
-            <label style="display:block; font-weight:700; margin-bottom:5px;">اختر السنة:</label>
+            <label style="display:block; font-size:12px; font-weight:bold;">1. السنة</label>
             <select id="arc-year" class="input-field" onchange="updateMonthFilter()"></select>
         </div>
         <div>
-            <label style="display:block; font-weight:700; margin-bottom:5px;">اختر الشهر:</label>
+            <label style="display:block; font-size:12px; font-weight:bold;">2. الشهر</label>
             <select id="arc-month" class="input-field" onchange="updateWeekFilter()"></select>
         </div>
         <div>
-            <label style="display:block; font-weight:700; margin-bottom:5px;">اختر الأسبوع:</label>
+            <label style="display:block; font-size:12px; font-weight:bold;">3. الأسبوع (سيظهر الجدول فوراً)</label>
             <select id="arc-week" class="input-field" onchange="loadArchivedWeek()"></select>
         </div>
     </div>
@@ -505,9 +505,28 @@ function updateWeekFilter() {
 }
 
 function loadArchivedWeek() {
-    const week = document.getElementById("arc-week").value;
-    if(week) {
-        setWeek(week);
+    const selectedWeek = document.getElementById("arc-week").value;
+    
+    if (selectedWeek) {
+        // 1. تحديث قيمة مدخل التاريخ الرئيسي في الصفحة
+        document.getElementById("week-picker").value = selectedWeek;
+        
+        // 2. استدعاء الدالة التي تقوم بتحديث الجداول والبيانات
+        changeWeek(); 
+        
+        // 3. رسالة تأكيد للمستخدم (تظهر وتختفي بسرعة)
+        Swal.fire({
+            icon: 'success',
+            title: 'تم تحميل البيانات',
+            text: 'أسبوع: ' + selectedWeek,
+            timer: 1500,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+
+        // 4. الصعود للأعلى لمشاهدة الجدول
+        window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 }
 // دالة تجميع الحصيلة الشهرية من السحابة
@@ -582,6 +601,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
