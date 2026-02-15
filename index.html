@@ -12,49 +12,50 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
+/* استعادة التنسيق الأصلي بالكامل */
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
 .hidden { display: none !important; }
-
-/* إزالة أزرار الزيادة والنقصان */
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
-
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
-#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.header-official { text-align: center; color: white; margin-bottom: 15px; }
-.header-official h1 { margin: 0; font-size: 2.5rem; font-weight: 900; }
-.clock-box { text-align: center; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px 50px; border-radius: 60px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); }
-#live-clock { font-size: 4.5rem; font-weight: 900; color: white; margin:0; }
-.login-card { background: white; padding: 15px 25px; border-radius: 25px; text-align: center; width: 320px; }
-.input-field { font-family: 'Cairo'; width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #eee; font-weight: 600; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2.5px solid #000; }
-th, td { border: 2px solid #000; padding: 6px 2px; text-align: center; }
-th { background: var(--primary) !important; color: white !important; }
-.editable { font-family: 'Cairo'; width: 92%; border: 1px solid #ccc; text-align: center; font-weight: 700; font-size: 17px; }
-.btn { font-family: 'Cairo'; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; }
 
-/* --- استعادة حركة الشريط السفلي --- */
+#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.header-official { text-align: center; color: white; margin-bottom: 15px; line-height: 1.2; }
+.header-official h1 { margin: 0; font-size: 2.5rem; font-weight: 900; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
+.header-official h2 { margin: 5px 0; font-size: 1.8rem; font-weight: 700; color: #ffd700; }
+.header-official h3 { margin: 0; font-size: 1.5rem; font-weight: 600; opacity: 0.9; }
+
+.clock-box { text-align: center; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px 50px; border-radius: 60px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
+#live-clock { font-size: 4.5rem; font-weight: 900; color: white; margin:0; line-height: 1; letter-spacing: 3px; }
+#live-date { color: #ffd700; font-weight: 700; font-size: 1.3rem; margin-top: 5px; }
+
+.login-card { background: white; padding: 15px 25px; border-radius: 25px; text-align: center; width: 320px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
+.input-field { font-family: 'Cairo'; width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #eee; font-size: 0.95rem; outline: none; box-sizing: border-box; font-weight: 600; }
+
+table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2.5px solid #000; table-layout: fixed; }
+th, td { border: 2px solid #000; padding: 6px 2px; text-align: center; vertical-align: middle; }
+th { background: var(--primary) !important; color: white !important; font-size: 14px; font-weight: 700; }
+.sub-head { background: #f1f3f4 !important; font-size: 11px; font-weight: 700; }
+.editable { font-family: 'Cairo'; width: 92%; border: 1px solid #ccc; text-align: center; font-weight: 700; padding: 5px; font-size: 17px; border-radius: 4px; outline: none; }
+.btn { font-family: 'Cairo'; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
+
+/* استعادة الشريط المتحرك الأصلي */
 .stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #ffd700; padding: 12px 0; font-weight: 700; z-index: 9999; overflow: hidden; }
-.ticker-content { display: inline-block; white-space: nowrap; animation: ticker 30s linear infinite; padding-right: 100%; }
-@keyframes ticker {
-    from { transform: translateX(100%); }
-    to { transform: translateX(-100%); }
-}
+.ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
+@keyframes ticker { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 
 @media print {
     @page { size: A4 landscape; margin: 1mm !important; }
     .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker { display: none !important; }
     .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; }
-    .editable { border: none !important; background: transparent !important; width: 100% !important; color: black !important; }
+    .editable { border: none !important; background: transparent !important; width: 100% !important; font-size: 18px !important; color: black !important; }
 }
 </style>
 </head>
 <body>
 
-<div class="stats-ticker no-print">
-    <div class="ticker-content" id="ticker-text">تحميل بيانات ولاية الوادي... مصلحة الوقاية... منظومة الحصيلة الرقمية...</div>
-</div>
+<div class="stats-ticker no-print"><div class="ticker-content" id="ticker-text">تحميل بيانات ولاية الوادي... مصلحة الوقاية...</div></div>
 
 <div id="login-page">
     <div class="header-official no-print">
@@ -67,10 +68,10 @@ th { background: var(--primary) !important; color: white !important; }
         <p id="live-date"></p>
     </div>
     <div class="login-card no-print">
-        <h2 style="color: var(--primary); margin:0 0 10px 0; font-weight: 900; border-bottom: 3px solid var(--danger); display: inline-block;">منظومة الحصيلة الرقمية</h2>
+        <h2 style="color: var(--primary); margin:0 0 10px 0; font-weight: 900; border-bottom: 3px solid var(--danger); display: inline-block; padding-bottom: 5px;">منظومة الحصيلة الرقمية</h2>
         <select id="user-role" class="input-field" style="margin-bottom: 10px; border: 2px solid var(--primary);"></select>
         <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور" style="margin-bottom: 15px; border: 2px solid var(--primary);">
-        <button onclick="login()" style="background: var(--primary); width: 100%; padding: 12px; border-radius: 10px; font-size: 1.1rem; border:none; color:white; cursor:pointer; font-weight: 900; font-family:'Cairo';">دخول</button>
+        <button onclick="login()" style="background: var(--primary); width: 100%; padding: 12px; border-radius: 10px; font-size: 1.1rem; border:none; color:white; cursor:pointer; font-weight: 900; font-family:'Cairo'; transition: 0.3s;">دخول</button>
         <div style="font-size: 11px; color: #777; margin-top: 10px; font-weight: 600;">إعداد الملازم أول: بن خليفة بدر الدين</div>
     </div>
 </div>
@@ -100,7 +101,10 @@ th { background: var(--primary) !important; color: white !important; }
                     <div>مكتب الإحصائيات</div>
                 </div>
                 <table id="daily-table">
-                    <thead id="main-table-header"></thead>
+                    <thead id="main-table-header">
+                        <tr><th rowspan="2" style="width:12%">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
+                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
+                    </thead>
                     <tbody id="daily-body"></tbody>
                     <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;"></tfoot>
                 </table>
@@ -154,7 +158,7 @@ const db = firebase.database();
 const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
 let currentUser = ""; let currentWeek = ""; let myChart = null;
 
-// دالة حساب الأسبوع مع إضافة يوم للتاريخ
+// وظيفة حساب الأسبوع التلقائي
 function autoCalculateWeek() {
     const now = new Date();
     const dayOfWeek = now.getDay();
@@ -182,7 +186,7 @@ function getWeekDays(w) {
     const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
     for(let i=0; i<7; i++) {
         let n = new Date(d);
-        n.setDate(d.getDate() + i + 1); // إضافة يوم واحد كما طلبت
+        n.setDate(d.getDate() + i + 1); 
         days.push({ name: names[i], date: n.toISOString().split('T')[0] });
     }
     return days;
@@ -204,22 +208,30 @@ async function login(){
 async function renderSystem(){
     let days = getWeekDays(currentWeek);
     document.getElementById("week-info").innerText = `من ${days[0].name} ${days[0].date} إلى ${days[6].name} ${days[6].date}`;
-    document.getElementById('main-table-header').innerHTML = `<tr><th rowspan="2">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2">ع ت</th></tr><tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>`;
+    
     const snapshot = await db.ref('data/' + currentWeek).once('value');
     const cloudData = snapshot.val() || {};
+
     let dBody = document.getElementById("daily-body"); dBody.innerHTML = "";
     for(let i=0; i<7; i++){
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f9f9f9; font-size:12px;">${days[i].name}<br>${days[i].date}</td>`;
-        for(let j=0; j<16; j++) tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+        for(let j=0; j<16; j++){
+            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
+            else tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+        }
         tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
     }
+
     let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
     let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
     munis.forEach(m => {
         let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
-        for(let j=0; j<16; j++) tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+        for(let j=0; j<16; j++){
+            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
+            else tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+        }
         tr += `<td style="background:#fff3e0; font-weight:900;" class="m-row-total">0</td></tr>`; mBody.innerHTML += tr;
     });
     calculate(); updateTicker();
@@ -243,19 +255,20 @@ function calculate() {
     let dTotals = new Array(16).fill(0);
     document.querySelectorAll("#daily-body tr").forEach(row => {
         let rSum = 0;
-        row.querySelectorAll(".d-input").forEach((el, idx) => {
-            let v = parseInt(el.value) || 0; dTotals[idx] += v;
-            if([1,5,9,13].includes(idx)) rSum += v;
+        row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
+            let v = parseInt(el.value || el.innerText) || 0;
+            if(idx < 16) { dTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; }
         });
         row.querySelector(".d-row-total").innerText = rSum;
     });
     document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`;
+    
     let mTotals = new Array(16).fill(0);
     document.querySelectorAll("#muni-body tr").forEach(row => {
         let rSum = 0;
-        row.querySelectorAll(".m-input").forEach((el, idx) => {
-            let v = parseInt(el.value) || 0; mTotals[idx] += v;
-            if([1,5,9,13].includes(idx)) rSum += v;
+        row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => {
+            let v = parseInt(el.value || el.innerText) || 0;
+            if(idx < 16) { mTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; }
         });
         row.querySelector(".m-row-total").innerText = rSum;
     });
@@ -271,12 +284,12 @@ function updateChart(t) {
 
 function updateClock() {
     const now = new Date();
-    const timeStr = now.toLocaleTimeString('ar-DZ');
-    const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); 
+    const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); 
     document.getElementById('live-clock').innerText = timeStr;
     document.getElementById('live-date').innerText = dateStr;
-    if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr;
-    if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr;
+    if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr;
+    if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr;
 }
 
 function updateTicker() {
@@ -296,7 +309,7 @@ async function saveData(){
     let muni = {}; document.querySelectorAll(".m-input").forEach(el => { if(!muni[el.dataset.muni]) muni[el.dataset.muni] = new Array(16).fill(0); muni[el.dataset.muni][el.dataset.col] = el.value; });
     Swal.fire({ title: 'جاري الحفظ...', didOpen: () => Swal.showLoading() });
     await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
-    Swal.fire("تم الحفظ", "", "success");
+    Swal.fire("تم الحفظ بنجاح", "", "success");
     updateTicker(); loadArchive();
 }
 
