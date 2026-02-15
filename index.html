@@ -91,11 +91,21 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         </div>
         <div id="status-panel" class="hidden no-print" style="background:#fff; border:2px solid var(--primary); padding:15px; margin-bottom:20px; border-radius:15px;">
             <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;"></div>
+    <div id="admin-monthly-box" class="no-print" style="text-align:center; margin: 15px 0; padding: 10px; background: #f3e5f5; border-radius: 12px; border: 1px solid #6a1b9a;">
+    <button class="btn" style="background:#6a1b9a; box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);" onclick="generateMonthlyReport()">
+        <i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية
+    </button>
+</div>
         </div>
         <div id="unit-clock-bar" class="internal-clock-bar no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
             <div><i class="fa-solid fa-clock"></i> التوقيت</div>
             <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
         </div>
+        <div id="unit-monthly-box" class="no-print" style="text-align:center; margin: 15px 0;">
+    <button class="btn" style="background:#4527a0; border: 2px solid #ffd700;" onclick="generateMonthlyReport()">
+        <i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري
+    </button>
+</div>
         <div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
             <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
             <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
@@ -145,6 +155,34 @@ th { background: var(--primary) !important; color: white !important; font-size: 
             <button class="btn" style="background:#673ab7" onclick="changeMyPassword()"><i class="fa-solid fa-key"></i> الكود</button>
             <button id="master-reveal-btn" class="btn hidden" style="background:#f57f17" onclick="revealUnitPass()"><i class="fa-solid fa-eye"></i> كشف</button>
             <button class="btn" style="background:#546e7a" onclick="location.reload()"><i class="fa-solid fa-door-open"></i> خروج</button>
+            <div id="monthly-report-section" class="hidden print-section" style="margin-top: 40px; border-top: 4px double #1a237e; padding-top: 20px;">
+    <div style="background:#1a237e; color:white; padding:12px; text-align:center; font-weight:900; font-size:22px; border-radius:8px 8px 0 0;">
+        <i class="fa-solid fa-calculator"></i> المجموع الإجمالي للحصيلة الشهرية
+    </div>
+    <table id="monthly-table">
+        <thead>
+            <tr>
+                <th rowspan="2" style="width:15%">البيان</th>
+                <th colspan="4">الإسعاف</th>
+                <th colspan="4">حوادث المرور</th>
+                <th colspan="4">الحرائق</th>
+                <th colspan="4">مختلفة</th>
+                <th rowspan="2" style="width:6%">ع ت</th>
+            </tr>
+            <tr class="sub-head">
+                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
+                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
+                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
+                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
+            </tr>
+        </thead>
+        <tbody id="monthly-body" style="background: #fff;">
+            </tbody>
+    </table>
+    <div class="no-print" style="text-align:left; margin-top:10px;">
+        <button class="btn" style="background:#d32f2f; padding:5px 15px; font-size:12px;" onclick="document.getElementById('monthly-report-section').classList.add('hidden')">إخفاء الجدول ×</button>
+    </div>
+</div>
         </div>
     </div>
 </div>
@@ -168,20 +206,25 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    let now = new Date(); let y = now.getFullYear();
-    let weekNum = Math.ceil((((now - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
-    currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
+    // تثبيت الأسبوع رقم 06 يدوياً كما طلبت
+    currentWeek = "2026-W06"; 
+    
+    // تحديث واجهة اختيار الأسبوع لتظهر 06
     document.getElementById("week-picker").value = currentWeek;
+    
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
+    
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
-    setInterval(updateClock, 1000);
-    updateTicker(); loadArchive();
-};
 
+    // تشغيل الساعة وتحديث البيانات
+    setInterval(updateClock, 1000);
+    updateTicker(); 
+    loadArchive();
+};
 async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
@@ -290,7 +333,66 @@ function getUnitDataLocal(week, key, type, cloudData) {
 
 // باقي الدوال الأصلية كما هي تماماً
 function updateClock() { const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); document.getElementById('live-clock').innerText = timeStr; document.getElementById('live-date').innerText = dateStr; if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr; if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr; }
-function calculate() { let dTotals = new Array(16).fill(0); document.querySelectorAll("#daily-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { dTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".d-row-total").innerText = rSum; }); document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`; let mTotals = new Array(16).fill(0); document.querySelectorAll("#muni-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { mTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".m-row-total").innerText = rSum; }); document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`; updateChart(dTotals); }
+function calculate() {
+    // 1. حساب جدول الحصيلة الأسبوعية (Daily Table)
+    let dTotals = new Array(16).fill(0); 
+    
+    document.querySelectorAll("#daily-body tr").forEach(row => {
+        let rSum = 0;
+        let inputs = row.querySelectorAll(".d-input");
+        
+        inputs.forEach((input, idx) => {
+            let v = parseInt(input.value) || 0;
+            dTotals[idx] += v; 
+            
+            // الجمع الأفقي الصحيح (ع ت): الأعمدة 2، 6، 10، 14 برمجياً
+            // وهي تقابل خانات "ع ت" لكل نوع من التدخلات
+            if ([1, 5, 9, 13].includes(idx)) {
+                rSum += v;
+            }
+        });
+        
+        let rowTotalCell = row.querySelector(".d-row-total");
+        if(rowTotalCell) rowTotalCell.innerText = rSum;
+    });
+
+    // تحديث الصف الأخير للمجاميع العمودية (نستخدم 1, 5, 9, 13 للمجموع النهائي)
+    updateTableFoot("daily-foot", dTotals, [1, 5, 9, 13]);
+
+    // 2. حساب جدول البلديات (Muni Table)
+    let mTotals = new Array(16).fill(0);
+    document.querySelectorAll("#muni-body tr").forEach(row => {
+        let rSum = 0;
+        let inputs = row.querySelectorAll(".m-input");
+        
+        inputs.forEach((input, idx) => {
+            let v = parseInt(input.value) || 0;
+            mTotals[idx] += v;
+            if ([1, 5, 9, 13].includes(idx)) {
+                rSum += v;
+            }
+        });
+        let rowTotalCell = row.querySelector(".m-row-total");
+        if(rowTotalCell) rowTotalCell.innerText = rSum;
+    });
+
+    updateTableFoot("muni-foot", mTotals, [1, 5, 9, 13]);
+
+    // تحديث الرسم البياني بالأعمدة الأربعة الأساسية
+    updateChart(dTotals);
+}
+
+// دالة تحديث التذييل (لا تلمسها، هي تعمل مع أي index ترسل لها)
+function updateTableFoot(id, totals, targetIndices) {
+    let foot = document.getElementById(id);
+    let html = `<td>المجموع الكلي</td>`;
+    totals.forEach(v => { html += `<td>${v}</td>`; });
+    
+    let grandTotal = targetIndices.reduce((sum, idx) => sum + totals[idx], 0);
+    
+    html += `<td style="background:#ffd700; color:black; font-weight:900;">${grandTotal}</td>`;
+    foot.innerHTML = html;
+}
 function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 function getWeekDays(w) { if(!w) return ["-","-","-","-","-","-","-"]; let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i); days.push(n.toISOString().split('T')[0]); } return days; }
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
@@ -304,7 +406,77 @@ function sendNotif() { let target = document.getElementById("notif-target").valu
 function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
 function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
 function loadArchive() { /* كود الأرشفة الأصلي */ const container = document.getElementById("archive-container"); container.innerHTML = "جاري جلب الأرشيف..."; db.ref('data').once('value').then(snap => { container.innerHTML = ""; const allData = snap.val() || {}; Object.keys(allData).reverse().forEach(weekKey => { container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`; }); }); }
+// دالة تجميع الحصيلة الشهرية من السحابة
+async function generateMonthlyReport() {
+    // 1. إظهار رسالة انتظار للمستخدم
+    Swal.fire({
+        title: 'جاري تجميع البيانات...',
+        text: 'يتم الآن سحب وإحصاء كافة الأسابيع المخزنة في السحابة',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    try {
+        // 2. جلب كافة البيانات من قسم data في Firebase
+        const snapshot = await db.ref('data').once('value');
+        const allWeeks = snapshot.val() || {};
+        
+        // مصفوفة لتخزين المجاميع (16 خانة)
+        let monthlyTotals = new Array(16).fill(0);
+        let hasData = false;
+
+        // 3. الدوران على كل الأسابيع الموجودة في قاعدة البيانات
+        Object.keys(allWeeks).forEach(weekKey => {
+            let unitsInData = allWeeks[weekKey];
+            
+            // الدوران على الوحدات داخل كل أسبوع
+            Object.keys(unitsInData).forEach(unitName => {
+                // شرط: إذا كان المستخدم "المتحكم الرئيسي" يجمع الكل، وإذا كانت وحدة تجمع حصتها فقط
+                if (currentUser === "المتحكم الرئيسي" || unitName === currentUser) {
+                    let unitData = unitsInData[unitName].daily || [];
+                    
+                    unitData.forEach(row => {
+                        if (row) {
+                            hasData = true;
+                            row.forEach((val, idx) => {
+                                monthlyTotals[idx] += parseInt(val) || 0;
+                            });
+                        }
+                    });
+                }
+            });
+        });
+
+        if (!hasData) {
+            Swal.fire("تنبيه", "لا توجد بيانات مسجلة في السحابة حتى الآن لتجميعها.", "warning");
+            return;
+        }
+
+        // 4. بناء سطر النتائج في الجدول السفلي
+        let mBody = document.getElementById("monthly-body");
+        // حساب المجموع الأفقي (ع ت) بناءً على الأعمدة [1, 5, 9, 13] كما اتفقنا سابقاً
+        let totalAT = [1, 5, 9, 13].reduce((sum, idx) => sum + monthlyTotals[idx], 0);
+        
+        mBody.innerHTML = `
+            <tr style="background: #f8f9fa;">
+                <td style="font-weight:900; color:var(--primary);">إجمالي الحصيلة الشهرية</td>
+                ${monthlyTotals.map(v => `<td style="font-weight:bold; font-size:16px;">${v}</td>`).join('')}
+                <td style="background:#ffd700; font-weight:900; font-size:18px; color:black;">${totalAT}</td>
+            </tr>
+        `;
+
+        // 5. إظهار القسم والنزول إليه بسلاسة
+        document.getElementById('monthly-report-section').classList.remove('hidden');
+        Swal.close();
+        document.getElementById('monthly-report-section').scrollIntoView({ behavior: 'smooth' });
+
+    } catch (error) {
+        console.error(error);
+        Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
+    }
+}
 </script>
 </body>
 </html>
+
 
