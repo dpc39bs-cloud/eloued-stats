@@ -262,8 +262,8 @@ window.onload = function() {
     currentWeek = "2026-W06"; 
     
     // تحديث واجهة اختيار الأسبوع لتظهر 06
-    document.getElementById("week-picker").value = currentWeek;
-    
+ document.getElementById("week-picker").value = currentWeek;
+    setInterval(updateClock, 1000);
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
     
@@ -281,42 +281,44 @@ async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
     
-    // الكود الرئيسي للطوارئ (Master Key)
+    // الكود الرئيسي للطوارئ
     const MASTER_KEY = "990099";
 
-    // جلب كلمة المرور من Firebase أو استخدام الافتراضي
+    // جلب كلمة المرور من السحابة
     const snapshot = await db.ref('passwords/' + u).once('value');
-    const cloudPass = snapshot.val() || localStorage.getItem("pass_" + u) || "1111";
+    const cloudPass = snapshot.val() || "1111";
 
-    // التحقق: إذا كان الكود المدخل هو الكود الرئيسي أو الكود الخاص بالوحدة
+    // التحقق من الكود
     if(p !== MASTER_KEY && p !== cloudPass) {
         return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
     }
     
-    // في حال نجاح الدخول بالكود الرئيسي، يظهر تنبيه بسيط (اختياري)
-    if(p === MASTER_KEY) {
-        console.log("تم الدخول بواسطة كود الطوارئ الرئيسي");
-    }
-
     currentUser = u;
-    currentWeek = document.getElementById("week-picker").value;
-    document.getElementById("login-page").classList.add("hidden");
-    document.getElementById("app-content").classList.remove("hidden");
-    document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
-    
-    if(currentUser === "المتحكم الرئيسي") {
-        document.getElementById("status-panel").classList.remove("hidden");
-        document.getElementById("master-clock-bar").classList.remove("hidden");
-        document.getElementById("master-notif-panel").classList.remove("hidden");
-        document.getElementById("unit-clock-bar").classList.add("hidden");
-        document.getElementById("master-reveal-btn").classList.remove("hidden");
-        updateStatusPanel();
-    } else { 
-        checkNotifications(); 
-    }
-    renderSystem();
-}
 
+    // 1. إخفاء صفحة الدخول تماماً
+    document.getElementById("login-page").style.display = "none";
+    
+    // 2. إظهار حاوية التطبيق
+    document.getElementById("app-content").style.display = "block";
+    document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
+
+    // 3. التحكم في ما يظهر بناءً على نوع المستخدم
+    if(currentUser === "المتحكم الرئيسي") {
+        // إخفاء جداول الإدخال وإظهار لوحة البطاقات فقط
+        const unitSections = document.getElementsByClassName("unit-section");
+        for(let section of unitSections) { section.style.display = "none"; }
+        
+        document.getElementById("status-panel").style.display = "block";
+        updateStatusPanel(); // تشغيل لوحة البطاقات الملونة
+    } else {
+        // إظهار جداول الإدخال وإخفاء لوحة التحكم
+        const unitSections = document.getElementsByClassName("unit-section");
+        for(let section of unitSections) { section.style.display = "block"; }
+        
+        document.getElementById("status-panel").style.display = "none";
+        renderSystem(); // بناء جداول الإدخال للوحدة
+    }
+}
 // دالة الحفظ السحابي الجديدة
 async function saveData(){
     let w = document.getElementById("week-picker").value;
@@ -619,5 +621,6 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
