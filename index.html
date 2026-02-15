@@ -612,75 +612,7 @@ async function generateMonthlyReport() {
         Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
     }
 }
-async function viewUnitData(unitName) {
-    // 1. إظهار منطقة العرض وتحديد العنوان
-    const viewArea = document.getElementById("unit-view-area");
-    const contentArea = document.getElementById("unit-table-content");
-    const nameLabel = document.getElementById("viewing-unit-name");
-    
-    viewArea.classList.remove("hidden");
-    nameLabel.innerHTML = `<i class="fa-solid fa-file-invoice"></i> حصيلة: ${unitName} للأسبوع ${currentWeek}`;
-    contentArea.innerHTML = "<p style='text-align:center'>جاري تحميل البيانات...</p>";
-
-    try {
-        // 2. جلب بيانات الوحدة المختارة من Firebase
-        const snapshot = await db.ref(`data/${currentWeek}/${unitName}`).once('value');
-        const unitData = snapshot.val();
-
-        if (!unitData || !unitData.daily) {
-            contentArea.innerHTML = "<div style='color:red; text-align:center; padding:20px;'>لا توجد بيانات مسجلة لهذه الوحدة في هذا الأسبوع.</div>";
-            return;
-        }
-
-        // 3. بناء الجدول (للقراءة فقط للمتحكم الرئيسي)
-        let tableHtml = `
-            <table style="width:100%; margin-top:10px; border-collapse: collapse;">
-                <thead>
-                    <tr style="background:#4527a0; color:white;">
-                        <th rowspan="2">اليوم</th>
-                        <th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th>
-                        <th colspan="4">الحرائق</th><th colspan="4">مختلفة</th>
-                        <th rowspan="2">ع ت</th>
-                    </tr>
-                    <tr style="background:#5e35b1; color:white; font-size:11px;">
-                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
-                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
-                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
-                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
-                    </tr>
-                </thead>
-                <tbody id="daily-body">
-        `;
-
-        const days = ["الأحد", "الأثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-        unitData.daily.forEach((row, i) => {
-            tableHtml += `<tr><td style="font-weight:bold; background:#f0f0f0;">${days[i]}</td>`;
-            row.forEach(val => {
-                tableHtml += `<td style="font-weight:bold;">${val || 0}</td>`;
-            });
-            tableHtml += `<td class="d-row-total" style="background:#fff9c4; font-weight:900;">0</td></tr>`;
-        });
-
-        tableHtml += `
-                </tbody>
-                <tfoot id="daily-foot" style="background:#eee; font-weight:900;"></tfoot>
-            </table>
-        `;
-
-        contentArea.innerHTML = tableHtml;
-
-        // 4. تشغيل دالة الحساب لتعبئة المجاميع تلقائياً
-        setTimeout(() => { 
-            calculate(); 
-            viewArea.scrollIntoView({ behavior: 'smooth' });
-        }, 300);
-
-    } catch (error) {
-        console.error(error);
-        contentArea.innerHTML = "خطأ في جلب البيانات.";
-    }
-}
-
 </script>
 </body>
 </html>
+
