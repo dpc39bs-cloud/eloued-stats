@@ -11,33 +11,53 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
-:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --gold: #ffd700; --soft-gold: #ffecb3; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; height: 100vh; }
+:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; --gold: #ffd700; --soft-gold: #ffecb3; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
 .hidden { display: none !important; }
 
+/* إزالة أزرار الزيادة والنقصان */
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 
-/* تنسيق واجهة الدخول المضبوط */
+/* --- ضبط واجهة الدخول بشكل احترافي --- */
 #login-page { 
     background: linear-gradient(rgba(10, 15, 60, 0.8), rgba(26, 35, 126, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); 
     background-size: cover; background-position: center; height: 100vh; width: 100vw; 
     display: flex; flex-direction: column; justify-content: center; align-items: center; 
     text-align: center; position: fixed; top: 0; left: 0; z-index: 10000;
 }
-.header-official { margin-bottom: 20px; }
-.header-official h1 { color: var(--soft-gold); font-size: 1.6rem; font-weight: 800; margin: 0; }
+.header-official { margin-bottom: 25px; }
+.header-official h1 { color: var(--soft-gold); font-size: 1.6rem; font-weight: 800; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
 .header-official h2 { color: white; font-size: 1.3rem; font-weight: 700; margin: 5px 0; }
-.clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.1); padding: 10px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px); }
-#live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; }
-#live-date { color: var(--soft-gold); font-size: 0.9rem; margin-top: 5px; }
+.header-official h3 { color: var(--gold); font-size: 1.1rem; font-weight: 600; margin: 0; }
 
-.login-card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 2px solid var(--gold); }
-.input-field { font-family: 'Cairo'; width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; font-weight: 700; text-align: center; box-sizing: border-box; }
-.btn-login { background: var(--primary); width: 100%; padding: 14px; border:none; border-radius:10px; color:white; font-weight:800; cursor:pointer; font-size: 1.1rem; transition: 0.3s; }
-.btn-login:hover { background: #0d1440; transform: translateY(-2px); }
+.clock-box { margin: 20px 0; background: rgba(255, 255, 255, 0.1); padding: 12px 35px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(8px); }
+#live-clock { font-size: 2.5rem; font-weight: 900; color: white; margin:0; line-height: 1; letter-spacing: 2px; }
+#live-date { color: var(--soft-gold); font-size: 0.95rem; margin-top: 5px; font-weight: 600; }
 
-/* تنسيق الجداول */
+.login-card { 
+    background: rgba(255, 255, 255, 0.98); 
+    padding: 35px; border-radius: 20px; width: 360px; 
+    box-shadow: 0 20px 40px rgba(0,0,0,0.6); border: 2px solid var(--gold);
+}
+.login-card h2 { font-size: 1.5rem; color: var(--primary); margin-bottom: 25px; font-weight: 900; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; }
+
+.input-field { 
+    font-family: 'Cairo'; width: 100%; padding: 14px; border-radius: 12px; border: 2px solid #ddd; 
+    margin-bottom: 18px; font-weight: 700; text-align: center; font-size: 1.1rem; box-sizing: border-box; transition: 0.3s;
+}
+.input-field:focus { border-color: var(--primary); outline: none; background: #fffde7; box-shadow: 0 0 10px rgba(26,35,126,0.2); }
+
+.btn-login { 
+    background: var(--primary); width: 100%; padding: 15px; border:none; border-radius:12px; 
+    color:white; font-weight:900; cursor:pointer; font-size: 1.2rem; transition: 0.3s;
+    box-shadow: 0 5px 15px rgba(26, 35, 126, 0.4);
+}
+.btn-login:hover { background: #0d1440; transform: translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.3); }
+
+.dev-credit { color: var(--soft-gold); font-size: 0.9rem; font-weight: 700; margin-top: 30px; text-shadow: 1px 1px 3px black; }
+
+/* --- تنسيق الجداول والطباعة --- */
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
 .table-title-box { background: #222; color: var(--gold); padding: 10px; text-align: center; font-weight: 900; font-size: 20px; border: 2.5px solid #000; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; border: 2.5px solid #000; table-layout: fixed; }
@@ -73,7 +93,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور">
         <button onclick="login()" class="btn-login">دخول للمنظومة</button>
     </div>
-    <div style="color:var(--soft-gold); margin-top:20px; font-weight:700;">إعداد الملازم أول: بن خليفة بدر الدين</div>
+    <div class="dev-credit">إعداد الملازم أول: بن خليفة بدر الدين</div>
 </div>
 
 <div id="app-content" class="hidden">
@@ -250,20 +270,11 @@ function changeWeek(){ currentWeek = document.getElementById("week-picker").valu
 
 async function saveData(){
     let w = document.getElementById("week-picker").value;
-    let daily = []; 
-    document.querySelectorAll(".d-input").forEach(el => { 
-        let d = el.dataset.day; if(!daily[d]) daily[d] = new Array(16).fill(0); 
-        daily[d][el.dataset.col] = el.value; 
-    });
-    let muni = {}; 
-    document.querySelectorAll(".m-input").forEach(el => { 
-        let m = el.dataset.muni; if(!muni[m]) muni[m] = new Array(16).fill(0); 
-        muni[m][el.dataset.col] = el.value; 
-    });
+    let daily = []; document.querySelectorAll(".d-input").forEach(el => { let d = el.dataset.day; if(!daily[d]) daily[d] = new Array(16).fill(0); daily[d][el.dataset.col] = el.value; });
+    let muni = {}; document.querySelectorAll(".m-input").forEach(el => { let m = el.dataset.muni; if(!muni[m]) muni[m] = new Array(16).fill(0); muni[m][el.dataset.col] = el.value; });
     await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
     Swal.fire("تم الحفظ", "", "success");
 }
-
 async function adminChangePassword() {
     const { value: v } = await Swal.fire({ title: 'تعديل كود', html: `<select id="sw-u" class="swal2-input">${Object.keys(unitConfig).map(u=>`<option>${u}</option>`).join('')}</select><input id="sw-p" class="swal2-input" placeholder="الكود الجديد">`, preConfirm: () => [document.getElementById('sw-u').value, document.getElementById('sw-p').value] });
     if (v && v[1]) await db.ref('passwords/' + v[0]).set(v[1]);
