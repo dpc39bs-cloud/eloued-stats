@@ -1,626 +1,102 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<meta charset="UTF-8">
-<title>منظومة الحصيلة الرقمية - ولاية الوادي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
-<style>
-    /* إخفاء محتوى التطبيق والجداول عند البداية */
-#app-content, #status-panel, #monthly-report-section, .unit-section {
-    display: none;
-}
-/* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
-:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
-.hidden { display: none !important; }
-input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
-.container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
-#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
-.header-official { text-align: center; color: white; margin-bottom: 15px; line-height: 1.2; }
-.header-official h1 { margin: 0; font-size: 2.5rem; font-weight: 900; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
-.header-official h2 { margin: 5px 0; font-size: 1.8rem; font-weight: 700; color: #ffd700; }
-.header-official h3 { margin: 0; font-size: 1.5rem; font-weight: 600; opacity: 0.9; }
-.clock-box { text-align: center; margin-bottom: 20px; background: rgba(255, 255, 255, 0.1); padding: 15px 50px; border-radius: 60px; border: 2px solid rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 10px 25px rgba(0,0,0,0.2); }
-#live-clock { font-size: 4.5rem; font-weight: 900; color: white; margin:0; line-height: 1; letter-spacing: 3px; }
-#live-date { color: #ffd700; font-weight: 700; font-size: 1.3rem; margin-top: 5px; }
-.login-card { background: white; padding: 15px 25px; border-radius: 25px; text-align: center; width: 320px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); }
-.login-card h2 { font-size: 1.4rem; margin-bottom: 15px !important; }
-.input-field { font-family: 'Cairo'; width: 100%; padding: 10px; border-radius: 10px; border: 2px solid #eee; font-size: 0.95rem; outline: none; box-sizing: border-box; font-weight: 600; }
-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2.5px solid #000; table-layout: fixed; }
-th, td { border: 2px solid #000; padding: 6px 2px; text-align: center; vertical-align: middle; }
-th { background: var(--primary) !important; color: white !important; font-size: 14px; font-weight: 700; }
-.sub-head { background: #f1f3f4 !important; font-size: 11px; font-weight: 700; }
-.editable { font-family: 'Cairo'; width: 92%; border: 1px solid #ccc; text-align: center; font-weight: 700; padding: 5px; font-size: 17px; border-radius: 4px; outline: none; }
-.btn { font-family: 'Cairo'; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
-.stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #ffd700; padding: 12px 0; font-weight: 700; z-index: 9999; }
-.ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
-@keyframes ticker { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
-/* إخفاء هيدر الطباعة في الشاشة العادية وإظهاره فقط عند الطباعة */
-.only-print { display: none; }
-@media print {
-    .only-print { display: block !important; }
-}
-@media print {
-    @page { size: A4 landscape; margin: 1mm !important; }
-    
-    /* إخفاء الأزرار والأدوات التي لا نحتاجها في الورقة */
-    .no-print, .btn, .stats-ticker, #archive-section, #mainChart, 
-    .internal-clock-bar, #status-panel, #week-picker, #master-notif-panel, 
-    #unit-notification, #admin-monthly-box, #unit-monthly-box { 
-        display: none !important; 
-    }
-    
-    .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; }
-    
-    /* تنسيق الأقسام المطبوعة */
-    .print-section { 
-        page-break-after: always; 
-        display: block !important; 
-        width: 100% !important; 
-    }
-
-    /* ضمان ظهور جدول الحصيلة الشهرية إذا تم استخراجه */
-    #monthly-report-section:not(.hidden) {
-        display: block !important;
-        page-break-before: always; /* يبدأ دائماً في صفحة جديدة */
-    }
-
-    .editable { border: none !important; background: transparent !important; box-shadow: none !important; width: 100% !important; font-size: 18px !important; color: black !important; }
-    table { border: 2.5px solid #000 !important; }
-    th, td { border: 2px solid #000 !important; color: black !important; }
-}
-</style>
+    <meta charset="UTF-8">
+    <title>نظام الحصيلة الرقمي - ولاية الوادي</title>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary: #1a237e; --secondary: #ffd700; --danger: #d32f2f; --success: #2e7d32; }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #f0f2f5; margin: 0; padding: 20px; }
+        .hidden { display: none !important; }
+        .card { background: white; padding: 20px; border-radius: 15px; box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: white; font-size: 14px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: center; }
+        th { background: var(--primary); color: white; }
+        input[type="number"] { width: 50px; border: none; text-align: center; font-weight: bold; -moz-appearance: textfield; }
+        input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+        .btn { cursor: pointer; border: none; padding: 10px 20px; border-radius: 5px; font-weight: bold; color: white; background: var(--primary); }
+        
+        @media print {
+            .no-print { display: none !important; }
+            body { background: white; padding: 0; }
+            .card { box-shadow: none; border: 1px solid #000; }
+            #monthly-report-section:not(.hidden) { page-break-before: always; display: block !important; }
+            table { border: 2px solid #000 !important; }
+        }
+    </style>
 </head>
 <body>
 
-<div class="stats-ticker no-print"><div class="ticker-content" id="ticker-text">تحميل بيانات ولاية الوادي...</div></div>
+    <div id="login-page" class="card" style="max-width: 400px; margin: 100px auto; text-align: center;">
+        <h2 style="color: var(--primary);">تسجيل الدخول</h2>
+        <select id="user-role" class="btn" style="background: #eee; color: #333; width: 100%; margin-bottom: 10px;">
+            <option>المتحكم الرئيسي</option>
+            <option>وحدة الرقيبة</option>
+            <option>وحدة قمار</option>
+            <option>وحدة حاسي خليفة</option>
+            </select>
+        <input type="password" id="pass-code" placeholder="كلمة المرور" style="width: 90%; padding: 10px; margin-bottom: 20px; border-radius: 5px; border: 1px solid #ddd;">
+        <button class="btn" onclick="login()" style="width: 100%;">دخول</button>
+    </div>
 
-<div id="login-page">
-    <div class="header-official no-print">
-        <h1>الجمهورية الجزائرية الديمقراطية الشعبية</h1>
-        <h2>مديرية الحماية المدنية لولاية الوادي</h2>
-        <h3>مصلحة الوقايـــــــــة</h3>
-    </div>
-    <div class="clock-box no-print">
-        <p id="live-clock"></p>
-        <p id="live-date"></p>
-    </div>
-    <div class="login-card no-print">
-        <h2 style="color: var(--primary); margin:0 0 10px 0; font-weight: 900; border-bottom: 3px solid var(--danger); display: inline-block; padding-bottom: 5px;">منظومة الحصيلة الرقمية</h2>
-        <select id="user-role" class="input-field" style="margin-bottom: 10px; border: 2px solid var(--primary);"></select>
-        <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور" style="margin-bottom: 15px; border: 2px solid var(--primary);">
-        <button onclick="login()" style="background: var(--primary); width: 100%; padding: 12px; border-radius: 10px; font-size: 1.1rem; border:none; color:white; cursor:pointer; font-weight: 900; font-family:'Cairo'; transition: 0.3s;">دخول</button>
-        <div style="font-size: 11px; color: #777; margin-top: 10px; font-weight: 600;">إعداد الملازم الأول: بن خليفة بدر الدين</div>
-    </div>
-</div>
-
-<div id="app-content" class="hidden">
-    <div class="container">
-        <div id="unit-notification" class="hidden no-print" style="background:var(--danger); color:white; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <span><i class="fa-solid fa-bell"></i> تنبيه: <span id="notif-text"></span></span>
-            <button onclick="clearNotif()" style="background:white; color:red; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">إغلاق</button>
-        </div>
-        <div id="master-clock-bar" class="internal-clock-bar hidden no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div><i class="fa-solid fa-user-gear"></i> لوحة التحكم الرئيسي</div>
-            <div id="m-time-box" style="font-weight:900; font-size:20px;"></div>
-        </div>
-        <div id="master-notif-panel" class="hidden no-print" style="background: #fff; border: 2px solid var(--primary); padding: 15px; border-radius: 15px; margin-bottom: 20px;">
-            <div style="display: flex; gap: 10px;">
-                <select id="notif-target" class="input-field" style="width: 25%;"></select>
-                <input type="text" id="notif-msg" class="input-field" style="width: 60%;" placeholder="إرسال رسالة...">
-                <button onclick="sendNotif()" class="btn" style="background: var(--primary); width: 15%; margin:0;">إرسال</button>
+    <div id="app-content" class="hidden">
+        <div class="card no-print" style="display: flex; justify-content: space-between; align-items: center;">
+            <h3 id="user-tag" style="margin: 0; color: var(--primary);"></h3>
+            <div>
+                <input type="week" id="week-picker" class="btn" style="background: #eee; color: #333;">
+                <button class="btn" style="background: var(--danger);" onclick="location.reload()">خروج</button>
             </div>
         </div>
-      <div id="status-panel" class="hidden no-print" style="background:#f8f9fa; padding:20px; border-radius:15px; margin-bottom:20px;">
-    </div>
-    
-    <div id="master-notif-panel" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center;">
-        </div>
 
-    <h3 style="text-align:center; color:#1a237e; border-bottom:2px solid #ffd700; padding-bottom:10px;">
-        <i class="fa-solid fa-tower-broadcast"></i> لوحة مراقبة إرسال الوحدات
-    </h3>
+        <div id="status-panel" class="hidden card no-print"></div>
 
-    <table style="width:100%; text-align:center;">
-        <thead>
-            <tr style="background:#1a237e; color:white;">
-                <th>الوحدة</th>
-                <th>حالة الإرسال</th>
-                <th>كود الدخول</th>
-                <th>ع ت (أسبوعي)</th>
-                <th>إجراء</th>
-            </tr>
-        </thead>
-        <tbody id="status-body"></tbody>
-    </table>
-</div>
-            <div id="admin-monthly-box" class="no-print" style="text-align:center; margin: 15px 0; padding: 10px; background: #f3e5f5; border-radius: 12px; border: 1px solid #6a1b9a;">
-    <button class="btn" style="background:#6a1b9a; box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);" onclick="generateMonthlyReport()">
-        <i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية
-    </button>
-</div>
-            <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;"></div>
-        </div>
-        <div id="unit-clock-bar" class="internal-clock-bar no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div id="unit-monthly-box" class="no-print" style="text-align:center; margin: 15px 0;">
-    <button class="btn" style="background:#4527a0; border: 2px solid #ffd700;" onclick="generateMonthlyReport()">
-        <i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري
-    </button>
-</div>
-            <div><i class="fa-solid fa-clock"></i> التوقيت</div>
-            <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
-        </div>
-        <div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
-            <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
-            <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
-        </div>
-
-        <div id="capture-area">
-            <div class="print-section">
-                <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
-                    <div>الحماية المدنية<br>ولاية الوادي</div>
-                    <div><h2 style="margin:0; font-weight: 900;">حصيلة النشاط اليومي</h2><div id="week-info" style="font-weight:700; color:blue;"></div></div>
-                    <div>مكتب الإحصائيات</div>
-                </div>
-                <table id="daily-table">
+        <div class="unit-section hidden">
+            <div class="card">
+                <h3 style="text-align: center; color: var(--primary);">الحصيلة الأسبوعية الرقمية</h3>
+                <table id="main-table">
                     <thead>
-                        <tr><th rowspan="2" style="width:12%">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
-                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
+                        <tr>
+                            <th rowspan="2">اليوم</th>
+                            <th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th>
+                            <th colspan="4">الحرائق</th><th colspan="4">مختلفة</th>
+                            <th rowspan="2">ع ت</th>
+                        </tr>
+                        <tr style="font-size: 11px;">
+                            <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                            <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                            <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                            <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        </tr>
                     </thead>
                     <tbody id="daily-body"></tbody>
-                    <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;"></tfoot>
+                    <tfoot id="daily-foot"></tfoot>
                 </table>
-            </div>
-            <div class="print-section">
-                <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
-                    <div>الحماية المدنية<br>ولاية الوادي</div>
-                    <div><h2 style="margin:0; font-weight: 900;">الحصيلة حسب البلديات</h2><div id="user-tag" style="color:red; font-weight:700;"></div></div>
-                    <div>مكتب الإحصائيات</div>
+                <div style="margin-top: 20px; text-align: center;" class="no-print">
+                    <button class="btn" style="background: var(--success);" onclick="saveToCloud()"><i class="fa-solid fa-cloud-arrow-up"></i> حفظ وإرسال للسحابة</button>
+                    <button class="btn" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة الأسبوع</button>
+                    <button class="btn" style="background: #6a1b9a;" onclick="generateMonthlyReport()"><i class="fa-solid fa-calendar-check"></i> استخراج الحصيلة الشهرية</button>
                 </div>
-                <table id="muni-table">
-                    <thead>
-                        <tr><th rowspan="2" style="width:15%">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
-                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
-                    </thead>
-                    <tbody id="muni-body"></tbody>
-                    <tfoot id="muni-foot" style="background:#fff3e0; font-weight:900;"></tfoot>
-                </table>
             </div>
         </div>
 
-        <div class="no-print" style="width:100%; height:320px; margin: 20px auto;"><canvas id="mainChart"></canvas></div>
-        <div id="archive-section" class="no-print" style="background:#f1f1f1; padding:15px; border-radius:15px; border:1px solid #ccc; margin-bottom: 80px;">
-            <h3 style="margin:0 0 15px 0; color:var(--primary); font-weight: 900;"><i class="fa-solid fa-box-archive"></i> الأرشيف</h3>
-            <div id="archive-container"></div>
-        </div>
-        <div class="no-print" style="text-align:center; padding-bottom: 100px;">
-            <button class="btn" style="background:var(--success)" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ أونلاين ✅</button>
-            <button class="btn" style="background:#e67e22" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
-            <button class="btn" style="background:#673ab7" onclick="changeMyPassword()"><i class="fa-solid fa-key"></i> الكود</button>
-            <button id="master-reveal-btn" class="btn hidden" style="background:#f57f17" onclick="revealUnitPass()"><i class="fa-solid fa-eye"></i> كشف</button>
-            <div id="monthly-report-section" class="hidden print-section" style="margin-top: 40px; border-top: 4px double #1a237e; padding-top: 20px;">
-    <div style="background:#1a237e; color:white; padding:12px; text-align:center; font-weight:900; font-size:22px; border-radius:8px 8px 0 0;">
-        <i class="fa-solid fa-calculator"></i> المجموع الإجمالي للحصيلة الشهرية
-    </div>
-    <table id="monthly-table">
-        <thead>
-            <tr>
-                <th rowspan="2" style="width:15%">البيان</th>
-                <th colspan="4">الإسعاف</th>
-                <th colspan="4">حوادث المرور</th>
-                <th colspan="4">الحرائق</th>
-                <th colspan="4">مختلفة</th>
-                <th rowspan="2" style="width:6%">ع ت</th>
-            </tr>
-            <tr class="sub-head">
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-            </tr>
-        </thead>
-        <tbody id="monthly-body" style="background: #fff;">
-            </tbody>
-    </table>
-    <div class="no-print" style="text-align:left; margin-top:10px;">
-        <button class="btn" style="background:#d32f2f; padding:5px 15px; font-size:12px;" onclick="document.getElementById('monthly-report-section').classList.add('hidden')">إخفاء الجدول ×</button>
-    </div>
-</div>
-            <button class="btn" style="background:#546e7a" onclick="location.reload()"><i class="fa-solid fa-door-open"></i> خروج</button>
+        <div id="monthly-report-section" class="card hidden">
+            <h3 style="text-align: center; color: var(--primary); border-bottom: 2px solid var(--secondary); padding-bottom: 10px;">إجمالي الحصيلة الشهرية</h3>
+            <table>
+                <thead>
+                    <tr style="background: #333;">
+                        <th>البيان</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th>ع ع</th><th>ع ت</th><th>م</th><th>و</th>
+                        <th style="background: var(--secondary); color: black;">الإجمالي ع ت</th>
+                    </tr>
+                </thead>
+                <tbody id="monthly-body"></tbody>
+            </table>
         </div>
     </div>
-</div>
 
-<script>
-// إعدادات Firebase
-const firebaseConfig = {
-  apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY",
-  authDomain: "eloued-system.firebaseapp.com",
-  projectId: "eloued-system",
-  storageBucket: "eloued-system.firebasestorage.app",
-  messagingSenderId: "215124234121",
-  appId: "1:215124234121:web:01536290ef78a417a71b58"
-};
-
-firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
-
-let myChart = null;
-const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
-let currentUser = ""; let currentWeek = "";
-
-window.onload = function() {
-    // تثبيت الأسبوع رقم 06 يدوياً كما طلبت
-    currentWeek = "2026-W06"; 
-    
-    // تحديث واجهة اختيار الأسبوع لتظهر 06
- document.getElementById("week-picker").value = currentWeek;
-    setInterval(updateClock, 1000);
-    const userSelect = document.getElementById("user-role");
-    const notifTarget = document.getElementById("notif-target");
-    
-    Object.keys(unitConfig).forEach(u => {
-        userSelect.innerHTML += `<option value="${u}">${u}</option>`;
-        if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
-    });
-
-    // تشغيل الساعة وتحديث البيانات
-    setInterval(updateClock, 1000);
-    updateTicker(); 
-    loadArchive();
-};
-async function login(){
-    let p = document.getElementById("pass-code").value; 
-    let u = document.getElementById("user-role").value;
-    
-    // الكود الرئيسي للطوارئ
-    const MASTER_KEY = "990099";
-
-    // جلب كلمة المرور من السحابة
-    const snapshot = await db.ref('passwords/' + u).once('value');
-    const cloudPass = snapshot.val() || "1111";
-
-    // التحقق من الكود
-    if(p !== MASTER_KEY && p !== cloudPass) {
-        return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
-    }
-    
-    currentUser = u;
-
-    // 1. إخفاء صفحة الدخول تماماً
-    document.getElementById("login-page").style.display = "none";
-    
-    // 2. إظهار حاوية التطبيق
-    document.getElementById("app-content").style.display = "block";
-    document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
-
-    // 3. التحكم في ما يظهر بناءً على نوع المستخدم
-    if(currentUser === "المتحكم الرئيسي") {
-        // إخفاء جداول الإدخال وإظهار لوحة البطاقات فقط
-        const unitSections = document.getElementsByClassName("unit-section");
-        for(let section of unitSections) { section.style.display = "none"; }
-        
-        document.getElementById("status-panel").style.display = "block";
-        updateStatusPanel(); // تشغيل لوحة البطاقات الملونة
-    } else {
-        // إظهار جداول الإدخال وإخفاء لوحة التحكم
-        const unitSections = document.getElementsByClassName("unit-section");
-        for(let section of unitSections) { section.style.display = "block"; }
-        
-        document.getElementById("status-panel").style.display = "none";
-        renderSystem(); // بناء جداول الإدخال للوحدة
-    }
-}
-// دالة الحفظ السحابي الجديدة
-async function saveData(){
-    let w = document.getElementById("week-picker").value;
-    let daily = []; 
-    document.querySelectorAll(".d-input").forEach(el => { 
-        if(!daily[el.dataset.day]) daily[el.dataset.day] = new Array(16).fill(0); 
-        daily[el.dataset.day][el.dataset.col] = el.value; 
-    });
-    
-    let muni = {}; 
-    document.querySelectorAll(".m-input").forEach(el => { 
-        if(!muni[el.dataset.muni]) muni[el.dataset.muni] = new Array(16).fill(0); 
-        muni[el.dataset.muni][el.dataset.col] = el.value; 
-    });
-
-    Swal.fire({ title: 'جاري الحفظ سحابياً...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
-
-    try {
-        await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
-        localStorage.setItem(w + "_daily_" + currentUser, JSON.stringify(daily));
-        localStorage.setItem(w + "_muni_" + currentUser, JSON.stringify(muni));
-        Swal.fire("تم الحفظ بنجاح", "البيانات الآن متوفرة أونلاين", "success");
-        updateStatusPanel(); updateTicker(); loadArchive();
-    } catch(e) {
-        Swal.fire("خطأ في الحفظ", e.message, "error");
-    }
-}
-
-// دالة جلب البيانات السحابية
-async function renderSystem(){
-    let days = getWeekDays(currentWeek);
-    document.getElementById("week-info").innerText = `من الأحد ${days[0]} إلى السبت ${days[6]}`;
-    
-    // محاولة جلب البيانات من السحابة أولاً
-    const snapshot = await db.ref('data/' + currentWeek).once('value');
-    const cloudData = snapshot.val() || {};
-
-    let dBody = document.getElementById("daily-body"); dBody.innerHTML = "";
-    for(let i=0; i<7; i++){
-        let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
-        let tr = `<tr><td style="font-weight:900; background:#f9f9f9;">${days[i]}</td>`;
-        for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
-            else tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
-        }
-        tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
-    }
-
-    let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
-    let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
-    munis.forEach(m => {
-        let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
-        let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
-        for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
-            else tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
-        }
-        tr += `<td style="background:#fff3e0; font-weight:900;" class="m-row-total">0</td></tr>`; mBody.innerHTML += tr;
-    });
-    calculate();
-}
-
-function getUnitDataLocal(week, key, type, cloudData) {
-    let res = new Array(16).fill(0);
-    if(currentUser === "المتحكم الرئيسي") {
-        Object.keys(unitConfig).forEach(u => {
-            if(u === "المتحكم الرئيسي") return;
-            let uData = cloudData[u] ? cloudData[u][type] : null;
-            if(uData) { let d = uData[key]; if(d) d.forEach((v, i) => res[i] += parseInt(v) || 0); }
-        });
-    } else {
-        let uData = cloudData[currentUser] ? cloudData[currentUser][type] : null;
-        if(uData) res = uData[key] || res;
-    }
-    return res;
-}
-
-// باقي الدوال الأصلية كما هي تماماً
-function updateClock() { const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); document.getElementById('live-clock').innerText = timeStr; document.getElementById('live-date').innerText = dateStr; if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr; if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr; }
-function calculate() {
-    let dTotals = new Array(16).fill(0); 
-    
-    document.querySelectorAll("#daily-body tr").forEach(row => {
-        let rSum = 0;
-        // نتحقق من وجود إدخال أو نص عادي (للمتحكم الرئيسي)
-        let cells = row.querySelectorAll("td:not(:first-child):not(:last-child)");
-        
-        cells.forEach((cell, idx) => {
-            let input = cell.querySelector("input");
-            let v = input ? (parseInt(input.value) || 0) : (parseInt(cell.innerText) || 0);
-            
-            if (idx < 16) {
-                dTotals[idx] += v;
-                // حساب (ع ت) بناءً على الأعمدة 2، 6، 10، 14 برمجياً (Index 1, 5, 9, 13)
-                if ([1, 5, 9, 13].includes(idx)) {
-                    rSum += v;
-                }
-            }
-        });
-        
-        let rowTotalCell = row.querySelector(".d-row-total");
-        if(rowTotalCell) rowTotalCell.innerText = rSum;
-    });
-
-    updateTableFoot("daily-foot", dTotals, [1, 5, 9, 13]);
-
-    // نفس الشيء لجدول البلديات
-    let mTotals = new Array(16).fill(0);
-    document.querySelectorAll("#muni-body tr").forEach(row => {
-        let rSum = 0;
-        let cells = row.querySelectorAll("td:not(:first-child):not(:last-child)");
-        
-        cells.forEach((cell, idx) => {
-            let input = cell.querySelector("input");
-            let v = input ? (parseInt(input.value) || 0) : (parseInt(cell.innerText) || 0);
-            if (idx < 16) {
-                mTotals[idx] += v;
-                if ([1, 5, 9, 13].includes(idx)) { rSum += v; }
-            }
-        });
-        let rowTotalCell = row.querySelector(".m-row-total");
-        if(rowTotalCell) rowTotalCell.innerText = rSum;
-    });
-
-    updateTableFoot("muni-foot", mTotals, [1, 5, 9, 13]);
-    if (typeof updateChart === "function") updateChart(dTotals);
-}
-
-// دالة تحديث التذييل (لا تلمسها، هي تعمل مع أي index ترسل لها)
-function updateTableFoot(id, totals, targetIndices) {
-    let foot = document.getElementById(id);
-    let html = `<td>المجموع الكلي</td>`;
-    totals.forEach(v => { html += `<td>${v}</td>`; });
-    
-    let grandTotal = targetIndices.reduce((sum, idx) => sum + totals[idx], 0);
-    
-    html += `<td style="background:#ffd700; color:black; font-weight:900;">${grandTotal}</td>`;
-    foot.innerHTML = html;
-}
-function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function getWeekDays(w) {
-    if(!w) return ["-","-","-","-","-","-","-"];
-    let [year, week] = w.split('-W');
-    
-    // حساب أول يوم في السنة
-    let firstDayOfYear = new Date(year, 0, 1);
-    
-    // تحديد تاريخ أول يوم في الأسبوع المطلوب
-    // نستخدم صيغة ISO القياسية لضمان عدم حدوث أخطاء في التوقيت المحلي
-    let d = new Date(year, 0, (parseInt(week) - 1) * 7 + 1);
-    
-    // البحث عن أقرب يوم أحد (بداية الأسبوع) وزيادة التاريخ ليضبط تماماً
-    while (d.getDay() !== 0) {
-        d.setDate(d.getDate() + 1);
-    }
-    
-    // في بعض الحالات نحتاج لزيادة يوم إضافي لضبط التاريخ مع أسبوع العمل
-    d.setDate(d.getDate() + 1); 
-
-    let days = [];
-    for(let i=0; i<7; i++) {
-        let n = new Date(d);
-        n.setDate(d.getDate() + i - 1); // طرح 1 لضبط الترتيب بعد الزيادة
-        
-        let dd = String(n.getDate()).padStart(2, '0');
-        let mm = String(n.getMonth() + 1).padStart(2, '0');
-        let yy = n.getFullYear();
-        days.push(`${dd}-${mm}-${yy}`);
-    }
-    return days;
-}
-function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
-function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
-async function updateStatusPanel() {
-    const dataSnapshot = await db.ref('data/' + currentWeek).once('value');
-    const passSnapshot = await db.ref('passwords').once('value');
-    const data = dataSnapshot.val() || {};
-    const passwords = passSnapshot.val() || {};
-    
-    const statusPanel = document.getElementById("status-panel");
-    
-    // وضع الهيكل: البطاقات في الأعلى، ومكان للعرض في الأسفل
-    statusPanel.innerHTML = `
-        <h3 style="text-align:center; color:#1a237e; margin-bottom:20px;">
-            <i class="fa-solid fa-monitors-direct"></i> مراقبة إرسال الوحدات
-        </h3>
-        <div id="cards-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 15px; margin-bottom: 30px;"></div>
-        
-        <div id="unit-view-area" class="hidden" style="border-top: 4px solid #ffd700; padding-top: 20px; background: #fff; padding: 15px; border-radius: 10px; box-shadow: 0 -5px 15px rgba(0,0,0,0.1);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-                <h4 id="viewing-unit-name" style="color:#1a237e; margin:0;"></h4>
-                <button class="btn" style="background:#d32f2f; padding:5px 10px;" onclick="document.getElementById('unit-view-area').classList.add('hidden')">إغلاق العرض ×</button>
-            </div>
-            <div id="unit-table-content"></div> 
-        </div>
-    `;
-
-    const container = document.getElementById("cards-container");
-
-    Object.keys(unitConfig).forEach(unit => {
-        if(unit === "المتحكم الرئيسي") return;
-        
-        let unitData = data[unit] || {};
-        let unitPass = passwords[unit] || "1111";
-        let isSent = !!unitData.lastUpdate;
-
-        let bgColor = isSent ? "#d4edda" : "#f8d7da";
-        let borderColor = isSent ? "#28a745" : "#dc3545";
-
-        container.innerHTML += `
-            <div style="background:${bgColor}; border: 2px solid ${borderColor}; padding:12px; border-radius:12px; text-align:center;">
-                <div style="font-weight:900; font-size:16px;">${unit}</div>
-                <div style="font-size:12px; margin:5px 0;">${isSent ? '✅ تم الإرسال' : '❌ لم يرسل'}</div>
-                <div style="font-family:monospace; font-size:11px; margin-bottom:8px;">كود: ${unitPass}</div>
-                <button class="btn" style="padding:4px; font-size:11px; width:100%; background:#1a237e;" 
-                        onclick="viewUnitData('${unit}')">
-                    عرض الحصيلة
-                </button>
-            </div>
-        `;
-    });
-}
-async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
-async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
-function updateTicker() { let total = 0; db.ref('data/' + currentWeek).once('value').then(snap => { const data = snap.val() || {}; Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); }); document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`; }); }
-function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
-function sendNotif() { let target = document.getElementById("notif-target").value; let msg = document.getElementById("notif-msg").value; if(!msg) return; db.ref('notifications/' + target).set(msg); Swal.fire("تم الإرسال سحابياً", "", "success"); document.getElementById("notif-msg").value = ""; }
-function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
-function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
-function loadArchive() { /* كود الأرشفة الأصلي */ const container = document.getElementById("archive-container"); container.innerHTML = "جاري جلب الأرشيف..."; db.ref('data').once('value').then(snap => { container.innerHTML = ""; const allData = snap.val() || {}; Object.keys(allData).reverse().forEach(weekKey => { container.innerHTML += `<button class="btn" style="background:#fff; color:#1a237e; border:1px solid #1a237e; font-size:11px; padding:3px 8px;" onclick="setWeek('${weekKey}')">أسبوع ${weekKey}</button>`; }); }); }
-// دالة تجميع الحصيلة الشهرية من السحابة
-async function generateMonthlyReport() {
-    // 1. إظهار رسالة انتظار للمستخدم
-    Swal.fire({
-        title: 'جاري تجميع البيانات...',
-        text: 'يتم الآن سحب وإحصاء كافة الأسابيع المخزنة في السحابة',
-        allowOutsideClick: false,
-        didOpen: () => { Swal.showLoading(); }
-    });
-    
-    try {
-        // 2. جلب كافة البيانات من قسم data في Firebase
-        const snapshot = await db.ref('data').once('value');
-        const allWeeks = snapshot.val() || {};
-        
-        // مصفوفة لتخزين المجاميع (16 خانة)
-        let monthlyTotals = new Array(16).fill(0);
-        let hasData = false;
-
-        // 3. الدوران على كل الأسابيع الموجودة في قاعدة البيانات
-        Object.keys(allWeeks).forEach(weekKey => {
-            let unitsInData = allWeeks[weekKey];
-            
-            // الدوران على الوحدات داخل كل أسبوع
-            Object.keys(unitsInData).forEach(unitName => {
-                // شرط: إذا كان المستخدم "المتحكم الرئيسي" يجمع الكل، وإذا كانت وحدة تجمع حصتها فقط
-                if (currentUser === "المتحكم الرئيسي" || unitName === currentUser) {
-                    let unitData = unitsInData[unitName].daily || [];
-                    
-                    unitData.forEach(row => {
-                        if (row) {
-                            hasData = true;
-                            row.forEach((val, idx) => {
-                                monthlyTotals[idx] += parseInt(val) || 0;
-                            });
-                        }
-                    });
-                }
-            });
-        });
-
-        if (!hasData) {
-            Swal.fire("تنبيه", "لا توجد بيانات مسجلة في السحابة حتى الآن لتجميعها.", "warning");
-            return;
-        }
-
-        // 4. بناء سطر النتائج في الجدول السفلي
-        let mBody = document.getElementById("monthly-body");
-        // حساب المجموع الأفقي (ع ت) بناءً على الأعمدة [1, 5, 9, 13] كما اتفقنا سابقاً
-        let totalAT = [1, 5, 9, 13].reduce((sum, idx) => sum + monthlyTotals[idx], 0);
-        
-        mBody.innerHTML = `
-            <tr style="background: #f8f9fa;">
-                <td style="font-weight:900; color:var(--primary);">إجمالي الحصيلة الشهرية</td>
-                ${monthlyTotals.map(v => `<td style="font-weight:bold; font-size:16px;">${v}</td>`).join('')}
-                <td style="background:#ffd700; font-weight:900; font-size:18px; color:black;">${totalAT}</td>
-            </tr>
-        `;
-
-        // 5. إظهار القسم والنزول إليه بسلاسة
-        document.getElementById('monthly-report-section').classList.remove('hidden');
-        Swal.close();
-        document.getElementById('monthly-report-section').scrollIntoView({ behavior: 'smooth' });
-
-    } catch (error) {
-        console.error(error);
-        Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
-    }
-}
-</script>
-</body>
-</html>
-
-
-
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
