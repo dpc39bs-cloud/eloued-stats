@@ -303,7 +303,68 @@ function getUnitDataLocal(week, key, type, cloudData) {
 
 // باقي الدوال الأصلية كما هي تماماً
 function updateClock() { const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); document.getElementById('live-clock').innerText = timeStr; document.getElementById('live-date').innerText = dateStr; if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr; if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr; }
-function calculate() { let dTotals = new Array(16).fill(0); document.querySelectorAll("#daily-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".d-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { dTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".d-row-total").innerText = rSum; }); document.getElementById("daily-foot").innerHTML = `<td>المجموع</td>` + dTotals.map(v => `<td>${v}</td>`).join('') + `<td>${dTotals[1]+dTotals[5]+dTotals[9]+dTotals[13]}</td>`; let mTotals = new Array(16).fill(0); document.querySelectorAll("#muni-body tr").forEach(row => { let rSum = 0; row.querySelectorAll(".m-input, td:not(:first-child):not(:last-child)").forEach((el, idx) => { let v = parseInt(el.value || el.innerText) || 0; if(idx < 16) { mTotals[idx] += v; if([1,5,9,13].includes(idx)) rSum += v; } }); row.querySelector(".m-row-total").innerText = rSum; }); document.getElementById("muni-foot").innerHTML = `<td>المجموع</td>` + mTotals.map(v => `<td>${v}</td>`).join('') + `<td>${mTotals[1]+mTotals[5]+mTotals[9]+mTotals[13]}</td>`; updateChart(dTotals); }
+function calculate() {
+    // 1. حساب جدول الحصيلة الأسبوعية (Daily Table)
+    let dTotals = new Array(16).fill(0); 
+    
+    document.querySelectorAll("#daily-body tr").forEach(row => {
+        let rSum = 0;
+        let inputs = row.querySelectorAll(".d-input");
+        
+        inputs.forEach((input, idx) => {
+            let v = parseInt(input.value) || 0;
+            dTotals[idx] += v; // جمع عمودي لكل الأعمدة
+            
+            // الجمع الأفقي (الأعمدة المطلوبة ناقص 1): 
+            // 3->2 | 7->6 | 11->10 | 15->14
+            if ([2, 6, 10, 14].includes(idx)) {
+                rSum += v;
+            }
+        });
+        
+        // وضع المجموع الأفقي في العمود الأخير
+        let rowTotalCell = row.querySelector(".d-row-total");
+        if(rowTotalCell) rowTotalCell.innerText = rSum;
+    });
+
+    // تحديث الصف الأخير (المجموع الكلي العمودي)
+    updateTableFoot("daily-foot", dTotals, [2, 6, 10, 14]);
+
+    // 2. حساب جدول البلديات (Muni Table) بنفس المنطق
+    let mTotals = new Array(16).fill(0);
+    document.querySelectorAll("#muni-body tr").forEach(row => {
+        let rSum = 0;
+        let inputs = row.querySelectorAll(".m-input");
+        
+        inputs.forEach((input, idx) => {
+            let v = parseInt(input.value) || 0;
+            mTotals[idx] += v;
+            if ([2, 6, 10, 14].includes(idx)) {
+                rSum += v;
+            }
+        });
+        let rowTotalCell = row.querySelector(".m-row-total");
+        if(rowTotalCell) rowTotalCell.innerText = rSum;
+    });
+
+    updateTableFoot("muni-foot", mTotals, [2, 6, 10, 14]);
+
+    // تحديث الرسم البياني
+    updateChart(dTotals);
+}
+
+// دالة مساعدة لتحديث تذييل الجدول (تمنع تكرار الكود)
+function updateTableFoot(id, totals, targetIndices) {
+    let foot = document.getElementById(id);
+    let html = `<td>المجموع الكلي</td>`;
+    totals.forEach(v => { html += `<td>${v}</td>`; });
+    
+    // جمع القيم النهائية للأعمدة المستهدفة فقط
+    let grandTotal = targetIndices.reduce((sum, idx) => sum + totals[idx], 0);
+    
+    html += `<td style="background:#ffd700; color:black; font-weight:900;">${grandTotal}</td>`;
+    foot.innerHTML = html;
+}
 function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
 function getWeekDays(w) {
     if(!w) return ["-","-","-","-","-","-","-"];
@@ -350,3 +411,4 @@ function loadArchive() { /* كود الأرشفة الأصلي */ const containe
 </script>
 </body>
 </html>
+
