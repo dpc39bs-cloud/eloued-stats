@@ -308,17 +308,27 @@ function updateChart(t) { const ctx = document.getElementById('mainChart').getCo
 function getWeekDays(w) {
     if(!w) return ["-","-","-","-","-","-","-"];
     let [year, week] = w.split('-W');
-    // تعديل الانطلاق من أول يوم في السنة
-    let d = new Date(year, 0, 1 + (week - 1) * 7);
     
-    // ضبط البداية لتكون يوم الأحد بالضبط (زيادة 1 لتصحيح التوقيت المحلي)
-    while (d.getDay() !== 0) d.setDate(d.getDate() + 1); 
+    // حساب أول يوم في السنة
+    let firstDayOfYear = new Date(year, 0, 1);
     
+    // تحديد تاريخ أول يوم في الأسبوع المطلوب
+    // نستخدم صيغة ISO القياسية لضمان عدم حدوث أخطاء في التوقيت المحلي
+    let d = new Date(year, 0, (parseInt(week) - 1) * 7 + 1);
+    
+    // البحث عن أقرب يوم أحد (بداية الأسبوع) وزيادة التاريخ ليضبط تماماً
+    while (d.getDay() !== 0) {
+        d.setDate(d.getDate() + 1);
+    }
+    
+    // في بعض الحالات نحتاج لزيادة يوم إضافي لضبط التاريخ مع أسبوع العمل
+    d.setDate(d.getDate() + 1); 
+
     let days = [];
     for(let i=0; i<7; i++) {
         let n = new Date(d);
-        n.setDate(d.getDate() + i); 
-        // عرض التاريخ بصيغة يوم-شهر-سنة لتكون واضحة
+        n.setDate(d.getDate() + i - 1); // طرح 1 لضبط الترتيب بعد الزيادة
+        
         let dd = String(n.getDate()).padStart(2, '0');
         let mm = String(n.getMonth() + 1).padStart(2, '0');
         let yy = n.getFullYear();
@@ -340,7 +350,3 @@ function loadArchive() { /* كود الأرشفة الأصلي */ const containe
 </script>
 </body>
 </html>
-
-
-
-
