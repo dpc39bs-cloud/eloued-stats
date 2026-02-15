@@ -415,7 +415,58 @@ function updateChart(t) { const ctx = document.getElementById('mainChart').getCo
 function getWeekDays(w) { if(!w) return ["-","-","-","-","-","-","-"]; let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i); days.push(n.toISOString().split('T')[0]); } return days; }
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
-async function updateStatusPanel() { if(currentUser !== "المتحكم الرئيسي") return; const grid = document.getElementById("status-grid"); grid.innerHTML = ""; const snapshot = await db.ref('data/' + currentWeek).once('value'); const cloudData = snapshot.val() || {}; Object.keys(unitConfig).forEach(u => { if(u === "المتحكم الرئيسي") return; let isSent = !!cloudData[u]; grid.innerHTML += `<div style="background:${isSent ? 'var(--success)' : 'var(--danger)'}; color:white; padding:10px; border-radius:10px; text-align:center; font-weight:700; font-size:12px;">${u}<br>${isSent ? '✓' : '✘'}</div>`; }); }
+async function updateStatusPanel() {
+    const snapshot = await db.ref('data/' + currentWeek).once('value');
+    const data = snapshot.val() || {};
+    const tbody = document.getElementById("status-body");
+    tbody.innerHTML = "";
+
+    // مصفوفة لتخزين المجموع العام للولاية (16 عمود)
+    let grandTotals = new Array(16).fill(0);
+
+    Object.keys(unitConfig).forEach(unit => {
+        if(unit === "المتحكم الرئيسي") return;
+        
+        let unitData = data[unit] || {};
+        let status = unitData.lastUpdate ? `<span style="color:green">تم الإرسال (${unitData.lastUpdate})</span>` : `<span style="color:red">انتظار...</span>`;
+        
+        // حساب مجموع الوحدة لهذه الأسبوع
+        let unitSums = new Array(16).fill(0);
+        if(unitData.daily) {
+            unitData.daily.forEach(row => {
+                if(row) row.forEach((val, idx) => {
+                    let v = parseInt(val) || 0;
+                    unitSums[idx] += v;
+                    grandTotals[idx] += v; // إضافة للمجموع الكلي للولاية
+                });
+            });
+        }
+
+        // حساب "ع ت" للوحدة (الأعمدة 2، 6، 10، 14 برمجياً)
+        let unitTotalAT = [1, 5, 9, 13].reduce((s, i) => s + unitSums[i], 0);
+
+        tbody.innerHTML += `
+            <tr>
+                <td style="font-weight:bold">${unit}</td>
+                <td>${status}</td>
+                <td style="background:#e3f2fd; font-weight:bold">${unitTotalAT}</td>
+                <td class="no-print">
+                    <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="viewUnitData('${unit}')">عرض</button>
+                </td>
+            </tr>
+        `;
+    });
+
+    // إضافة صف "المجموع الكلي للولاية" في أسفل جدول المراقبة
+    let stateTotalAT = [1, 5, 9, 13].reduce((s, i) => s + grandTotals[i], 0);
+    tbody.innerHTML += `
+        <tr style="background:#fff9c4; border-top: 2px solid #fbc02d;">
+            <td colspan="2" style="font-weight:900; text-align:center;">مجموع الولاية الإجمالي</td>
+            <td style="font-weight:900; color:#d32f2f; font-size:18px;">${stateTotalAT}</td>
+            <td class="no-print">---</td>
+        </tr>
+    `;
+}
 async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
 async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
 function updateTicker() { let total = 0; db.ref('data/' + currentWeek).once('value').then(snap => { const data = snap.val() || {}; Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); }); document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`; }); }
@@ -479,4 +530,5 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
