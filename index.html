@@ -115,7 +115,28 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                 <button onclick="sendNotif()" class="btn" style="background: var(--primary); width: 15%; margin:0;">إرسال</button>
             </div>
         </div>
-        <div id="status-panel" class="hidden no-print" style="background:#fff; border:2px solid var(--primary); padding:15px; margin-bottom:20px; border-radius:15px;">
+        <div id="status-panel" class="hidden no-print" style="background:white; padding:20px; border-radius:15px; margin-bottom:20px; border:2px solid #1a237e;">
+    
+    <div id="master-notif-panel" style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; justify-content: center;">
+        </div>
+
+    <h3 style="text-align:center; color:#1a237e; border-bottom:2px solid #ffd700; padding-bottom:10px;">
+        <i class="fa-solid fa-tower-broadcast"></i> لوحة مراقبة إرسال الوحدات
+    </h3>
+
+    <table style="width:100%; text-align:center;">
+        <thead>
+            <tr style="background:#1a237e; color:white;">
+                <th>الوحدة</th>
+                <th>حالة الإرسال</th>
+                <th>كود الدخول</th>
+                <th>ع ت (أسبوعي)</th>
+                <th>إجراء</th>
+            </tr>
+        </thead>
+        <tbody id="status-body"></tbody>
+    </table>
+</div>
             <div id="admin-monthly-box" class="no-print" style="text-align:center; margin: 15px 0; padding: 10px; background: #f3e5f5; border-radius: 12px; border: 1px solid #6a1b9a;">
     <button class="btn" style="background:#6a1b9a; box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);" onclick="generateMonthlyReport()">
         <i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية
@@ -465,54 +486,75 @@ function getWeekDays(w) {
 function setWeek(w) { document.getElementById("week-picker").value = w; changeWeek(); }
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); updateStatusPanel(); }
 async function updateStatusPanel() {
-    const snapshot = await db.ref('data/' + currentWeek).once('value');
-    const data = snapshot.val() || {};
+    const dataSnapshot = await db.ref('data/' + currentWeek).once('value');
+    const passSnapshot = await db.ref('passwords').once('value');
+    const data = dataSnapshot.val() || {};
+    const passwords = passSnapshot.val() || {};
+    
     const tbody = document.getElementById("status-body");
-    tbody.innerHTML = "";
+    const notifPanel = document.getElementById("master-notif-panel"); // لوحة المربعات الملونة
+    
+    if (tbody) tbody.innerHTML = "";
+    if (notifPanel) notifPanel.innerHTML = ""; // تنظيف اللوحة العلوية
 
-    // مصفوفة لتخزين المجموع العام للولاية (16 عمود)
     let grandTotals = new Array(16).fill(0);
 
     Object.keys(unitConfig).forEach(unit => {
         if(unit === "المتحكم الرئيسي") return;
         
         let unitData = data[unit] || {};
-        let status = unitData.lastUpdate ? `<span style="color:green">تم الإرسال (${unitData.lastUpdate})</span>` : `<span style="color:red">انتظار...</span>`;
+        let unitPass = passwords[unit] || "1111";
+        let isSent = !!unitData.lastUpdate; // هل أرسلت الوحدة؟
+
+        // أولاً: بناء المربعات الملونة العلوية (التي كنت تقصدها)
+        let color = isSent ? "#2e7d32" : "#c62828"; // أخضر للمرسل، أحمر للمنتظر
+        let icon = isSent ? "fa-check-circle" : "fa-circle-xmark";
         
-        // حساب مجموع الوحدة لهذه الأسبوع
+        notifPanel.innerHTML += `
+            <div style="background:${color}; color:white; padding:8px 15px; border-radius:8px; font-size:13px; font-weight:bold; display:flex; align-items:center; gap:8px; min-width:120px; box-shadow:0 2px 5px rgba(0,0,0,0.2)">
+                <i class="fa-solid ${icon}"></i>
+                ${unit}
+            </div>
+        `;
+
+        // ثانياً: بناء أسطر الجدول كما فعلنا سابقاً
+        let statusText = isSent ? 
+            `<b style="color:green">تم الإرسال (${unitData.lastUpdate})</b>` : 
+            `<b style="color:red">في الانتظار...</b>`;
+        
         let unitSums = new Array(16).fill(0);
         if(unitData.daily) {
             unitData.daily.forEach(row => {
-                if(row) row.forEach((val, idx) => {
-                    let v = parseInt(val) || 0;
-                    unitSums[idx] += v;
-                    grandTotals[idx] += v; // إضافة للمجموع الكلي للولاية
+                if(row) row.forEach((v, idx) => {
+                    unitSums[idx] += (parseInt(v) || 0);
+                    grandTotals[idx] += (parseInt(v) || 0);
                 });
             });
         }
-
-        // حساب "ع ت" للوحدة (الأعمدة 2، 6، 10، 14 برمجياً)
         let unitTotalAT = [1, 5, 9, 13].reduce((s, i) => s + unitSums[i], 0);
 
         tbody.innerHTML += `
             <tr>
-                <td style="font-weight:bold">${unit}</td>
-                <td>${status}</td>
-                <td style="background:#e3f2fd; font-weight:bold">${unitTotalAT}</td>
-                <td class="no-print">
-                    <button class="btn" style="padding:4px 8px; font-size:11px;" onclick="viewUnitData('${unit}')">عرض</button>
-                </td>
+                <td style="font-weight:900;">${unit}</td>
+                <td>${statusText}</td>
+                <td style="font-family:monospace; font-weight:bold; background:#f9f9f9;">${unitPass}</td>
+                <td style="background:#fff9c4; font-weight:900;">${unitTotalAT}</td>
+                <td><button class="btn" style="padding:4px 10px; font-size:12px;" onclick="viewUnitData('${unit}')">عرض</button></td>
             </tr>
         `;
     });
 
-    // إضافة صف "المجموع الكلي للولاية" في أسفل جدول المراقبة
+    // إظهار اللوحات
+    if (notifPanel) notifPanel.classList.remove("hidden");
+    document.getElementById("status-panel").classList.remove("hidden");
+
+    // إضافة المجموع الكلي للولاية في آخر الجدول
     let stateTotalAT = [1, 5, 9, 13].reduce((s, i) => s + grandTotals[i], 0);
     tbody.innerHTML += `
-        <tr style="background:#fff9c4; border-top: 2px solid #fbc02d;">
-            <td colspan="2" style="font-weight:900; text-align:center;">مجموع الولاية الإجمالي</td>
-            <td style="font-weight:900; color:#d32f2f; font-size:18px;">${stateTotalAT}</td>
-            <td class="no-print">---</td>
+        <tr style="background:#1a237e; color:white;">
+            <td colspan="3" style="font-weight:900; text-align:center;">إجمالي الولاية</td>
+            <td style="background:#ffd700; color:black; font-weight:900; font-size:18px;">${stateTotalAT}</td>
+            <td>---</td>
         </tr>
     `;
 }
@@ -596,6 +638,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
