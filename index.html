@@ -98,6 +98,11 @@ th { background: var(--primary) !important; color: white !important; font-size: 
             <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;"></div>
         </div>
         <div id="unit-clock-bar" class="internal-clock-bar no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
+            <div id="unit-monthly-box" class="no-print" style="text-align:center; margin: 15px 0;">
+    <button class="btn" style="background:#4527a0; border: 2px solid #ffd700;" onclick="generateMonthlyReport()">
+        <i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري
+    </button>
+</div>
             <div><i class="fa-solid fa-clock"></i> التوقيت</div>
             <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
         </div>
@@ -406,6 +411,7 @@ function loadArchive() { /* كود الأرشفة الأصلي */ const containe
 </script>
 </body>
 </html>
+
 
 
 
