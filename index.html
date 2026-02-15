@@ -11,94 +11,44 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
-:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; --gold: #ffd700; --soft-gold: #ffecb3; }
+:root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --gold: #ffd700; --soft-gold: #ffecb3; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; height: 100vh; }
 .hidden { display: none !important; }
 
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 
-/* ضبط واجهة الدخول بدقة */
+/* تنسيق واجهة الدخول المضبوط */
 #login-page { 
     background: linear-gradient(rgba(10, 15, 60, 0.8), rgba(26, 35, 126, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); 
-    background-size: cover; 
-    background-position: center; 
-    height: 100vh; 
-    width: 100vw; 
-    display: flex; 
-    flex-direction: column; 
-    justify-content: center; 
-    align-items: center; 
-    text-align: center;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 10000;
+    background-size: cover; background-position: center; height: 100vh; width: 100vw; 
+    display: flex; flex-direction: column; justify-content: center; align-items: center; 
+    text-align: center; position: fixed; top: 0; left: 0; z-index: 10000;
 }
-
 .header-official { margin-bottom: 20px; }
-.header-official h1 { color: var(--soft-gold); font-size: 1.6rem; font-weight: 800; margin: 0; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+.header-official h1 { color: var(--soft-gold); font-size: 1.6rem; font-weight: 800; margin: 0; }
 .header-official h2 { color: white; font-size: 1.3rem; font-weight: 700; margin: 5px 0; }
-.header-official h3 { color: var(--gold); font-size: 1.1rem; font-weight: 600; margin: 0; }
-
 .clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.1); padding: 10px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.3); backdrop-filter: blur(5px); }
-#live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; letter-spacing: 2px; }
-#live-date { color: var(--soft-gold); font-size: 0.9rem; margin-top: 5px; font-weight: 600; }
+#live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; }
+#live-date { color: var(--soft-gold); font-size: 0.9rem; margin-top: 5px; }
 
-.login-card { 
-    background: rgba(255, 255, 255, 0.95); 
-    padding: 30px; 
-    border-radius: 20px; 
-    width: 350px; 
-    box-shadow: 0 15px 35px rgba(0,0,0,0.5); 
-    border: 2px solid var(--gold);
-}
-.login-card h2 { font-size: 1.4rem; color: var(--primary); margin-bottom: 20px; font-weight: 800; border-bottom: 3px solid var(--accent); display: inline-block; padding-bottom: 5px; }
-
-.input-field { 
-    font-family: 'Cairo'; 
-    width: 100%; 
-    padding: 12px; 
-    border-radius: 10px; 
-    border: 2px solid #ddd; 
-    margin-bottom: 15px; 
-    font-weight: 700; 
-    text-align: center; 
-    font-size: 1rem;
-    box-sizing: border-box;
-    transition: 0.3s;
-}
-.input-field:focus { border-color: var(--primary); outline: none; background: #fffde7; }
-
-.btn-login { 
-    background: var(--primary); 
-    width: 100%; 
-    padding: 14px; 
-    border:none; 
-    border-radius:10px; 
-    color:white; 
-    font-weight:800; 
-    cursor:pointer; 
-    font-size: 1.1rem;
-    box-shadow: 0 4px 15px rgba(26, 35, 126, 0.3);
-    transition: 0.3s;
-}
+.login-card { background: rgba(255, 255, 255, 0.95); padding: 30px; border-radius: 20px; width: 350px; box-shadow: 0 15px 35px rgba(0,0,0,0.5); border: 2px solid var(--gold); }
+.input-field { font-family: 'Cairo'; width: 100%; padding: 12px; border-radius: 10px; border: 2px solid #ddd; margin-bottom: 15px; font-weight: 700; text-align: center; box-sizing: border-box; }
+.btn-login { background: var(--primary); width: 100%; padding: 14px; border:none; border-radius:10px; color:white; font-weight:800; cursor:pointer; font-size: 1.1rem; transition: 0.3s; }
 .btn-login:hover { background: #0d1440; transform: translateY(-2px); }
 
-.dev-credit { color: var(--soft-gold); font-size: 0.9rem; font-weight: 600; margin-top: 25px; text-shadow: 1px 1px 2px black; }
-
-/* باقي إعدادات المنظومة كما هي */
+/* تنسيق الجداول */
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
 .table-title-box { background: #222; color: var(--gold); padding: 10px; text-align: center; font-weight: 900; font-size: 20px; border: 2.5px solid #000; margin-top: 20px; }
 table { width: 100%; border-collapse: collapse; border: 2.5px solid #000; table-layout: fixed; }
 th, td { border: 2px solid #000; padding: 6px 1px; text-align: center; }
-th { background: var(--primary) !important; color: white !important; font-size: 14px; }
+th { background: var(--primary) !important; color: white !important; font-size: 13px; }
 .editable { font-family: 'Cairo'; width: 95%; border: 1px solid #ccc; text-align: center; font-weight: 700; font-size: 19px; background: #fffde7; }
 .btn { font-family: 'Cairo'; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; }
 
 @media print { 
     @page { size: landscape; margin: 1cm; }
-    .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #admin-tools { display: none !important; } 
+    .no-print, .btn, #admin-tools, #week-picker, .internal-clock-bar { display: none !important; } 
     .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; } 
     .editable { border: none !important; background: transparent !important; } 
     .print-page-break { page-break-before: always; margin-top: 50px; }
@@ -108,22 +58,22 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 <body>
 
 <div id="login-page">
-    <div class="header-official no-print">
+    <div class="header-official">
         <h1>الجمهورية الجزائرية الديمقراطية الشعبية</h1>
         <h2>مديرية الحماية المدنية لولاية الوادي</h2>
         <h3>مصلحة الوقايـــــــــة</h3>
     </div>
-    <div class="clock-box no-print">
+    <div class="clock-box">
         <p id="live-clock"></p>
         <p id="live-date"></p>
     </div>
-    <div class="login-card no-print">
+    <div class="login-card">
         <h2>تسجيل الدخول</h2>
         <select id="user-role" class="input-field"></select>
         <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور">
         <button onclick="login()" class="btn-login">دخول للمنظومة</button>
     </div>
-    <div class="dev-credit no-print">إعداد الملازم الأول: بن خليفة بدر الدين</div>
+    <div style="color:var(--soft-gold); margin-top:20px; font-weight:700;">إعداد الملازم أول: بن خليفة بدر الدين</div>
 </div>
 
 <div id="app-content" class="hidden">
@@ -170,8 +120,8 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                 </table>
             </div>
         </div>
-        
-        <div class="no-print" style="text-align:center; padding: 30px 0;">
+
+        <div class="no-print" style="text-align:center; padding-top: 30px; margin-bottom: 50px;">
             <button class="btn" style="background:var(--success)" onclick="saveData()">حفظ وإرسال</button>
             <button class="btn" style="background:#e67e22" onclick="window.print()">طباعة الحصيلة</button>
             <button class="btn" style="background:#546e7a" onclick="location.reload()">خروج</button>
@@ -180,7 +130,6 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 </div>
 
 <script>
-// البرمجة (نظام 24 ساعة + فايربيز + التفاعلات) كما طلبت
 const firebaseConfig = { apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY", authDomain: "eloued-system.firebaseapp.com", projectId: "eloued-system", storageBucket: "eloued-system.firebasestorage.app", messagingSenderId: "215124234121", appId: "1:215124234121:web:01536290ef78a417a71b58" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -192,7 +141,9 @@ window.onload = function() {
     currentWeek = autoCalculateWeek();
     document.getElementById("week-picker").value = currentWeek;
     const userSelect = document.getElementById("user-role");
-    Object.keys(unitConfig).forEach(u => userSelect.innerHTML += `<option value="${u}">${u}</option>`);
+    Object.keys(unitConfig).forEach(u => {
+        let opt = document.createElement("option"); opt.value = u; opt.text = u; userSelect.add(opt);
+    });
     setInterval(updateClock, 1000);
 };
 
@@ -220,10 +171,12 @@ async function login(){
     let u = document.getElementById("user-role").value;
     const snap = await db.ref('passwords/' + u).once('value');
     if(p !== (snap.val() || "1111")) return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
+    
     currentUser = u;
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-display").innerText = "الوحدة: " + currentUser;
+    
     if(currentUser === "المتحكم الرئيسي") document.getElementById("admin-tools").classList.remove("hidden");
     renderSystem();
 }
@@ -294,13 +247,23 @@ function calculate() {
 function getWeekDays(w) { let [year, week] = w.split('-W'); let d = new Date(year, 0, 1 + (week - 1) * 7); while (d.getDay() !== 0) d.setDate(d.getDate() - 1); let days = []; const names = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"]; for(let i=0; i<7; i++) { let n = new Date(d); n.setDate(d.getDate() + i + 1); days.push({ name: names[i], date: n.toISOString().split('T')[0] }); } return days; }
 function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
 function changeWeek(){ currentWeek = document.getElementById("week-picker").value; renderSystem(); }
+
 async function saveData(){
     let w = document.getElementById("week-picker").value;
-    let daily = []; document.querySelectorAll(".d-input").forEach(el => { if(!daily[el.dataset.day]) daily[el.dataset.day] = new Array(16).fill(0); daily[el.dataset.day][el.dataset.col] = el.value; });
-    let muni = {}; document.querySelectorAll(".m-input").forEach(el => { if(!muni[el.dataset.muni]) muni[el.dataset.muni] = new Array(16).fill(0); muni[el.dataset.muni][el.dataset.col] = el.value; });
+    let daily = []; 
+    document.querySelectorAll(".d-input").forEach(el => { 
+        let d = el.dataset.day; if(!daily[d]) daily[d] = new Array(16).fill(0); 
+        daily[d][el.dataset.col] = el.value; 
+    });
+    let muni = {}; 
+    document.querySelectorAll(".m-input").forEach(el => { 
+        let m = el.dataset.muni; if(!muni[m]) muni[m] = new Array(16).fill(0); 
+        muni[m][el.dataset.col] = el.value; 
+    });
     await db.ref('data/' + w + '/' + currentUser).set({ daily, muni });
     Swal.fire("تم الحفظ", "", "success");
 }
+
 async function adminChangePassword() {
     const { value: v } = await Swal.fire({ title: 'تعديل كود', html: `<select id="sw-u" class="swal2-input">${Object.keys(unitConfig).map(u=>`<option>${u}</option>`).join('')}</select><input id="sw-p" class="swal2-input" placeholder="الكود الجديد">`, preConfirm: () => [document.getElementById('sw-u').value, document.getElementById('sw-p').value] });
     if (v && v[1]) await db.ref('passwords/' + v[0]).set(v[1]);
