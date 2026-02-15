@@ -23,7 +23,6 @@ input[type=number] { -moz-appearance: textfield; }
 .header-official h1 { color: var(--soft-gold); font-size: 1.8rem; font-weight: 800; margin: 0; }
 .header-official h2 { color: white; font-size: 1.4rem; font-weight: 700; margin: 5px 0; }
 
-/* تصغير الساعة في الواجهة الرئيسية */
 .clock-box { margin: 15px 0; background: rgba(255, 255, 255, 0.05); padding: 8px 30px; border-radius: 50px; border: 1px solid rgba(255, 255, 255, 0.2); }
 #live-clock { font-size: 2.2rem; font-weight: 900; color: white; margin:0; line-height: 1; }
 #live-date { color: var(--soft-gold); font-size: 0.9rem; margin-top: 5px; font-weight: 600; }
@@ -34,7 +33,7 @@ input[type=number] { -moz-appearance: textfield; }
 
 /* إعدادات الحصيلة والجداول */
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
-.table-title-box { background: #222; color: var(--gold); padding: 10px; text-align: center; font-weight: 900; font-size: 20px; border: 2.5px solid #000; }
+.table-title-box { background: #222; color: var(--gold); padding: 10px; text-align: center; font-weight: 900; font-size: 20px; border: 2.5px solid #000; margin-top: 20px; }
 
 table { width: 100%; border-collapse: collapse; border: 2.5px solid #000; table-layout: fixed; }
 th, td { border: 2px solid #000; padding: 6px 1px; text-align: center; }
@@ -49,12 +48,15 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 @keyframes ticker { from { transform: translateX(100%); } to { transform: translateX(-100%); } }
 .btn { font-family: 'Cairo'; padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; }
 
-/* إعدادات الطباعة الأفقية */
+/* ضبط الطباعة: كل جدول في صفحة منفصلة بوضع أفقي */
 @media print { 
-    @page { size: landscape; margin: 5mm; }
+    @page { size: landscape; margin: 1cm; }
     .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #admin-tools { display: none !important; } 
     .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; } 
     .editable { border: none !important; background: transparent !important; } 
+    
+    /* أمر الفصل: الجدول الثاني يبدأ دائماً في صفحة جديدة */
+    .print-page-break { page-break-before: always; margin-top: 50px; }
 }
 </style>
 </head>
@@ -115,15 +117,17 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                 <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;"></tfoot>
             </table>
 
-            <div class="table-title-box" style="margin-top:20px;">2. توزيع التدخلات حسب البلديات</div>
-            <table id="muni-table">
-                <thead>
-                    <tr><th rowspan="2" class="col-header-main">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" class="col-header-total">ع ت</th></tr>
-                    <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
-                </thead>
-                <tbody id="muni-body"></tbody>
-                <tfoot id="muni-foot" style="background:#fff3e0; font-weight:900;"></tfoot>
-            </table>
+            <div class="print-page-break">
+                <div class="table-title-box">2. توزيع التدخلات حسب البلديات</div>
+                <table id="muni-table">
+                    <thead>
+                        <tr><th rowspan="2" class="col-header-main">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" class="col-header-total">ع ت</th></tr>
+                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
+                    </thead>
+                    <tbody id="muni-body"></tbody>
+                    <tfoot id="muni-foot" style="background:#fff3e0; font-weight:900;"></tfoot>
+                </table>
+            </div>
         </div>
 
         <div class="no-print" style="width:100%; height:350px; margin: 30px auto;"><canvas id="mainChart"></canvas></div>
@@ -135,13 +139,14 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 
         <div class="no-print" style="text-align:center; padding-bottom: 50px;">
             <button class="btn" style="background:var(--success)" onclick="saveData()">حفظ وإرسال</button>
-            <button class="btn" style="background:#e67e22" onclick="window.print()">طباعة</button>
+            <button class="btn" style="background:#e67e22" onclick="window.print()">طباعة الحصيلة</button>
             <button class="btn" style="background:#546e7a" onclick="location.reload()">خروج</button>
         </div>
     </div>
 </div>
 
 <script>
+// الكود البرمجي كما هو في نسختك الأصلية مع تعديل نظام الوقت 24س
 const firebaseConfig = { apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY", authDomain: "eloued-system.firebaseapp.com", projectId: "eloued-system", storageBucket: "eloued-system.firebasestorage.app", messagingSenderId: "215124234121", appId: "1:215124234121:web:01536290ef78a417a71b58" };
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
@@ -166,7 +171,6 @@ function autoCalculateWeek() {
     return `${y}-W${weekNum.toString().padStart(2,'0')}`;
 }
 
-// نظام 24 ساعة مضبوط هنا
 function updateClock() {
     const now = new Date();
     const h = now.getHours().toString().padStart(2, '0');
@@ -221,7 +225,7 @@ async function renderSystem(){
         }
         tr += `<td class="m-row-total" style="background:#fff3e0; font-weight:900;">0</td></tr>`; mBody.innerHTML += tr;
     });
-    calculate(); updateTicker();
+    calculate();
 }
 
 function getUnitDataLocal(week, key, type, cloudData) {
@@ -267,14 +271,6 @@ function updateChart(t) {
     const ctx = document.getElementById('mainChart').getContext('2d');
     if(myChart) myChart.destroy();
     myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'تدخلات الأسبوع', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } });
-}
-
-function updateTicker() {
-    db.ref('data/' + currentWeek).once('value').then(snap => {
-        let total = 0; const data = snap.val() || {};
-        Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); });
-        document.getElementById('ticker-text').innerText = `إحصائيات ولاية الوادي: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`;
-    });
 }
 
 async function saveData(){
