@@ -291,7 +291,7 @@ async function renderSystem(){
     let days = getWeekDays(currentWeek);
     document.getElementById("week-info").innerText = `من الأحد ${days[0]} إلى السبت ${days[6]}`;
     
-    // محاولة جلب البيانات من السحابة أولاً
+    // محاولة جلب البيانات من السحابة
     const snapshot = await db.ref('data/' + currentWeek).once('value');
     const cloudData = snapshot.val() || {};
 
@@ -300,7 +300,8 @@ async function renderSystem(){
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f9f9f9;">${days[i]}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
+            // إضافة كلاس d-val للتمكن من قراءتها برمجياً للمتحكم الرئيسي
+            if(currentUser === "المتحكم الرئيسي") tr += `<td class="d-val" data-day="${i}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
             else tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
         }
         tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
@@ -312,11 +313,13 @@ async function renderSystem(){
         let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") tr += `<td style="font-weight:800;">${data[j]}</td>`;
+            if(currentUser === "المتحكم الرئيسي") tr += `<td class="m-val" data-muni="${m}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
             else tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
         }
         tr += `<td style="background:#fff3e0; font-weight:900;" class="m-row-total">0</td></tr>`; mBody.innerHTML += tr;
     });
+    
+    // استدعاء الحساب فوراً بعد الانتهاء من بناء الجداول
     calculate();
 }
 
@@ -338,19 +341,17 @@ function getUnitDataLocal(week, key, type, cloudData) {
 // باقي الدوال الأصلية كما هي تماماً
 function updateClock() { const now = new Date(); const timeStr = now.getHours().toString().padStart(2,'0') + ":" + now.getMinutes().toString().padStart(2,'0') + ":" + now.getSeconds().toString().padStart(2,'0'); const dateStr = now.toLocaleDateString('ar-DZ', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }); document.getElementById('live-clock').innerText = timeStr; document.getElementById('live-date').innerText = dateStr; if(document.getElementById('u-time-box')) document.getElementById('u-time-box').innerText = timeStr + " | " + dateStr; if(document.getElementById('m-time-box')) document.getElementById('m-time-box').innerText = timeStr + " | " + dateStr; }
 function calculate() {
-    // 1. حساب جدول الحصيلة الأسبوعية (Daily Table)
+    // 1. حساب جدول الحصيلة الأسبوعية
     let dTotals = new Array(16).fill(0); 
     
     document.querySelectorAll("#daily-body tr").forEach(row => {
         let rSum = 0;
-        let inputs = row.querySelectorAll(".d-input");
+        // قراءة من input (للوحدات) أو من td.d-val (للمتحكم الرئيسي)
+        let values = row.querySelectorAll(".d-input, .d-val");
         
-        inputs.forEach((input, idx) => {
-            let v = parseInt(input.value) || 0;
+        values.forEach((el, idx) => {
+            let v = parseInt(el.value || el.innerText) || 0;
             dTotals[idx] += v; 
-            
-            // الجمع الأفقي الصحيح (ع ت): الأعمدة 2، 6، 10، 14 برمجياً
-            // وهي تقابل خانات "ع ت" لكل نوع من التدخلات
             if ([1, 5, 9, 13].includes(idx)) {
                 rSum += v;
             }
@@ -360,17 +361,16 @@ function calculate() {
         if(rowTotalCell) rowTotalCell.innerText = rSum;
     });
 
-    // تحديث الصف الأخير للمجاميع العمودية (نستخدم 1, 5, 9, 13 للمجموع النهائي)
     updateTableFoot("daily-foot", dTotals, [1, 5, 9, 13]);
 
-    // 2. حساب جدول البلديات (Muni Table)
+    // 2. حساب جدول البلديات
     let mTotals = new Array(16).fill(0);
     document.querySelectorAll("#muni-body tr").forEach(row => {
         let rSum = 0;
-        let inputs = row.querySelectorAll(".m-input");
+        let values = row.querySelectorAll(".m-input, .m-val");
         
-        inputs.forEach((input, idx) => {
-            let v = parseInt(input.value) || 0;
+        values.forEach((el, idx) => {
+            let v = parseInt(el.value || el.innerText) || 0;
             mTotals[idx] += v;
             if ([1, 5, 9, 13].includes(idx)) {
                 rSum += v;
@@ -381,8 +381,6 @@ function calculate() {
     });
 
     updateTableFoot("muni-foot", mTotals, [1, 5, 9, 13]);
-
-    // تحديث الرسم البياني بالأعمدة الأربعة الأساسية
     updateChart(dTotals);
 }
 
@@ -482,4 +480,5 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
