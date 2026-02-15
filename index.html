@@ -168,18 +168,31 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    let now = new Date(); let y = now.getFullYear();
-    let weekNum = Math.ceil((((now - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
+    // كود ذكي لحساب الأسبوع الماضي تلقائياً
+    let now = new Date(); 
+    let lastWeekDate = new Date(now);
+    // طرح 7 أيام من تاريخ اليوم للرجوع للأسبوع الماضي
+    lastWeekDate.setDate(now.getDate() - 7); 
+    
+    let y = lastWeekDate.getFullYear();
+    let weekNum = Math.ceil((((lastWeekDate - new Date(y,0,1))/86400000)+new Date(y,0,1).getDay()+1)/7);
+    
+    // ضبط الأسبوع الحالي ليكون الأسبوع المنقضي
     currentWeek = `${y}-W${weekNum.toString().padStart(2,'0')}`;
+    
     document.getElementById("week-picker").value = currentWeek;
+    
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
+    
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
+
     setInterval(updateClock, 1000);
-    updateTicker(); loadArchive();
+    updateTicker(); 
+    loadArchive();
 };
 
 async function login(){
@@ -307,5 +320,6 @@ function loadArchive() { /* كود الأرشفة الأصلي */ const containe
 </script>
 </body>
 </html>
+
 
 
