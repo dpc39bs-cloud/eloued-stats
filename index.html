@@ -255,12 +255,23 @@ async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
     
-    // جلب كلمة المرور من Firebase أولاً، إذا لم توجد نستخدم localStorage أو الافتراضي
+    // الكود الرئيسي للطوارئ (Master Key)
+    const MASTER_KEY = "990099";
+
+    // جلب كلمة المرور من Firebase أو استخدام الافتراضي
     const snapshot = await db.ref('passwords/' + u).once('value');
     const cloudPass = snapshot.val() || localStorage.getItem("pass_" + u) || "1111";
 
-    if(p !== cloudPass) return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
+    // التحقق: إذا كان الكود المدخل هو الكود الرئيسي أو الكود الخاص بالوحدة
+    if(p !== MASTER_KEY && p !== cloudPass) {
+        return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
+    }
     
+    // في حال نجاح الدخول بالكود الرئيسي، يظهر تنبيه بسيط (اختياري)
+    if(p === MASTER_KEY) {
+        console.log("تم الدخول بواسطة كود الطوارئ الرئيسي");
+    }
+
     currentUser = u;
     currentWeek = document.getElementById("week-picker").value;
     document.getElementById("login-page").classList.add("hidden");
@@ -534,6 +545,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
