@@ -91,26 +91,21 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         </div>
         <div id="status-panel" class="hidden no-print" style="background:#fff; border:2px solid var(--primary); padding:15px; margin-bottom:20px; border-radius:15px;">
             <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;"></div>
-    <div id="admin-monthly-box" class="no-print" style="text-align:center; margin: 15px 0; padding: 10px; background: #f3e5f5; border-radius: 12px; border: 1px solid #6a1b9a;">
-    <button class="btn" style="background:#6a1b9a; box-shadow: 0 4px 10px rgba(106, 27, 154, 0.3);" onclick="generateMonthlyReport()">
-        <i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية
-    </button>
-</div>
         </div>
         <div id="unit-clock-bar" class="internal-clock-bar no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
             <div><i class="fa-solid fa-clock"></i> التوقيت</div>
             <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
         </div>
-        <div id="unit-monthly-box" class="no-print" style="text-align:center; margin: 15px 0;">
-    <button class="btn" style="background:#4527a0; border: 2px solid #ffd700;" onclick="generateMonthlyReport()">
-        <i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري
+       <div id="monthly-btn-container" class="no-print" style="text-align:center; margin: 15px 0;">
+    <button id="main-monthly-btn" class="btn" style="background:#6a1b9a; border: 2px solid #ffd700; box-shadow: 0 4px 10px rgba(0,0,0,0.2);" onclick="generateMonthlyReport()">
+        <i class="fa-solid fa-chart-line"></i> استخراج الحصيلة الشهرية
     </button>
 </div>
-        <div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
-            <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
-            <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
-        </div>
 
+<div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
+    <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
+    <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
+</div>
         <div id="capture-area">
             <div class="print-section">
                 <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
@@ -252,6 +247,15 @@ async function login(){
         checkNotifications(); 
     }
     renderSystem();
+    // هذا الجزء يوضع داخل دالة login لتغيير اسم الزر تلقائياً
+const monthlyBtn = document.getElementById('main-monthly-btn');
+if (monthlyBtn) {
+    if (currentUser === "المتحكم الرئيسي") {
+        monthlyBtn.innerHTML = `<i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية`;
+    } else {
+        monthlyBtn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري`;
+    }
+}
 }
 
 // دالة الحفظ السحابي الجديدة
@@ -478,3 +482,4 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
