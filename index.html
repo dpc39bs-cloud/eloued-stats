@@ -12,6 +12,10 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
+    /* إخفاء محتوى التطبيق والجداول عند البداية */
+#app-content, #status-panel, #monthly-report-section, .unit-section {
+    display: none;
+}
 /* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
@@ -615,4 +619,5 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
