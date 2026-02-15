@@ -399,19 +399,24 @@ function updateChart(t) { const ctx = document.getElementById('mainChart').getCo
 function getWeekDays(w) { 
     if(!w) return ["-","-","-","-","-","-","-"]; 
     let [year, week] = w.split('-W'); 
-    // تحديد تاريخ بداية الأسبوع (الأحد)
+    
+    // تحديد التاريخ بناءً على رقم الأسبوع
     let d = new Date(year, 0, 1 + (week - 1) * 7); 
+    
+    // البحث عن يوم الأحد
     while (d.getDay() !== 0) d.setDate(d.getDate() - 1); 
     
-    let days = []; 
-    const dayNames = ["الأحد", "الاثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+    // زيادة يوم واحد كما طلبت لضبط الحساب
+    d.setDate(d.getDate() + 1); 
     
+    let days = []; 
     for(let i=0; i<7; i++) { 
         let n = new Date(d); 
         n.setDate(d.getDate() + i); 
-        let dateStr = n.toISOString().split('T')[0]; // التاريخ YYYY-MM-DD
-        // دمج اسم اليوم مع التاريخ لشكل أجمل في الجدول
-        days.push(dayNames[i] + " " + dateStr); 
+        
+        // استخراج التاريخ فقط بصيغة YYYY-MM-DD
+        let dateStr = n.toISOString().split('T')[0]; 
+        days.push(dateStr); 
     } 
     return days; 
 }
@@ -497,6 +502,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
