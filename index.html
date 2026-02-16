@@ -74,6 +74,20 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 
 <div id="app-content" class="hidden">
     <div class="container">
+        <div class="no-print" style="background:#f0f4f8; padding:15px; border-radius:10px; border:2px solid #1a237e; margin-bottom:20px;">
+    <h4 style="margin:0 0 10px 0; color:#1a237e;">استخراج الحصيلة الشهرية:</h4>
+    <div style="display: flex; gap: 10px; align-items: center;">
+        <select id="m-year" class="input-field" style="width:120px; margin:0;"></select>
+        <select id="m-month" class="input-field" style="width:120px; margin:0;">
+            <option value="1">جانفي</option><option value="2">فيفري</option><option value="3">مارس</option>
+            <option value="4">أفريل</option><option value="5">ماي</option><option value="6">جوان</option>
+            <option value="7">جويلية</option><option value="8">أوت</option><option value="9">سبتمبر</option>
+            <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+        </select>
+        <button onclick="getMonthly()" class="btn" style="background:#1a237e; margin:0;">إظهار الحصيلة</button>
+        <button onclick="window.print()" class="btn" style="background:#2e7d32; margin:0;">طباعة (A4 عرضي)</button>
+    </div>
+</div>
         <div id="unit-notification" class="hidden no-print" style="background:var(--danger); color:white; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
             <span><i class="fa-solid fa-bell"></i> تنبيه: <span id="notif-text"></span></span>
             <button onclick="clearNotif()" style="background:white; color:red; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">إغلاق</button>
@@ -591,9 +605,50 @@ async function generateMonthlyReport() {
         Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
     }
 }
+    // تعبئة السنوات تلقائياً
+(function() {
+    const yr = document.getElementById("m-year");
+    for(let i=2025; i<=2030; i++) yr.innerHTML += `<option value="${i}">${i}</option>`;
+})();
+
+async function getMonthly() {
+    const year = document.getElementById("m-year").value;
+    const month = document.getElementById("m-month").value;
+    
+    // جلب كل البيانات من السحابة
+    const snap = await db.ref('data').once('value');
+    const allData = snap.val() || {};
+    let totals = new Array(16).fill(0);
+
+    // تصفية البيانات حسب السنة والشهر
+    Object.keys(allData).forEach(wk => {
+        let [y, w] = wk.split('-W');
+        let d = new Date(y, 0, 1 + (w - 1) * 7);
+        if(y === year && (d.getMonth() + 1) == month) {
+            Object.values(allData[wk]).forEach(unit => {
+                if(currentUser === "المتحكم الرئيسي" || allData[wk][currentUser]) {
+                    let data = (currentUser === "المتحكم الرئيسي") ? unit.daily : allData[wk][currentUser].daily;
+                    if(data) data.forEach(row => { 
+                        if(row) row.forEach((v, i) => totals[i] += parseInt(v)||0); 
+                    });
+                }
+            });
+        }
+    });
+
+    // عرض النتيجة في جدول الأيام مؤقتاً أو تنبيه
+    if(totals.reduce((a,b)=>a+b, 0) === 0) {
+        Swal.fire("تنبيه", "لا توجد بيانات لهذا الشهر", "info");
+    } else {
+        // تحديث تذييل الجدول بالقيم الشهرية المحسوبة
+        updateTableFoot("daily-foot", totals, [1, 5, 9, 13]);
+        Swal.fire("تم التجميع", "تم عرض مجموع الشهر في أسفل الجدول", "success");
+    }
+}
 </script>
 </body>
 </html>
+
 
 
 
