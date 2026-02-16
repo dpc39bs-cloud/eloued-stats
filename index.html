@@ -71,7 +71,56 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         <div style="font-size: 11px; color: #777; margin-top: 10px; font-weight: 600;">إعداد الملازم أول: بن خليفة بدر الدين</div>
     </div>
 </div>
+<div id="monthly-report-section" class="no-print" style="background:#fff; padding:20px; border-radius:15px; border:3px solid #6a1b9a; margin-bottom: 20px; box-shadow: 0 4px 15px rgba(0,0,0,0.1);">
+    <h3 style="margin:0 0 15px 0; color:#6a1b9a; font-weight: 900; border-bottom: 2px solid #6a1b9a; display: inline-block; padding-bottom: 5px;">
+        <i class="fa-solid fa-calendar-check"></i> استخراج الحصيلة الشهرية الرسمية
+    </h3>
+    <div style="display: grid; grid-template-columns: 1fr 1fr 1.5fr; gap: 15px; align-items: flex-end;">
+        <div>
+            <label style="display:block; font-weight:bold; margin-bottom:5px;">1. اختر السنة</label>
+            <select id="report-year" class="input-field" style="margin:0; border:2px solid #6a1b9a;"></select>
+        </div>
+        <div>
+            <label style="display:block; font-weight:bold; margin-bottom:5px;">2. اختر الشهر</label>
+            <select id="report-month" class="input-field" style="margin:0; border:2px solid #6a1b9a;">
+                <option value="1">جانفي</option><option value="2">فيفري</option><option value="3">مارس</option>
+                <option value="4">أفريل</option><option value="5">ماي</option><option value="6">جوان</option>
+                <option value="7">جويلية</option><option value="8">أوت</option><option value="9">سبتمبر</option>
+                <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
+            </select>
+        </div>
+        <div style="display:flex; gap:10px;">
+            <button onclick="generateMonthlyReport()" class="btn" style="background:#6a1b9a; flex:1; margin:0; height:45px;">
+                <i class="fa-solid fa-magnifying-glass"></i> إظهار الحصيلة
+            </button>
+            <button onclick="printMonthlyReport()" id="btn-print-m" class="btn hidden" style="background:#2e7d32; flex:1; margin:0; height:45px;">
+                <i class="fa-solid fa-print"></i> طباعة الحصيلة (A4)
+            </button>
+        </div>
+    </div>
+</div>
 
+<div id="monthly-display-area" class="hidden">
+    <div class="print-section" style="padding: 10px; background: white;">
+        <div style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 15px;">
+            <div style="font-weight:bold; line-height:1.4;">الجمهورية الجزائرية الديمقراطية الشعبية<br>وزارة الداخلية والجماعات المحلية<br>المديرية العامة للحماية المدنية</div>
+            <div>
+                <h2 style="margin:0; font-weight: 900; text-decoration: underline;">إجمالي حصيلة النشاط الشهرية</h2>
+                <div id="m-report-title" style="font-weight:800; color:blue; font-size:20px; margin-top:5px;"></div>
+                <div id="m-report-unit" style="font-weight:700; color:red;"></div>
+            </div>
+            <div style="font-weight:bold;">مديرية الحماية المدنية لولاية الوادي<br>مصلحة الوقاية<br>مكتب الإحصائيات</div>
+        </div>
+        <table id="monthly-table-final" style="width:100%; border-collapse:collapse; border:2.5px solid #000;">
+            <thead>
+                <tr><th rowspan="2" style="width:15%">البيان</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
+                <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
+            </thead>
+            <tbody id="monthly-result-body" style="font-weight:bold; font-size:18px;"></tbody>
+        </table>
+    </div>
+</div>
+    
 <div id="app-content" class="hidden">
     <div class="container">
         <div id="unit-notification" class="hidden no-print" style="background:var(--danger); color:white; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
@@ -597,8 +646,94 @@ async function generateMonthlyReport() {
         Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات لتجميع الحصيلة", "error");
     }
 }
+
+// تعبئة السنوات تلقائياً عند التحميل
+(function fillYears() {
+    const yearSelect = document.getElementById("report-year");
+    for(let i=2025; i<=2030; i++) {
+        let opt = document.createElement("option"); opt.value = i; opt.innerText = i;
+        yearSelect.appendChild(opt);
+    }
+})();
+
+async function generateMonthlyReport() {
+    const year = document.getElementById("report-year").value;
+    const month = document.getElementById("report-month").value;
+    const monthName = document.getElementById("report-month").options[document.getElementById("report-month").selectedIndex].text;
+
+    Swal.fire({ title: 'جاري جمع البيانات من السحابة...', allowOutsideClick: false, didOpen: () => { Swal.showLoading(); } });
+
+    try {
+        const snapshot = await db.ref('data').once('value');
+        const allData = snapshot.val() || {};
+        let monthlyTotal = new Array(16).fill(0);
+        let found = false;
+
+        Object.keys(allData).forEach(weekKey => {
+            let [y, wk] = weekKey.split('-W');
+            let d = new Date(y, 0, 1 + (wk - 1) * 7);
+            if (y === year && (d.getMonth() + 1) == month) {
+                Object.keys(allData[weekKey]).forEach(unit => {
+                    if (currentUser === "المتحكم الرئيسي" || currentUser === unit) {
+                        const daily = allData[weekKey][unit].daily;
+                        if (daily) {
+                            found = true;
+                            daily.forEach(row => { if(row) row.forEach((v, i) => monthlyTotal[i] += parseInt(v) || 0); });
+                        }
+                    }
+                });
+            }
+        });
+
+        if (!found) {
+            Swal.close();
+            return Swal.fire("تنبيه", "لا توجد بيانات مسجلة لهذا الشهر", "info");
+        }
+
+        // تعبئة النتائج
+        document.getElementById("m-report-title").innerText = `لشهر: ${monthName} ${year}`;
+        document.getElementById("m-report-unit").innerText = (currentUser === "المتحكم الرئيسي") ? "إجمالي ولاية الوادي" : "الوحدة: " + currentUser;
+        
+        let grandTotal = [1, 5, 9, 13].reduce((sum, i) => sum + monthlyTotal[i], 0);
+        let html = `<tr><td style="background:#f5f5f5;">المجموع الشهري الإجمالي</td>`;
+        monthlyTotal.forEach(v => { html += `<td>${v}</td>`; });
+        html += `<td style="background:#ffd700; color:#000;">${grandTotal}</td></tr>`;
+        
+        document.getElementById("monthly-result-body").innerHTML = html;
+        document.getElementById("monthly-display-area").classList.remove("hidden");
+        document.getElementById("btn-print-m").classList.remove("hidden");
+        Swal.close();
+    } catch (e) {
+        Swal.fire("خطأ", "فشل الاتصال بقاعدة البيانات", "error");
+    }
+}
+
+function printMonthlyReport() {
+    const content = document.getElementById("monthly-display-area").innerHTML;
+    const win = window.open('', '', 'height=800,width=1100');
+    win.document.write(`
+        <html>
+            <head>
+                <title>طباعة الحصيلة الشهرية</title>
+                <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@700;900&display=swap" rel="stylesheet">
+                <style>
+                    body { font-family: 'Cairo', sans-serif; direction: rtl; padding: 10mm; }
+                    @page { size: A4 landscape; margin: 5mm; }
+                    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+                    th, td { border: 2.5px solid #000; padding: 8px 2px; text-align: center; }
+                    th { background: #1a237e !important; color: white !important; font-size: 14px; }
+                    .sub-head { background: #eee !important; color: #000 !important; font-size: 12px; }
+                </style>
+            </head>
+            <body>\${content}</body>
+        </html>
+    `);
+    win.document.close();
+    setTimeout(() => { win.print(); win.close(); }, 500);
+}    
 </script>
 </body>
 </html>
+
 
 
