@@ -43,8 +43,8 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 @media print {
     @page { size: A4 landscape; margin: 1mm !important; }
     .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #master-notif-panel, #unit-notification { display: none !important; }
-    .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; }
-    .print-section { page-break-after: always; display: block; width: 100% !important; }
+    .container { zoom: 90% !important; width: 90% !important; padding: 0 !important; }
+    .print-section { page-break-after: always; display: block; width: 90% !important; }
     .editable { border: none !important; background: transparent !important; box-shadow: none !important; width: 100% !important; font-size: 18px !important; color: black !important; }
 }
 </style>
@@ -600,6 +600,7 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
+
 
 
 
