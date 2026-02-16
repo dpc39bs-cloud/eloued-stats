@@ -12,14 +12,26 @@
 <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
 
 <style>
-    /* ألوان رؤوس العائلات */
-.head-ambulance { background-color: #2e7d32 !important; } /* أخضر للإسعاف */
-.head-traffic { background-color: #ef6c00 !important; }   /* برتقالي للحوادث */
-.head-fire { background-color: #c62828 !important; }      /* أحمر للحرائق */
-.head-other { background-color: #1565c0 !important; }     /* أزرق للمختلفة */
+    /* ألوان الأعمدة حسب النوع */
+.count-col { background-color: #e3f2fd !important; }     /* أزرق فاتح (ع ع) */
+.sub-total-col { background-color: #f1f8e9 !important; } /* أخضر فاتح (ع ت) */
+.medic-col { background-color: #fffde7 !important; }     /* أصفر فاتح (مسعف) */
+.death-col { background-color: #ffebee !important; }     /* أحمر فاتح (وفاة) */
 
-/* تمييز أعمدة المجموع الفرعي (ع ت) داخل الجدول */
-.sub-total-col { background-color: #f0f4f7 !important; font-weight: 900; }
+/* ضبط مظهر المدخلات لتتناسق مع لون الخلية */
+.editable { 
+    background: transparent !important; 
+    border: none !important; 
+    width: 100%; 
+    text-align: center; 
+}
+/* تأكد من ظهور الألوان عند الطباعة */
+@media print {
+    .count-col, .sub-total-col, .medic-col, .death-col {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+    }
+}
 /* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
@@ -122,22 +134,15 @@ th { background: var(--primary) !important; color: white !important; font-size: 
                     <div>مكتب الإحصاء</div>
                 </div>
                 <table id="daily-table">
-                   <thead>
-    <tr>
-        <th rowspan="2" style="width:12%">التاريخ</th>
-        <th colspan="4" class="head-ambulance">الإسـعاف</th>
-        <th colspan="4" class="head-traffic">حوادث المرور</th>
-        <th colspan="4" class="head-fire">الحرائق</th>
-        <th colspan="4" class="head-other">مختلفة</th>
-        <th rowspan="2" style="width:6%">المجموع</th>
-    </tr>
-    <tr class="sub-head">
-        <th>ع ع</th><th class="sub-total-col">ع ت</th><th>مسعف</th><th>وفاة</th>
-        <th>ع ع</th><th class="sub-total-col">ع ت</th><th>مسعف</th><th>وفاة</th>
-        <th>ع ع</th><th class="sub-total-col">ع ت</th><th>مسعف</th><th>وفاة</th>
-        <th>ع ع</th><th class="sub-total-col">ع ت</th><th>مسعف</th><th>وفاة</th>
-    </tr>
-</thead>
+                    <thead>
+                        <tr><th rowspan="2" style="width:12%">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
+                        <tr class="sub-head">
+    <th class="count-col">ع ع</th><th class="sub-total-col">ع ت</th><th class="medic-col">مسعف</th><th class="death-col">وفاة</th>
+    <th class="count-col">ع ع</th><th class="sub-total-col">ع ت</th><th class="medic-col">مسعف</th><th class="death-col">وفاة</th>
+    <th class="count-col">ع ع</th><th class="sub-total-col">ع ت</th><th class="medic-col">مسعف</th><th class="death-col">وفاة</th>
+    <th class="count-col">ع ع</th><th class="sub-total-col">ع ت</th><th class="medic-col">مسعف</th><th class="death-col">وفاة</th>
+</tr>
+                    </thead>
                     <tbody id="daily-body"></tbody>
                     <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;"></tfoot>
                 </table>
@@ -324,26 +329,81 @@ async function saveData(){
 }
 
 // دالة جلب البيانات السحابية
+// دالة جلب البيانات السحابية وبناء الجداول مع التلوين
 async function renderSystem(){
     let days = getWeekDays(currentWeek);
     document.getElementById("week-info").innerText = `من الأحد ${days[0]} إلى السبت ${days[6]}`;
     
-    // محاولة جلب البيانات من السحابة
+    // محاولة جلب البيانات من السحابة (Firebase)
     const snapshot = await db.ref('data/' + currentWeek).once('value');
     const cloudData = snapshot.val() || {};
 
+    // 1. بناء جدول الحصيلة اليومية (Daily Table)
     let dBody = document.getElementById("daily-body"); dBody.innerHTML = "";
     for(let i=0; i<7; i++){
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f9f9f9;">${days[i]}</td>`;
+        
         for(let j=0; j<16; j++){
-            // إضافة كلاس d-val للتمكن من قراءتها برمجياً للمتحكم الرئيسي
-            if(currentUser === "المتحكم الرئيسي") tr += `<td class="d-val" data-day="${i}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
-            else tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+            // تحديد الكلاس اللوني تلقائياً بناءً على العمود
+            let columnClass = ["count-col", "sub-total-col", "medic-col", "death-col"][j % 4];
+            
+            if(currentUser === "المتحكم الرئيسي") {
+                tr += `<td class="d-val ${columnClass}" data-day="${i}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
+            } else {
+                tr += `<td class="${columnClass}"><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+            }
         }
-        tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; dBody.innerHTML += tr;
+        tr += `<td style="background:#fff3e0; font-weight:900;" class="d-row-total">0</td></tr>`; 
+        dBody.innerHTML += tr;
     }
 
+    // 2. بناء جدول البلديات (Municipality Table)
+    let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
+    let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
+    
+    munis.forEach(m => {
+        let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
+        let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
+        
+        for(let j=0; j<16; j++){
+            // تحديد الكلاس اللوني تلقائياً بناءً على العمود
+            let columnClass = ["count-col", "sub-total-col", "medic-col", "death-col"][j % 4];
+            
+            if(currentUser === "المتحكم الرئيسي") {
+                tr += `<td class="m-val ${columnClass}" data-muni="${m}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
+            } else {
+                tr += `<td class="${columnClass}"><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+            }
+        }
+        tr += `<td style="background:#fff3e0; font-weight:900;" class="m-row-total">0</td></tr>`; 
+        mBody.innerHTML += tr;
+    });
+    
+    // تشغيل الحسابات فوراً لتحديث المجاميع
+    calculate();
+}
+    // 2. بناء جدول البلديات
+    let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
+    let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
+    munis.forEach(m => {
+        let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
+        let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
+        for(let j=0; j<16; j++){
+            // تحديد الكلاس اللوني بناءً على رقم العمود
+            let columnClass = ["count-col", "sub-total-col", "medic-col", "death-col"][j % 4];
+            
+            if(currentUser === "المتحكم الرئيسي") 
+                tr += `<td class="m-val ${columnClass}" data-muni="${m}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
+            else 
+                tr += `<td class="${columnClass}"><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
+        }
+        tr += `<td style="background:#fff3e0; font-weight:900;" class="m-row-total">0</td></tr>`; mBody.innerHTML += tr;
+    });
+    
+    // استدعاء الحساب فوراً لتحديث المجاميع والألوان
+    calculate();
+}
     let mBody = document.getElementById("muni-body"); mBody.innerHTML = "";
     let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
     munis.forEach(m => {
@@ -620,17 +680,3 @@ async function generateMonthlyReport() {
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
