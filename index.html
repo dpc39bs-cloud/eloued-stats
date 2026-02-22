@@ -253,10 +253,30 @@ const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["�
 let currentUser = ""; let currentWeek = "";
 
 window.onload = function() {
-    // تثبيت الأسبوع رقم 7 يدوياً كما طلبت
-    currentWeek = "2026-W8"; 
+    // دالة حساب الأسبوع السابق (الأحد - السبت) تلقائياً
+    function getAutoPreviousWeek() {
+        const now = new Date();
+        // طرح 7 أيام للحصول على تاريخ الأسبوع الماضي
+        const pastDate = new Date(now.getTime());
+        pastDate.setDate(now.getDate() - 7);
+        
+        const year = pastDate.getFullYear();
+        const firstDayOfYear = new Date(year, 0, 1);
+        
+        // حساب عدد الأيام المنقضية
+        const days = Math.floor((pastDate - firstDayOfYear) / (24 * 60 * 60 * 1000));
+        
+        // حساب رقم الأسبوع (نظام الأحد كأول يوم في الأسبوع)
+        const weekNumber = Math.ceil((days + firstDayOfYear.getDay() + 1) / 7);
+        
+        // تنسيق النتيجة لتكون YYYY-Www (مثلاً 2026-W08)
+        return year + "-W" + (weekNumber < 10 ? "0" + weekNumber : weekNumber);
+    }
+
+    // تعيين القيمة تلقائياً بدلاً من التثبيت اليدوي
+    currentWeek = getAutoPreviousWeek(); 
     
-    // تحديث واجهة اختيار الأسبوع لتظهر 06
+    // تحديث واجهة اختيار الأسبوع لتظهر القيمة المحسوبة تلقائياً
     document.getElementById("week-picker").value = currentWeek;
     
     const userSelect = document.getElementById("user-role");
@@ -272,6 +292,7 @@ window.onload = function() {
     updateTicker(); 
     loadArchive();
 };
+
 async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
@@ -694,6 +715,7 @@ async function getMonthly() {
 </script>
 </body>
 </html>
+
 
 
 
