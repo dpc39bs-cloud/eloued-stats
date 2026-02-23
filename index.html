@@ -1,25 +1,29 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head>
-<meta charset="UTF-8">
-<title>منظومة الحصيلة الرقمية - ولاية الوادي</title>
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js"></script>
-
-<style>
-/* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
+  <head>
+    <meta charset="UTF-8" />
+    <title>
+      منظومة الحصيلة الرقمية - ولاية الوادي
+    </title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11">
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js">
+    </script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-database-compat.js">
+    </script>
+    <style>
+      /* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
 :root { --primary:#1a237e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
 body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
 .hidden { display: none !important; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
 .container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
-#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://i.ibb.co/twcywxj9/22.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
 .header-official { text-align: center; color: white; margin-bottom: 15px; line-height: 1.2; }
 .header-official h1 { margin: 0; font-size: 2.5rem; font-weight: 900; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 .header-official h2 { margin: 5px 0; font-size: 1.8rem; font-weight: 700; color: #ffd700; }
@@ -34,11 +38,13 @@ table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 2.5
 th, td { border: 2px solid #000; padding: 6px 2px; text-align: center; vertical-align: middle; }
 th { background: var(--primary) !important; color: white !important; font-size: 14px; font-weight: 700; }
 .sub-head { background: #f1f3f4 !important; font-size: 11px; font-weight: 700; }
-.editable { font-family: 'Cairo'; width: 92%; border: 1px solid #ccc; text-align: center; font-weight: 700; padding: 5px; font-size: 17px; border-radius: 4px; outline: none; }
+.editable { font-family: 'Cairo'; width: 92%; border: none; background: transparent; text-align: center; font-weight: 700; padding: 5px; font-size: 17px; outline: none; }
 .btn { font-family: 'Cairo'; padding: 12px 20px; border: none; border-radius: 10px; cursor: pointer; font-weight: 700; margin: 5px; color: white; display: inline-flex; align-items: center; gap: 8px; transition: 0.3s; }
 .stats-ticker { position: fixed; bottom: 0; width: 100%; background: rgba(0,0,0,0.9); color: #ffd700; padding: 12px 0; font-weight: 700; z-index: 9999; }
 .ticker-content { display: inline-block; white-space: nowrap; animation: ticker 40s linear infinite; }
 @keyframes ticker { from { transform: translateX(-100%); } to { transform: translateX(100%); } }
+@keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.5; transform: scale(1.2); } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); } 20%, 40%, 60%, 80% { transform: translateX(10px); } }
 
 @media print {
     @page { size: A4 landscape; margin: 5mm !important; }
@@ -47,197 +53,640 @@ th { background: var(--primary) !important; color: white !important; font-size: 
     .print-section { page-break-after: always; display: block; width: 100% !important; }
     .editable { border: none !important; background: transparent !important; box-shadow: none !important; width: 100% !important; font-size: 18px !important; color: black !important; }
 }
-</style>
-</head>
-<body>
-
-<div class="stats-ticker no-print"><div class="ticker-content" id="ticker-text">تحميل بيانات ولاية الوادي...</div></div>
-
-<div id="login-page">
-    <div class="header-official no-print">
-        <h1>الجمهورية الجزائرية الديمقراطية الشعبية</h1>
-        <h2>مديرية الحماية المدنية لولاية الوادي</h2>
-        <h3>مصلحة الوقايـــــــــة</h3>
+    </style>
+  </head>
+  <body>
+    <div class="stats-ticker no-print">
+      <div class="ticker-content" id="ticker-text">
+        تحميل بيانات ولاية الوادي...
+      </div>
     </div>
-    <div class="clock-box no-print">
-        <p id="live-clock"></p>
-        <p id="live-date"></p>
-    </div>
-    <div class="login-card no-print">
-        <h2 style="color: var(--primary); margin:0 0 10px 0; font-weight: 900; border-bottom: 3px solid var(--danger); display: inline-block; padding-bottom: 5px;">منظومة الحصيلة الرقمية</h2>
-        <select id="user-role" class="input-field" style="margin-bottom: 10px; border: 2px solid var(--primary);"></select>
-        <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور" style="margin-bottom: 15px; border: 2px solid var(--primary);">
-        <button onclick="login()" style="background: var(--primary); width: 100%; padding: 12px; border-radius: 10px; font-size: 1.1rem; border:none; color:white; cursor:pointer; font-weight: 900; font-family:'Cairo'; transition: 0.3s;">دخول</button>
-        <div style="font-size: 11px; color: #777; margin-top: 10px; font-weight: 600;">إعداد الملازم أول: بن خليفة بدر الدين</div>
-    </div>
-</div>
-
-<div id="app-content" class="hidden">
-    <div class="container">
-        <div class="no-print" style="background:#f0f4f8; padding:15px; border-radius:10px; border:2px solid #1a237e; margin-bottom:20px;">
-    <h4 style="margin:0 0 10px 0; color:#1a237e;">استخراج الحصيلة الشهرية:</h4>
-    <div style="display: flex; gap: 10px; align-items: center;">
-        <select id="m-year" class="input-field" style="width:120px; margin:0;"></select>
-        <select id="m-month" class="input-field" style="width:120px; margin:0;">
-            <option value="1">جانفي</option><option value="2">فيفري</option><option value="3">مارس</option>
-            <option value="4">أفريل</option><option value="5">ماي</option><option value="6">جوان</option>
-            <option value="7">جويلية</option><option value="8">أوت</option><option value="9">سبتمبر</option>
-            <option value="10">أكتوبر</option><option value="11">نوفمبر</option><option value="12">ديسمبر</option>
-        </select>
-        <button onclick="getMonthly()" class="btn" style="background:#1a237e; margin:0;">إظهار الحصيلة</button>
-        <button onclick="window.print()" class="btn" style="background:#2e7d32; margin:0;">طباعة (A4 عرضي)</button>
-    </div>
-</div>
-        <div id="monthly-report-area" class="hidden" style="margin-top: 20px;">
-    <div class="print-section" style="border: 2px solid #000; padding: 15px;">
-        <h3 id="m-report-title" style="text-align: center; background: #eee; padding: 10px; border: 2px solid #000; margin-bottom: 10px;">
-            حصيلة النشاط لشهر: ...
+    <div id="login-page">
+      <div class="header-official no-print">
+        <h1>
+          الجمهورية الجزائرية الديمقراطية الشعبية
+        </h1>
+        <h2>
+          مديرية الحماية المدنية لولاية الوادي
+        </h2>
+        <h3>
+          مصلحة الوقايـــــــــة
         </h3>
-        <table>
-            <thead>
+      </div>
+      <div class="clock-box no-print">
+        <p id="live-clock">
+        </p>
+        <p id="live-date">
+        </p>
+      </div>
+      <div class="login-card no-print">
+        <h2 style="color: var(--primary); margin:0 0 10px 0; font-weight: 900; border-bottom: 3px solid var(--danger); display: inline-block; padding-bottom: 5px;">
+          منظومة الحصيلة الرقمية
+        </h2>
+        
+        <!-- مؤشر حالة الاتصال -->
+        <div id="connection-status" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin-bottom: 15px; padding: 8px; background: #f5f5f5; border-radius: 8px;">
+          <div id="status-dot" style="width: 12px; height: 12px; border-radius: 50%; background: #ffc107; animation: pulse 1.5s infinite;"></div>
+          <span id="status-text" style="font-size: 13px; font-weight: 700; color: #666;">جاري الاتصال بقاعدة البيانات...</span>
+        </div>
+        
+        <select id="user-role" class="input-field" style="margin-bottom: 10px; border: 2px solid var(--primary);">
+        </select>
+        <input type="password" id="pass-code" class="input-field" placeholder="كلمة المرور" style="margin-bottom: 15px; border: 2px solid var(--primary);" onkeypress="if(event.key==='Enter') login()" />
+        <button id="login-btn" onclick="login()" style="background: var(--primary); width: 100%; padding: 12px; border-radius: 10px; font-size: 1.1rem; border:none; color:white; cursor:pointer; font-weight: 900; font-family:'Cairo'; transition: 0.3s;" disabled>
+          <i class="fa-solid fa-spinner fa-spin"></i> انتظر...
+        </button>
+        <div style="font-size: 11px; color: #777; margin-top: 10px; font-weight: 600;">
+          إعداد الملازم أول: بن خليفة بدر الدين
+        </div>
+      </div>
+    </div>
+    <div id="app-content" class="hidden">
+      <div class="container">
+        <div class="no-print" style="background:#f0f4f8; padding:15px; border-radius:10px; border:2px solid #1a237e; margin-bottom:20px;">
+          <h4 style="margin:0 0 10px 0; color:#1a237e;">
+            استخراج الحصيلة الشهرية:
+          </h4>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="m-year" class="input-field" style="width:120px; margin:0;">
+            </select>
+            <select id="m-month" class="input-field" style="width:120px; margin:0;">
+              <option value="1">
+                جانفي
+              </option>
+              <option value="2">
+                فيفري
+              </option>
+              <option value="3">
+                مارس
+              </option>
+              <option value="4">
+                أفريل
+              </option>
+              <option value="5">
+                ماي
+              </option>
+              <option value="6">
+                جوان
+              </option>
+              <option value="7">
+                جويلية
+              </option>
+              <option value="8">
+                أوت
+              </option>
+              <option value="9">
+                سبتمبر
+              </option>
+              <option value="10">
+                أكتوبر
+              </option>
+              <option value="11">
+                نوفمبر
+              </option>
+              <option value="12">
+                ديسمبر
+              </option>
+            </select>
+            <button onclick="getMonthly()" class="btn" style="background:#1a237e; margin:0;">
+              إظهار الحصيلة
+            </button>
+            <button onclick="window.print()" class="btn" style="background:#2e7d32; margin:0;">
+              طباعة (A4 عرضي)
+            </button>
+          </div>
+        </div>
+        <div id="monthly-report-area" class="hidden" style="margin-top: 20px;">
+          <div class="print-section" style="border: 2px solid #000; padding: 15px;">
+            <h3 id="m-report-title" style="text-align: center; background: #eee; padding: 10px; border: 2px solid #000; margin-bottom: 10px;">
+              حصيلة النشاط لشهر: ...
+            </h3>
+            <table>
+              <thead>
                 <tr>
-                    <th rowspan="2">البيان</th>
-                    <th colspan="4">الإسعاف</th>
-                    <th colspan="4">حوادث المرور</th>
-                    <th colspan="4">الحرائق</th>
-                    <th colspan="4">مختلفة</th>
-                    <th rowspan="2">ع ت</th>
+                  <th rowspan="2">
+                    البيان
+                  </th>
+                  <th colspan="4">
+                    الإسعاف
+                  </th>
+                  <th colspan="4">
+                    حوادث المرور
+                  </th>
+                  <th colspan="4">
+                    الحرائق
+                  </th>
+                  <th colspan="4">
+                    مختلفة
+                  </th>
+                  <th rowspan="2">
+                    ع ت
+                  </th>
                 </tr>
                 <tr style="font-size: 10px; background: #f0f0f0; color: #000;">
-                    <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                    <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                    <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                    <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
                 </tr>
-            </thead>
-            <tbody id="m-result-body">
-                </tbody>
-        </table>
-    </div>
-</div>
+              </thead>
+              <tbody id="m-result-body">
+              </tbody>
+            </table>
+          </div>
+        </div>
         <div id="unit-notification" class="hidden no-print" style="background:var(--danger); color:white; padding:15px; border-radius:12px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <span><i class="fa-solid fa-bell"></i> تنبيه: <span id="notif-text"></span></span>
-            <button onclick="clearNotif()" style="background:white; color:red; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">إغلاق</button>
+          <span>          <i class="fa-solid fa-bell"></i>
+          تنبيه:
+          <span id="notif-text"></span>
+</span>
+          <button onclick="clearNotif()" style="background:white; color:red; border:none; padding:5px 10px; border-radius:5px; cursor:pointer; font-weight:bold;">
+            إغلاق
+          </button>
         </div>
         <div id="master-clock-bar" class="internal-clock-bar hidden no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div><i class="fa-solid fa-user-gear"></i> لوحة التحكم الرئيسي</div>
-            <div id="m-time-box" style="font-weight:900; font-size:20px;"></div>
+          <div>
+            <i class="fa-solid fa-user-gear"></i>
+            لوحة التحكم الرئيسية
+          </div>
+          <div id="m-time-box" style="font-weight:900; font-size:20px;">
+          </div>
         </div>
         <div id="master-notif-panel" class="hidden no-print" style="background: #fff; border: 2px solid var(--primary); padding: 15px; border-radius: 15px; margin-bottom: 20px;">
-            <div style="display: flex; gap: 10px;">
-                <select id="notif-target" class="input-field" style="width: 25%;"></select>
-                <input type="text" id="notif-msg" class="input-field" style="width: 60%;" placeholder="إرسال رسالة...">
-                <button onclick="sendNotif()" class="btn" style="background: var(--primary); width: 15%; margin:0;">إرسال</button>
+          <div style="display: flex; gap: 10px;">
+            <select id="notif-target" class="input-field" style="width: 25%;">
+            </select>
+            <input type="text" id="notif-msg" class="input-field" style="width: 60%;" placeholder="إرسال رسالة..." />
+            <button onclick="sendNotif()" class="btn" style="background: var(--primary); width: 15%; margin:0;">
+              إرسال
+            </button>
+          </div>
+        </div>
+        
+        <!-- لوحة النسخ الاحتياطي التلقائي - المديـــــرية فقط -->
+        <div id="backup-panel" class="hidden no-print" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 20px; margin-bottom: 20px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <i class="fa-solid fa-shield-halved" style="font-size: 24px;"></i>
+              <h3 style="margin: 0; font-size: 18px; font-weight: 900;">نظام النسخ الاحتياطي</h3>
             </div>
+            <div id="backup-status-indicator" style="display: flex; align-items: center; gap: 8px; background: rgba(255,255,255,0.2); padding: 8px 15px; border-radius: 20px; backdrop-filter: blur(10px);">
+              <div id="backup-dot" style="width: 10px; height: 10px; border-radius: 50%; background: #4caf50; box-shadow: 0 0 10px #4caf50;"></div>
+              <span id="backup-status-text" style="font-size: 13px; font-weight: 700;">جاهز</span>
+            </div>
+          </div>
+          
+          <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 15px;">
+            <div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 12px; backdrop-filter: blur(10px);">
+              <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">آخر نسخة احتياطية</div>
+              <div id="last-backup-time" style="font-size: 16px; font-weight: 900;">لم يتم الحفظ بعد</div>
+              <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">💾 جهاز | ☁️ سحابة</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 12px; backdrop-filter: blur(10px);">
+              <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">الحالة</div>
+              <div id="auto-backup-status" style="font-size: 16px; font-weight: 900;">مفعّل</div>
+              <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">🚪 عند الخروج</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.15); padding: 15px; border-radius: 12px; backdrop-filter: blur(10px);">
+              <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">عدد النسخ</div>
+              <div id="backup-count" style="font-size: 16px; font-weight: 900;">0</div>
+              <div style="font-size: 11px; opacity: 0.8; margin-top: 5px;">📦 محفوظة</div>
+            </div>
+          </div>
+          
+          <div style="display: flex; gap: 10px;">
+            <button onclick="openBackupManager()" class="btn" style="background: white; color: #667eea; flex: 1; margin: 0; justify-content: center; font-weight: 900;">
+              <i class="fa-solid fa-sliders"></i> إدارة النسخ الاحتياطية
+            </button>
+          </div>
         </div>
         <div id="status-panel" class="hidden no-print" style="background:#fff; border:2px solid var(--primary); padding:15px; margin-bottom:20px; border-radius:15px;">
-            <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;"></div>
+          <div id="status-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 12px;">
+          </div>
         </div>
         <div id="unit-clock-bar" class="internal-clock-bar no-print" style="background:#f8f9fa; border:1px solid #dee2e6; padding:12px 25px; border-radius:15px; margin-bottom:20px; display:flex; justify-content:space-between; align-items:center;">
-            <div><i class="fa-solid fa-clock"></i> التوقيت</div>
-            <div id="u-time-box" style="font-weight:900; font-size:20px;"></div>
+          <div>
+            <i class="fa-solid fa-clock"></i>
+            التوقيت
+          </div>
+          <div id="u-time-box" style="font-weight:900; font-size:20px;">
+          </div>
         </div>
-<div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
-    <label style="font-weight: 800; font-size: 18px;">الأسبوع: </label>
-    <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()">
-</div>
+        <div class="no-print" style="text-align:center; margin-bottom: 20px; background: #e3f2fd; padding: 15px; border-radius: 12px;">
+          <label style="font-weight: 800; font-size: 18px;">
+            الأسبوع:
+          </label>
+          <input type="week" id="week-picker" style="font-family:'Cairo'; padding: 8px;" onchange="changeWeek()" />
+        </div>
         <div id="capture-area">
-            <div class="print-section">
-                <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
-                    <div>مديرية الحماية المدنية<br>لولاية الوادي</div>
-                    <div><h2 style="margin:0; font-weight: 900;">جدول النشاطات العملية</h2><div id="week-info" style="font-weight:700; color:blue;"></div></div>
+          <div class="print-section">
+            <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
+              <div>
+                مديرية الحماية المدنية
+                <br />
+                لولاية الوادي
+              </div>
+              <div>
+                <h2 style="margin:0; font-weight: 900;">
+                  حصيلة النشاط اليومي
+                </h2>
+                <div><h2 style="margin:0; font-weight: 900;">جدول النشاطات العملية</h2><div id="week-info" style="font-weight:700; color:blue;"></div></div>
                     <div><h2 style="margin:0; font-weight: 500;">الحصيلة الاسبوعية</h2><div  id="user-tag" style="font-weight:500; color:blue;"></div></div>
                     <div>مكتب الاحصاء</div>
-                </div>
-                <table id="daily-table">
-                    <thead>
-                        <tr><th rowspan="2" style="width:12%">التاريخ</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
-                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
-                    </thead>
-                    <tbody id="daily-body"></tbody>
-                    <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;"></tfoot>
-                </table>
             </div>
-            <div class="print-section">
-                <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
-                    <div>مديرية الحماية المدنية<br>لولاية الوادي</div>
-                    <div><h2 style="margin:0; font-weight: 900;">جدول النشاطات العملية</h2><div id="week-info" style="font-weight:700; color:blue;"></div></div>
+            <table id="daily-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:12%">
+                    التاريخ
+                  </th>
+                  <th colspan="4">
+                    الإسعاف
+                  </th>
+                  <th colspan="4">
+                    حوادث المرور
+                  </th>
+                  <th colspan="4">
+                    الحرائق
+                  </th>
+                  <th colspan="4">
+                    مختلفة
+                  </th>
+                  <th rowspan="2" style="width:6%">
+                    ع ت
+                  </th>
+                </tr>
+                <tr class="sub-head">
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="daily-body">
+              </tbody>
+              <tfoot id="daily-foot" style="background:#e8f5e9; font-weight:900;">
+              </tfoot>
+            </table>
+          </div>
+          <div class="print-section">
+            <div class="print-header" style="display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; text-align: center; border: 2.5px solid #000; padding: 10px; margin-bottom: 10px;">
+              <div>
+                الحماية المدنية
+                <br />
+                ولاية الوادي
+              </div>
+              <div><h2 style="margin:0; font-weight: 900;">جدول النشاطات العملية</h2><div id="week-info" style="font-weight:700; color:blue;"></div></div>
                     <div><h2 style="margin:0; font-weight: 500;">حسب البلديات</h2><div  id="user-tag" style="font-weight:500; color:blue;"></div></div>
                     <div>مكتب الاحصاء</div>
-                </div>
-                <table id="muni-table">
-                    <thead>
-                        <tr><th rowspan="2" style="width:15%">البلدية</th><th colspan="4">الإسعاف</th><th colspan="4">حوادث المرور</th><th colspan="4">الحرائق</th><th colspan="4">مختلفة</th><th rowspan="2" style="width:6%">ع ت</th></tr>
-                        <tr class="sub-head"><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th><th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th></tr>
-                    </thead>
-                    <tbody id="muni-body"></tbody>
-                    <tfoot id="muni-foot" style="background:#fff3e0; font-weight:900;"></tfoot>
-                </table>
             </div>
+            <table id="muni-table">
+              <thead>
+                <tr>
+                  <th rowspan="2" style="width:15%">
+                    البلدية
+                  </th>
+                  <th colspan="4">
+                    الإسعاف
+                  </th>
+                  <th colspan="4">
+                    حوادث المرور
+                  </th>
+                  <th colspan="4">
+                    الحرائق
+                  </th>
+                  <th colspan="4">
+                    مختلفة
+                  </th>
+                  <th rowspan="2" style="width:6%">
+                    ع ت
+                  </th>
+                </tr>
+                <tr class="sub-head">
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                  <th>
+                    ع ع
+                  </th>
+                  <th>
+                    ع ت
+                  </th>
+                  <th>
+                    مسعف
+                  </th>
+                  <th>
+                    وفاة
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="muni-body">
+              </tbody>
+              <tfoot id="muni-foot" style="background:#fff3e0; font-weight:900;">
+              </tfoot>
+            </table>
+          </div>
         </div>
-
-        <div class="no-print" style="width:100%; height:320px; margin: 20px auto;"><canvas id="mainChart"></canvas></div>
+        <div class="no-print" style="width:100%; height:320px; margin: 20px auto;">
+          <canvas id="mainChart">
+          </canvas>
+        </div>
         <div id="archive-section" class="no-print" style="background:#fff; padding:20px; border-radius:15px; border:2px solid var(--primary); margin-bottom: 80px;">
-    <h3 style="margin:0 0 15px 0; color:var(--primary); font-weight: 900;">
-        <i class="fa-solid fa-box-archive"></i> أرشيف الحصائل الرقمية
-    </h3>
-    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 15px;">
-        <div>
-            <label style="display:block; font-size:12px; font-weight:bold;">1. السنة</label>
-            <select id="arc-year" class="input-field" onchange="updateMonthFilter()"></select>
-        </div>
-        <div>
-            <label style="display:block; font-size:12px; font-weight:bold;">2. الشهر</label>
-            <select id="arc-month" class="input-field" onchange="updateWeekFilter()"></select>
-        </div>
-        <div>
-            <label style="display:block; font-size:12px; font-weight:bold;">3. الأسبوع (سيظهر الجدول فوراً)</label>
-            <select id="arc-week" class="input-field" onchange="loadArchivedWeek()"></select>
-        </div>
-    </div>
-</div>
-            <div id="archive-container"></div>
-        </div>
-        <div class="no-print" style="text-align:center; padding-bottom: 100px;">
-            <button class="btn" style="background:var(--success)" onclick="saveData()"><i class="fa-solid fa-floppy-disk"></i> حفظ أونلاين ✅</button>
-            <button class="btn" style="background:#e67e22" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
-            <button class="btn" style="background:#673ab7" onclick="changeMyPassword()"><i class="fa-solid fa-key"></i> الكود</button>
-            <button id="master-reveal-btn" class="btn hidden" style="background:#f57f17" onclick="revealUnitPass()"><i class="fa-solid fa-eye"></i> كشف</button>
-            <button class="btn" style="background:#546e7a" onclick="location.reload()"><i class="fa-solid fa-door-open"></i> خروج</button>
-            <div id="monthly-report-section" class="hidden print-section" style="margin-top: 40px; border-top: 4px double #1a237e; padding-top: 20px;">
-    <div style="background:#1a237e; color:white; padding:12px; text-align:center; font-weight:900; font-size:22px; border-radius:8px 8px 0 0;">
-        <i class="fa-solid fa-calculator"></i> المجموع الإجمالي للحصيلة الشهرية
-    </div>
-    <table id="monthly-table">
-        <thead>
-            <tr>
-                <th rowspan="2" style="width:15%">البيان</th>
-                <th colspan="4">الإسعاف</th>
-                <th colspan="4">حوادث المرور</th>
-                <th colspan="4">الحرائق</th>
-                <th colspan="4">مختلفة</th>
-                <th rowspan="2" style="width:6%">ع ت</th>
-            </tr>
-            <tr class="sub-head">
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-                <th>ع ع</th><th>ع ت</th><th>مسعف</th><th>وفاة</th>
-            </tr>
-        </thead>
-        <tbody id="monthly-body" style="background: #fff;">
-            </tbody>
-    </table>
-    <div class="no-print" style="text-align:left; margin-top:10px;">
-        <button class="btn" style="background:#d32f2f; padding:5px 15px; font-size:12px;" onclick="document.getElementById('monthly-report-section').classList.add('hidden')">إخفاء الجدول ×</button>
-    </div>
-</div>
-        </div>
-    </div>
-</div>
+          
+          <!-- عنوان الأرشيف -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; flex-wrap:wrap; gap:10px;">
+            <h3 style="margin:0; color:var(--primary); font-weight:900; font-size:20px;">
+              <i class="fa-solid fa-box-archive"></i> أرشيف الحصائل الرقمية
+            </h3>
+            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+              <button onclick="setArchiveView('timeline')" id="view-timeline-btn" class="btn" style="background:var(--primary); margin:0; padding:8px 15px; font-size:13px;">
+                <i class="fa-solid fa-timeline"></i> مخطط زمني
+              </button>
+              <button onclick="setArchiveView('compare')" id="view-compare-btn" class="btn" style="background:#607d8b; margin:0; padding:8px 15px; font-size:13px;">
+                <i class="fa-solid fa-code-compare"></i> مقارنة أسبوعين
+              </button>
+              <button onclick="printArchiveReport()" class="btn" style="background:var(--success); margin:0; padding:8px 15px; font-size:13px;">
+                <i class="fa-solid fa-print"></i> طباعة التقرير
+              </button>
+            </div>
+          </div>
 
-<script>
-// إعدادات Firebase
+          <!-- فلتر السنة والشهر -->
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:20px;">
+            <div>
+              <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">📅 السنة</label>
+              <select id="arc-year" class="input-field" onchange="updateMonthFilter()" style="margin:0;">
+              </select>
+            </div>
+            <div>
+              <label style="display:block; font-size:12px; font-weight:bold; margin-bottom:5px; color:#555;">📆 الشهر</label>
+              <select id="arc-month" class="input-field" onchange="loadArchiveView()" style="margin:0;">
+              </select>
+            </div>
+          </div>
+
+          <!-- منطقة المحتوى -->
+          <div id="archive-content-area"></div>
+
+          <!-- منطقة المقارنة (مخفية بالافتراضي) -->
+          <div id="compare-area" style="display:none; margin-top:20px;">
+            <div style="background:#f8f9fa; padding:20px; border-radius:12px; border:2px dashed #607d8b;">
+              <h4 style="margin:0 0 15px 0; color:#607d8b; font-weight:900;">
+                <i class="fa-solid fa-code-compare"></i> مقارنة بين أسبوعين
+              </h4>
+              <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:15px;">
+                <div>
+                  <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">الأسبوع الأول</label>
+                  <select id="compare-week-1" class="input-field" style="margin:0;"></select>
+                </div>
+                <div>
+                  <label style="font-size:12px; font-weight:bold; display:block; margin-bottom:5px;">الأسبوع الثاني</label>
+                  <select id="compare-week-2" class="input-field" style="margin:0;"></select>
+                </div>
+              </div>
+              <button onclick="runComparison()" class="btn" style="background:#607d8b; margin:0; width:100%; justify-content:center;">
+                <i class="fa-solid fa-magnifying-glass-chart"></i> مقارنة الآن
+              </button>
+            </div>
+            <div id="comparison-result" style="margin-top:15px;"></div>
+          </div>
+
+        </div>
+        <div id="archive-container"></div>
+      </div>
+      <div class="no-print" style="text-align:center; padding-bottom: 100px;">
+        <button class="btn" style="background:var(--success)" onclick="saveData()">
+          <i class="fa-solid fa-floppy-disk"></i>
+          حفظ أونلاين ✅
+        </button>
+        <button class="btn" style="background:#e67e22" onclick="window.print()">
+          <i class="fa-solid fa-print"></i>
+          طباعة
+        </button>
+        <button class="btn" style="background:#673ab7" onclick="changeMyPassword()">
+          <i class="fa-solid fa-key"></i>
+          الكود
+        </button>
+        <button id="master-reveal-btn" class="btn hidden" style="background:#f57f17" onclick="revealUnitPass()">
+          <i class="fa-solid fa-eye"></i>
+          كشف
+        </button>
+        <button class="btn" style="background:#546e7a" onclick="location.reload()">
+          <i class="fa-solid fa-door-open"></i>
+          خروج
+        </button>
+        <div id="monthly-report-section" class="hidden print-section" style="margin-top: 40px; border-top: 4px double #1a237e; padding-top: 20px;">
+          <div style="background:#1a237e; color:white; padding:12px; text-align:center; font-weight:900; font-size:22px; border-radius:8px 8px 0 0;">
+            <i class="fa-solid fa-calculator"></i>
+            المجموع الإجمالي للحصيلة الشهرية
+          </div>
+          <table id="monthly-table">
+            <thead>
+              <tr>
+                <th rowspan="2" style="width:15%">
+                  البيان
+                </th>
+                <th colspan="4">
+                  الإسعاف
+                </th>
+                <th colspan="4">
+                  حوادث المرور
+                </th>
+                <th colspan="4">
+                  الحرائق
+                </th>
+                <th colspan="4">
+                  مختلفة
+                </th>
+                <th rowspan="2" style="width:6%">
+                  ع ت
+                </th>
+              </tr>
+              <tr class="sub-head">
+                <th>
+                  ع ع
+                </th>
+                <th>
+                  ع ت
+                </th>
+                <th>
+                  مسعف
+                </th>
+                <th>
+                  وفاة
+                </th>
+                <th>
+                  ع ع
+                </th>
+                <th>
+                  ع ت
+                </th>
+                <th>
+                  مسعف
+                </th>
+                <th>
+                  وفاة
+                </th>
+                <th>
+                  ع ع
+                </th>
+                <th>
+                  ع ت
+                </th>
+                <th>
+                  مسعف
+                </th>
+                <th>
+                  وفاة
+                </th>
+                <th>
+                  ع ع
+                </th>
+                <th>
+                  ع ت
+                </th>
+                <th>
+                  مسعف
+                </th>
+                <th>
+                  وفاة
+                </th>
+              </tr>
+            </thead>
+            <tbody id="monthly-body" style="background: #fff;">
+            </tbody>
+          </table>
+          <div class="no-print" style="text-align:left; margin-top:10px;">
+            <button class="btn" style="background:#d32f2f; padding:5px 15px; font-size:12px;" onclick="document.getElementById('monthly-report-section').classList.add('hidden')">
+              إخفاء الجدول ×
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script>
+      // إعدادات Firebase
 const firebaseConfig = {
   apiKey: "AIzaSyBxYbKWfBM-e2wE1ry_SNDSDaSi2k3IgHY",
   authDomain: "eloued-system.firebaseapp.com",
@@ -250,9 +699,1231 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 
+// فحص حالة الاتصال بقاعدة البيانات
+function checkDatabaseConnection() {
+    const statusDot = document.getElementById('status-dot');
+    const statusText = document.getElementById('status-text');
+    const loginBtn = document.getElementById('login-btn');
+    
+    // الاستماع لحالة الاتصال
+    const connectedRef = db.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+        if (snap.val() === true) {
+            // متصل بنجاح
+            statusDot.style.background = '#4caf50';
+            statusDot.style.animation = 'none';
+            statusDot.style.boxShadow = '0 0 8px #4caf50';
+            statusText.innerText = 'متصل بقاعدة البيانات ✓';
+            statusText.style.color = '#4caf50';
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="fa-solid fa-sign-in-alt"></i> دخول';
+            loginBtn.style.opacity = '1';
+            loginBtn.style.cursor = 'pointer';
+        } else {
+            // غير متصل
+            statusDot.style.background = '#f44336';
+            statusDot.style.animation = 'pulse 1s infinite';
+            statusDot.style.boxShadow = '0 0 8px #f44336';
+            statusText.innerText = 'غير متصل - تحقق من الإنترنت ⚠';
+            statusText.style.color = '#f44336';
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fa-solid fa-wifi"></i> لا يوجد اتصال';
+            loginBtn.style.opacity = '0.6';
+            loginBtn.style.cursor = 'not-allowed';
+            
+            // حفظ تلقائي عند فقدان الاتصال (للمتحكم الرئيسي فقط)
+            if (currentUser === "المديـــــرية") {
+                createAutoBackup();
+                console.log('تم الحفظ التلقائي بسبب فقدان الاتصال');
+            }
+        }
+    });
+}
+
+// مراقبة حالة الاتصال أثناء العمل
+function monitorConnectionInApp() {
+    const connectedRef = db.ref('.info/connected');
+    connectedRef.on('value', (snap) => {
+        if (snap.val() === false && currentUser === "المديـــــرية") {
+            // إنشاء نسخة احتياطية عند فقدان الاتصال
+            createAutoBackup();
+            
+            Swal.fire({
+                icon: 'warning',
+                title: 'انقطاع الاتصال',
+                text: 'تم حفظ نسخة احتياطية محلية تلقائياً',
+                timer: 3000,
+                showConfirmButton: false,
+                toast: true,
+                position: 'top-end'
+            });
+        }
+    });
+}
+
+// تشغيل فحص الاتصال عند تحميل الصفحة
+setTimeout(checkDatabaseConnection, 500);
+
 let myChart = null;
 const unitConfig = {"المديـــــرية": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
 let currentUser = ""; let currentWeek = "";
+
+// متغيرات النسخ الاحتياطي
+let backupTimer = null;
+let backupInterval = 5 * 60 * 1000; // 5 دقائق
+let nextBackupCountdown = null;
+let backupCount = 0;
+
+// نظام النسخ الاحتياطي عند الخروج
+async function initAutoBackup() {
+    // تحديث عداد النسخ بالعدد الفعلي
+    await updateBackupCount();
+    
+    // التحقق من إعدادات المستخدم
+    const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') !== 'false';
+    
+    if (autoBackupEnabled) {
+        // تفعيل الحفظ عند الخروج
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        
+        document.getElementById('auto-backup-status').innerText = 'مفعّل';
+        console.log('✅ تم تفعيل النسخ الاحتياطي عند الخروج');
+    } else {
+        document.getElementById('auto-backup-status').innerText = 'معطّل';
+        console.log('⏸️ النسخ الاحتياطي عند الخروج معطّل');
+    }
+}
+
+// دالة الحفظ عند الخروج
+function handleBeforeUnload(e) {
+    const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') !== 'false';
+    
+    if (autoBackupEnabled && currentUser === "المديـــــرية") {
+        // إنشاء نسخة احتياطية
+        createAutoBackup();
+        
+        // عرض رسالة تأكيد (اختياري)
+        // e.preventDefault();
+        // e.returnValue = '';
+    }
+}
+
+async function createAutoBackup() {
+    console.log('🔄 بدء عملية النسخ الاحتياطي التلقائي...');
+    
+    try {
+        // جلب جميع البيانات من Firebase
+        console.log('📥 جاري جلب البيانات من Firebase...');
+        const snapshot = await db.ref('data').once('value');
+        const allData = snapshot.val() || {};
+        console.log('✅ تم جلب البيانات:', Object.keys(allData).length, 'أسبوع');
+        
+        // حفظ النسخة الاحتياطية محلياً
+        const backupData = {
+            timestamp: new Date().toISOString(),
+            data: allData,
+            week: currentWeek,
+            user: currentUser
+        };
+        
+        // 1️⃣ الحفظ المحلي على الجهاز (localStorage)
+        console.log('💾 جاري الحفظ المحلي...');
+        localStorage.setItem('auto_backup_latest', JSON.stringify(backupData));
+        console.log('✅ تم الحفظ المحلي بنجاح');
+        
+        // حفظ نسخ متعددة محلياً (آخر 10 نسخ)
+        let localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+        localBackups.unshift(backupData);
+        localBackups = localBackups.slice(0, 10); // الاحتفاظ بآخر 10 نسخ فقط
+        localStorage.setItem('auto_backups', JSON.stringify(localBackups));
+        console.log('📦 عدد النسخ المحلية:', localBackups.length);
+        
+        // 2️⃣ الحفظ السحابي في Firebase
+        console.log('☁️ جاري الحفظ السحابي...');
+        const timestamp = new Date().getTime();
+        const backupKey = `backup_${timestamp}`;
+        
+        // حفظ في قسم خاص بالنسخ الاحتياطية
+        await db.ref('backups/' + backupKey).set({
+            timestamp: backupData.timestamp,
+            data: allData,
+            week: currentWeek,
+            user: currentUser,
+            backupType: 'auto'
+        });
+        console.log('✅ تم الحفظ السحابي بنجاح - المفتاح:', backupKey);
+        
+        // حفظ مرجع لآخر نسخة احتياطية
+        await db.ref('backups/latest').set({
+            timestamp: backupData.timestamp,
+            backupKey: backupKey,
+            week: currentWeek
+        });
+        
+        // حذف النسخ القديمة من Firebase (الاحتفاظ بآخر 10 فقط)
+        const allBackupsSnapshot = await db.ref('backups').once('value');
+        const allBackups = allBackupsSnapshot.val() || {};
+        const backupKeys = Object.keys(allBackups).filter(k => k.startsWith('backup_')).sort().reverse();
+        
+        console.log('📊 عدد النسخ السحابية:', backupKeys.length);
+        
+        if (backupKeys.length > 10) {
+            const oldBackups = backupKeys.slice(10);
+            console.log('🗑️ حذف', oldBackups.length, 'نسخة قديمة');
+            for (let oldKey of oldBackups) {
+                await db.ref('backups/' + oldKey).remove();
+            }
+        }
+        
+        // تحديث العداد بالعدد الفعلي (محلي + سحابي)
+        updateBackupCount();
+        
+        // تحديث وقت آخر نسخة
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('ar-DZ', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('last-backup-time').innerText = timeStr;
+        
+        // تأثير بصري للنجاح
+        showBackupSuccess('تم الحفظ (جهاز + سحابة)');
+        console.log('🎉 اكتملت عملية النسخ الاحتياطي بنجاح!');
+        
+    } catch (error) {
+        console.error('❌ خطأ في النسخ الاحتياطي:', error);
+        
+        // في حالة فشل الحفظ السحابي، نحفظ محلياً على الأقل
+        try {
+            console.log('⚠️ محاولة الحفظ المحلي فقط...');
+            const snapshot = await db.ref('data').once('value');
+            const allData = snapshot.val() || {};
+            
+            const backupData = {
+                timestamp: new Date().toISOString(),
+                data: allData,
+                week: currentWeek,
+                user: currentUser
+            };
+            
+            localStorage.setItem('auto_backup_latest', JSON.stringify(backupData));
+            
+            let localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+            localBackups.unshift(backupData);
+            localBackups = localBackups.slice(0, 10);
+            localStorage.setItem('auto_backups', JSON.stringify(localBackups));
+            
+            updateBackupCount();
+            showBackupSuccess('تم الحفظ محلياً فقط');
+            console.log('✅ تم الحفظ المحلي بنجاح (فشل السحابي)');
+        } catch (e) {
+            console.error('❌ فشل الحفظ تماماً:', e);
+            showBackupError();
+        }
+    }
+}
+
+// دالة تحديث عداد النسخ الاحتياطية
+async function updateBackupCount() {
+    try {
+        // عد النسخ المحلية
+        const localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+        const localCount = localBackups.length;
+        
+        // عد النسخ السحابية
+        let cloudCount = 0;
+        try {
+            const snapshot = await db.ref('backups').once('value');
+            const allBackups = snapshot.val() || {};
+            const backupKeys = Object.keys(allBackups).filter(k => k.startsWith('backup_'));
+            cloudCount = backupKeys.length;
+        } catch (error) {
+            console.log('تعذر جلب عدد النسخ السحابية');
+        }
+        
+        // العدد الإجمالي
+        const totalCount = localCount + cloudCount;
+        
+        // تحديث العرض
+        document.getElementById('backup-count').innerHTML = `
+            <div style="font-size: 16px; font-weight: 900;">${totalCount}</div>
+            <div style="font-size: 11px; opacity: 0.8; margin-top: 2px;">💾 ${localCount} | ☁️ ${cloudCount}</div>
+        `;
+        
+        console.log(`📊 إجمالي النسخ: ${totalCount} (محلي: ${localCount}, سحابي: ${cloudCount})`);
+        
+    } catch (error) {
+        console.error('خطأ في تحديث عداد النسخ:', error);
+    }
+}
+
+function createManualBackup() {
+    const statusText = document.getElementById('backup-status-text');
+    const statusDot = document.getElementById('backup-dot');
+    
+    statusText.innerText = 'جاري الحفظ...';
+    statusDot.style.background = '#ffc107';
+    
+    createAutoBackup();
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'تم إنشاء نسخة احتياطية',
+        text: 'تم حفظ جميع البيانات بنجاح',
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
+
+async function restoreFromBackup() {
+    // عرض خيارات الاستعادة
+    const result = await Swal.fire({
+        title: 'استعادة البيانات',
+        html: `
+            <div style="font-family: Cairo; text-align: right;">
+                <p style="font-size: 16px; margin-bottom: 20px;">اختر مصدر الاستعادة:</p>
+            </div>
+        `,
+        icon: 'question',
+        showDenyButton: true,
+        showCancelButton: true,
+        confirmButtonText: '💾 من الجهاز',
+        denyButtonText: '☁️ من السحابة',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#2196f3',
+        denyButtonColor: '#4caf50',
+        cancelButtonColor: '#9e9e9e'
+    });
+    
+    if (result.isConfirmed) {
+        // الاستعادة من النسخة المحلية
+        await restoreFromLocalBackup();
+    } else if (result.isDenied) {
+        // الاستعادة من النسخة السحابية
+        await restoreFromCloudBackup();
+    }
+}
+
+async function restoreFromLocalBackup() {
+    try {
+        const backup = localStorage.getItem('auto_backup_latest');
+        
+        if (!backup) {
+            Swal.fire('تنبيه', 'لا توجد نسخة احتياطية محلية', 'info');
+            return;
+        }
+        
+        const backupData = JSON.parse(backup);
+        const backupTime = new Date(backupData.timestamp).toLocaleString('ar-DZ');
+        
+        const confirm = await Swal.fire({
+            title: 'تأكيد الاستعادة من الجهاز',
+            html: `
+                <div style="text-align: right; font-family: Cairo;">
+                    <p><strong>📍 المصدر:</strong> نسخة محلية على الجهاز</p>
+                    <p><strong>🕐 وقت النسخة:</strong> ${backupTime}</p>
+                    <p><strong>📅 الأسبوع:</strong> ${backupData.week}</p>
+                    <p style="color: #d32f2f; font-weight: 700; margin-top: 15px;">⚠️ سيتم استبدال البيانات الحالية في السحابة</p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'استعادة',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#ff9800'
+        });
+        
+        if (confirm.isConfirmed) {
+            Swal.fire({
+                title: 'جاري الاستعادة...',
+                text: 'يتم رفع البيانات إلى السحابة',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            // استعادة البيانات إلى Firebase
+            await db.ref('data').set(backupData.data);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'تمت الاستعادة بنجاح',
+                text: 'تم استرجاع البيانات من النسخة المحلية ورفعها للسحابة',
+                confirmButtonColor: '#4caf50'
+            });
+            
+            // إعادة تحميل البيانات
+            renderSystem();
+        }
+        
+    } catch (error) {
+        Swal.fire('خطأ', 'فشلت عملية الاستعادة من الجهاز', 'error');
+        console.error(error);
+    }
+}
+
+async function restoreFromCloudBackup() {
+    try {
+        Swal.fire({
+            title: 'جاري البحث...',
+            text: 'يتم البحث عن النسخ الاحتياطية في السحابة',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        // جلب قائمة النسخ الاحتياطية من Firebase
+        const backupsSnapshot = await db.ref('backups').once('value');
+        const allBackups = backupsSnapshot.val() || {};
+        
+        const backupKeys = Object.keys(allBackups).filter(k => k.startsWith('backup_')).sort().reverse();
+        
+        if (backupKeys.length === 0) {
+            Swal.fire('تنبيه', 'لا توجد نسخ احتياطية في السحابة', 'info');
+            return;
+        }
+        
+        // إنشاء قائمة خيارات النسخ الاحتياطية
+        let optionsHtml = '<div style="max-height: 400px; overflow-y: auto; text-align: right; font-family: Cairo;">';
+        
+        for (let i = 0; i < Math.min(backupKeys.length, 10); i++) {
+            const key = backupKeys[i];
+            const backup = allBackups[key];
+            const backupTime = new Date(backup.timestamp).toLocaleString('ar-DZ');
+            const isLatest = i === 0 ? ' 🟢 (الأحدث)' : '';
+            
+            optionsHtml += `
+                <div class="backup-option" data-key="${key}" style="
+                    border: 2px solid #e0e0e0;
+                    padding: 15px;
+                    margin-bottom: 10px;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                " onmouseover="this.style.borderColor='#4caf50'; this.style.background='#f1f8f4';" 
+                   onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='white';"
+                   onclick="selectBackupForRestore('${key}')">
+                    <div style="font-weight: 700; color: #1a237e; margin-bottom: 5px;">
+                        نسخة ${i + 1}${isLatest}
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        🕐 ${backupTime}
+                    </div>
+                    <div style="font-size: 14px; color: #666;">
+                        📅 الأسبوع: ${backup.week}
+                    </div>
+                </div>
+            `;
+        }
+        
+        optionsHtml += '</div>';
+        
+        Swal.fire({
+            title: 'اختر النسخة الاحتياطية',
+            html: optionsHtml,
+            width: '600px',
+            showCancelButton: true,
+            showConfirmButton: false,
+            cancelButtonText: 'إلغاء'
+        });
+        
+    } catch (error) {
+        Swal.fire('خطأ', 'فشل جلب النسخ الاحتياطية من السحابة', 'error');
+        console.error(error);
+    }
+}
+
+async function selectBackupForRestore(backupKey) {
+    try {
+        Swal.fire({
+            title: 'جاري التحميل...',
+            allowOutsideClick: false,
+            didOpen: () => { Swal.showLoading(); }
+        });
+        
+        // جلب النسخة المحددة
+        const backupSnapshot = await db.ref('backups/' + backupKey).once('value');
+        const backup = backupSnapshot.val();
+        
+        if (!backup) {
+            Swal.fire('خطأ', 'النسخة الاحتياطية غير موجودة', 'error');
+            return;
+        }
+        
+        const backupTime = new Date(backup.timestamp).toLocaleString('ar-DZ');
+        
+        const confirm = await Swal.fire({
+            title: 'تأكيد الاستعادة من السحابة',
+            html: `
+                <div style="text-align: right; font-family: Cairo;">
+                    <p><strong>☁️ المصدر:</strong> نسخة سحابية في Firebase</p>
+                    <p><strong>🕐 وقت النسخة:</strong> ${backupTime}</p>
+                    <p><strong>📅 الأسبوع:</strong> ${backup.week}</p>
+                    <p style="color: #d32f2f; font-weight: 700; margin-top: 15px;">⚠️ سيتم استبدال البيانات الحالية</p>
+                </div>
+            `,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'استعادة',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#4caf50'
+        });
+        
+        if (confirm.isConfirmed) {
+            Swal.fire({
+                title: 'جاري الاستعادة...',
+                allowOutsideClick: false,
+                didOpen: () => { Swal.showLoading(); }
+            });
+            
+            // استعادة البيانات
+            await db.ref('data').set(backup.data);
+            
+            Swal.fire({
+                icon: 'success',
+                title: 'تمت الاستعادة بنجاح',
+                text: 'تم استرجاع البيانات من النسخة السحابية',
+                confirmButtonColor: '#4caf50'
+            });
+            
+            // إعادة تحميل البيانات
+            renderSystem();
+        }
+        
+    } catch (error) {
+        Swal.fire('خطأ', 'فشلت عملية الاستعادة من السحابة', 'error');
+        console.error(error);
+    }
+}
+
+function downloadBackup() {
+    try {
+        const backup = localStorage.getItem('auto_backup_latest');
+        
+        if (!backup) {
+            Swal.fire('تنبيه', 'لا توجد نسخة احتياطية للتنزيل', 'info');
+            return;
+        }
+        
+        const backupData = JSON.parse(backup);
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const filename = `backup_${timestamp}.json`;
+        
+        // إنشاء ملف للتنزيل
+        const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        a.click();
+        URL.revokeObjectURL(url);
+        
+        Swal.fire({
+            icon: 'success',
+            title: 'تم التنزيل',
+            text: 'تم تنزيل النسخة الاحتياطية بنجاح',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        
+    } catch (error) {
+        Swal.fire('خطأ', 'فشل تنزيل النسخة الاحتياطية', 'error');
+        console.error(error);
+    }
+}
+
+function showBackupSuccess(message = 'تم الحفظ ✓') {
+    const statusDot = document.getElementById('backup-dot');
+    const statusText = document.getElementById('backup-status-text');
+    
+    statusDot.style.background = '#4caf50';
+    statusDot.style.animation = 'pulse 0.5s';
+    statusText.innerText = message;
+    
+    setTimeout(() => {
+        statusDot.style.animation = '';
+        statusText.innerText = 'جاهز';
+    }, 3000);
+}
+
+function showBackupError() {
+    const statusDot = document.getElementById('backup-dot');
+    const statusText = document.getElementById('backup-status-text');
+    
+    statusDot.style.background = '#f44336';
+    statusText.innerText = 'فشل الحفظ';
+    
+    setTimeout(() => {
+        statusDot.style.background = '#4caf50';
+        statusText.innerText = 'جاهز';
+    }, 3000);
+}
+
+// فتح نافذة إدارة النسخ الاحتياطية
+async function openBackupManager() {
+    // جلب النسخ المحلية
+    const localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+    
+    // جلب النسخ السحابية
+    let cloudBackups = [];
+    try {
+        const snapshot = await db.ref('backups').once('value');
+        const allBackups = snapshot.val() || {};
+        const backupKeys = Object.keys(allBackups).filter(k => k.startsWith('backup_')).sort().reverse();
+        
+        cloudBackups = backupKeys.map(key => ({
+            key: key,
+            ...allBackups[key]
+        }));
+    } catch (error) {
+        console.error('خطأ في جلب النسخ السحابية:', error);
+    }
+    
+    // حالة الحفظ التلقائي
+    const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') !== 'false';
+    
+    // بناء محتوى النافذة
+    const modalHtml = `
+        <div style="font-family: Cairo; text-align: right;">
+            <!-- التبويبات -->
+            <div style="display: flex; border-bottom: 2px solid #e0e0e0; margin-bottom: 20px;">
+                <button id="tab-settings" onclick="switchBackupTab('settings')" style="
+                    flex: 1;
+                    padding: 15px;
+                    background: #667eea;
+                    color: white;
+                    border: none;
+                    border-bottom: 3px solid #667eea;
+                    cursor: pointer;
+                    font-family: Cairo;
+                    font-weight: 700;
+                    font-size: 16px;
+                    transition: 0.3s;
+                ">
+                    ⚙️ الإعدادات والتحكم
+                </button>
+                <button id="tab-local" onclick="switchBackupTab('local')" style="
+                    flex: 1;
+                    padding: 15px;
+                    background: #f5f5f5;
+                    color: #666;
+                    border: none;
+                    border-bottom: 3px solid transparent;
+                    cursor: pointer;
+                    font-family: Cairo;
+                    font-weight: 700;
+                    font-size: 16px;
+                    transition: 0.3s;
+                ">
+                    💾 النسخ المحلية (${localBackups.length})
+                </button>
+                <button id="tab-cloud" onclick="switchBackupTab('cloud')" style="
+                    flex: 1;
+                    padding: 15px;
+                    background: #f5f5f5;
+                    color: #666;
+                    border: none;
+                    border-bottom: 3px solid transparent;
+                    cursor: pointer;
+                    font-family: Cairo;
+                    font-weight: 700;
+                    font-size: 16px;
+                    transition: 0.3s;
+                ">
+                    ☁️ النسخ السحابية (${cloudBackups.length})
+                </button>
+            </div>
+            
+            <!-- محتوى الإعدادات والتحكم -->
+            <div id="content-settings" style="max-height: 500px; overflow-y: auto;">
+                <!-- حالة النسخ الاحتياطي -->
+                <div style="background: #f8f9fa; padding: 20px; border-radius: 12px; margin-bottom: 20px; border: 2px solid #667eea;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                        <div>
+                            <h3 style="margin: 0 0 5px 0; color: #667eea; font-size: 18px;">
+                                <i class="fa-solid fa-door-open"></i> الحفظ عند الخروج
+                            </h3>
+                            <p style="margin: 0; color: #666; font-size: 14px;">
+                                إنشاء نسخة احتياطية تلقائياً عند تسجيل الخروج أو إغلاق الصفحة
+                            </p>
+                        </div>
+                        <label style="position: relative; display: inline-block; width: 60px; height: 34px;">
+                            <input type="checkbox" id="auto-backup-toggle" ${autoBackupEnabled ? 'checked' : ''} 
+                                   onchange="toggleAutoBackup(this.checked)" 
+                                   style="opacity: 0; width: 0; height: 0;">
+                            <span style="
+                                position: absolute;
+                                cursor: pointer;
+                                top: 0;
+                                left: 0;
+                                right: 0;
+                                bottom: 0;
+                                background-color: ${autoBackupEnabled ? '#4caf50' : '#ccc'};
+                                transition: 0.4s;
+                                border-radius: 34px;
+                            ">
+                                <span style="
+                                    position: absolute;
+                                    content: '';
+                                    height: 26px;
+                                    width: 26px;
+                                    left: ${autoBackupEnabled ? '30px' : '4px'};
+                                    bottom: 4px;
+                                    background-color: white;
+                                    transition: 0.4s;
+                                    border-radius: 50%;
+                                "></span>
+                            </span>
+                        </label>
+                    </div>
+                    <div style="font-size: 13px; color: #666;">
+                        💡 نصيحة: قم بتفعيل هذا الخيار لضمان حفظ نسخة احتياطية عند إغلاق الصفحة
+                    </div>
+                </div>
+                
+                <!-- أزرار التحكم -->
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <button onclick="createManualBackupFromModal()" style="
+                        padding: 20px;
+                        background: linear-gradient(135deg, #4caf50 0%, #45a049 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-family: Cairo;
+                        font-weight: 900;
+                        font-size: 16px;
+                        transition: 0.3s;
+                        box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(76, 175, 80, 0.4)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(76, 175, 80, 0.3)';">
+                        <i class="fa-solid fa-download" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                        نسخ احتياطي الآن
+                    </button>
+                    
+                    <button onclick="quickRestore()" style="
+                        padding: 20px;
+                        background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-family: Cairo;
+                        font-weight: 900;
+                        font-size: 16px;
+                        transition: 0.3s;
+                        box-shadow: 0 4px 15px rgba(255, 152, 0, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(255, 152, 0, 0.4)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(255, 152, 0, 0.3)';">
+                        <i class="fa-solid fa-clock-rotate-left" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                        استعادة أحدث نسخة
+                    </button>
+                    
+                    <button onclick="downloadLatestBackup()" style="
+                        padding: 20px;
+                        background: linear-gradient(135deg, #2196f3 0%, #1976d2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-family: Cairo;
+                        font-weight: 900;
+                        font-size: 16px;
+                        transition: 0.3s;
+                        box-shadow: 0 4px 15px rgba(33, 150, 243, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(33, 150, 243, 0.4)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(33, 150, 243, 0.3)';">
+                        <i class="fa-solid fa-file-export" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                        تنزيل آخر نسخة
+                    </button>
+                    
+                    <button onclick="uploadBackupFile()" style="
+                        padding: 20px;
+                        background: linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%);
+                        color: white;
+                        border: none;
+                        border-radius: 12px;
+                        cursor: pointer;
+                        font-family: Cairo;
+                        font-weight: 900;
+                        font-size: 16px;
+                        transition: 0.3s;
+                        box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(156, 39, 176, 0.4)';"
+                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 15px rgba(156, 39, 176, 0.3)';">
+                        <i class="fa-solid fa-file-import" style="font-size: 24px; display: block; margin-bottom: 10px;"></i>
+                        استيراد نسخة خارجية
+                    </button>
+                </div>
+            </div>
+            
+            <!-- محتوى النسخ المحلية -->`
+            + generateBackupListHTML(localBackups, 'local') + `
+            
+            <!-- محتوى النسخ السحابية -->`
+            + generateBackupListHTML(cloudBackups, 'cloud') + `
+        </div>
+    `;
+    
+    Swal.fire({
+        title: '<div style="font-family: Cairo; font-weight: 900; color: #1a237e;"><i class="fa-solid fa-shield-halved"></i> إدارة النسخ الاحتياطية</div>',
+        html: modalHtml,
+        width: '900px',
+        showCloseButton: true,
+        showConfirmButton: false,
+        customClass: {
+            container: 'backup-manager-modal'
+        }
+    });
+}
+
+// دالة مساعدة لتوليد قائمة النسخ
+function generateBackupListHTML(backups, type) {
+    const isLocal = type === 'local';
+    const displayStyle = type === 'settings' ? 'block' : 'none';
+    
+    return `
+        <div id="content-${type}" style="max-height: 500px; overflow-y: auto; display: ${displayStyle};">
+            ${backups.length === 0 ? `
+                <div style="text-align: center; padding: 40px; color: #999;">
+                    <i class="fa-solid fa-${isLocal ? 'folder-open' : 'cloud'}" style="font-size: 48px; margin-bottom: 15px;"></i>
+                    <p style="font-size: 16px; font-weight: 700;">لا توجد نسخ ${isLocal ? 'محلية' : 'سحابية'}</p>
+                </div>
+            ` : backups.map((backup, index) => {
+                const backupTime = new Date(backup.timestamp).toLocaleString('ar-DZ');
+                const backupKey = isLocal ? index : backup.key;
+                return `
+                    <div style="
+                        border: 2px solid #e0e0e0;
+                        padding: 15px;
+                        margin-bottom: 10px;
+                        border-radius: 12px;
+                        background: white;
+                        transition: 0.3s;
+                    " onmouseover="this.style.borderColor='${isLocal ? '#667eea' : '#4caf50'}'; this.style.background='${isLocal ? '#f8f9ff' : '#f1f8f4'}';" 
+                       onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='white';">
+                        <div style="display: flex; justify-content: space-between; align-items: start;">
+                            <div style="flex: 1;">
+                                <div style="font-weight: 900; font-size: 16px; color: ${isLocal ? '#667eea' : '#4caf50'}; margin-bottom: 8px;">
+                                    ${index === 0 ? '🟢 ' : ''}نسخة ${isLocal ? 'محلية' : 'سحابية'} #${index + 1}
+                                </div>
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">
+                                    <i class="fa-solid fa-clock"></i> ${backupTime}
+                                </div>
+                                <div style="font-size: 14px; color: #666; margin-bottom: 5px;">
+                                    <i class="fa-solid fa-calendar"></i> الأسبوع: ${backup.week}
+                                </div>
+                                <div style="font-size: 14px; color: #666;">
+                                    <i class="fa-solid fa-user"></i> المستخدم: ${backup.user}
+                                </div>
+                                ${!isLocal ? `<div style="font-size: 12px; color: #999; margin-top: 5px;">
+                                    <i class="fa-solid fa-key"></i> ${backup.key}
+                                </div>` : ''}
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 8px;">
+                                <button onclick="restoreSingle${isLocal ? 'Local' : 'Cloud'}Backup(${isLocal ? index : "'" + backupKey + "'" })" style="
+                                    padding: 8px 15px;
+                                    background: #4caf50;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                    font-family: Cairo;
+                                    font-weight: 700;
+                                    font-size: 13px;
+                                    white-space: nowrap;
+                                ">
+                                    <i class="fa-solid fa-upload"></i> استعادة
+                                </button>
+                                <button onclick="deleteSingle${isLocal ? 'Local' : 'Cloud'}Backup(${isLocal ? index : "'" + backupKey + "'" })" style="
+                                    padding: 8px 15px;
+                                    background: #f44336;
+                                    color: white;
+                                    border: none;
+                                    border-radius: 8px;
+                                    cursor: pointer;
+                                    font-family: Cairo;
+                                    font-weight: 700;
+                                    font-size: 13px;
+                                    white-space: nowrap;
+                                ">
+                                    <i class="fa-solid fa-trash"></i> حذف
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+            
+            ${backups.length > 0 ? `
+                <div style="margin-top: 20px; padding-top: 20px; border-top: 2px solid #e0e0e0;">
+                    <button onclick="deleteAll${isLocal ? 'Local' : 'Cloud'}Backups()" style="
+                        width: 100%;
+                        padding: 15px;
+                        background: ${isLocal ? '#d32f2f' : '#c62828'};
+                        color: white;
+                        border: none;
+                        border-radius: 10px;
+                        cursor: pointer;
+                        font-family: Cairo;
+                        font-weight: 900;
+                        font-size: 16px;
+                    ">
+                        <i class="fa-solid fa-trash-can"></i> حذف جميع النسخ ${isLocal ? 'المحلية' : 'السحابية'} (${backups.length})
+                    </button>
+                </div>
+            ` : ''}
+        </div>
+    `;
+}
+
+// التبديل بين التبويبات
+function switchBackupTab(tab) {
+    const tabs = ['settings', 'local', 'cloud'];
+    const colors = {
+        'settings': '#667eea',
+        'local': '#667eea',
+        'cloud': '#4caf50'
+    };
+    
+    tabs.forEach(t => {
+        const tabBtn = document.getElementById(`tab-${t}`);
+        const content = document.getElementById(`content-${t}`);
+        
+        if (t === tab) {
+            tabBtn.style.background = colors[t];
+            tabBtn.style.color = 'white';
+            tabBtn.style.borderBottom = `3px solid ${colors[t]}`;
+            content.style.display = 'block';
+        } else {
+            tabBtn.style.background = '#f5f5f5';
+            tabBtn.style.color = '#666';
+            tabBtn.style.borderBottom = '3px solid transparent';
+            content.style.display = 'none';
+        }
+    });
+}
+
+// تفعيل/تعطيل الحفظ عند الخروج
+function toggleAutoBackup(enabled) {
+    localStorage.setItem('auto_backup_enabled', enabled);
+    
+    if (enabled) {
+        document.getElementById('auto-backup-status').innerText = 'مفعّل';
+        Swal.fire({
+            icon: 'success',
+            title: 'تم التفعيل',
+            text: 'سيتم إنشاء نسخة احتياطية تلقائياً عند تسجيل الخروج',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    } else {
+        document.getElementById('auto-backup-status').innerText = 'معطّل';
+        Swal.fire({
+            icon: 'info',
+            title: 'تم التعطيل',
+            text: 'لن يتم الحفظ التلقائي عند الخروج',
+            timer: 2000,
+            showConfirmButton: false,
+            toast: true,
+            position: 'top-end'
+        });
+    }
+}
+
+// إنشاء نسخة احتياطية من المودال
+async function createManualBackupFromModal() {
+    await createManualBackup();
+    // تحديث المودال
+    setTimeout(() => openBackupManager(), 1000);
+}
+
+// استعادة سريعة لأحدث نسخة
+async function quickRestore() {
+    // محاولة الاستعادة من السحابة أولاً، ثم المحلي
+    try {
+        const snapshot = await db.ref('backups').once('value');
+        const allBackups = snapshot.val() || {};
+        const backupKeys = Object.keys(allBackups).filter(k => k.startsWith('backup_')).sort().reverse();
+        
+        if (backupKeys.length > 0) {
+            await restoreSingleCloudBackup(backupKeys[0]);
+            return;
+        }
+    } catch (error) {
+        console.log('لا توجد نسخ سحابية، المحاولة من المحلي');
+    }
+    
+    // المحاولة من المحلي
+    const localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+    if (localBackups.length > 0) {
+        await restoreSingleLocalBackup(0);
+    } else {
+        Swal.fire('تنبيه', 'لا توجد نسخ احتياطية متاحة', 'info');
+    }
+}
+
+// تنزيل أحدث نسخة
+function downloadLatestBackup() {
+    const backup = localStorage.getItem('auto_backup_latest');
+    
+    if (!backup) {
+        Swal.fire('تنبيه', 'لا توجد نسخة احتياطية للتنزيل', 'info');
+        return;
+    }
+    
+    const backupData = JSON.parse(backup);
+    const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const filename = `backup_${timestamp}.json`;
+    
+    const blob = new Blob([JSON.stringify(backupData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    
+    Swal.fire({
+        icon: 'success',
+        title: 'تم التنزيل',
+        text: 'تم تنزيل النسخة الاحتياطية بنجاح',
+        timer: 2000,
+        showConfirmButton: false
+    });
+}
+
+// استيراد نسخة خارجية
+function uploadBackupFile() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    
+    input.onchange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        
+        try {
+            const text = await file.text();
+            const backupData = JSON.parse(text);
+            
+            // التحقق من صحة البيانات
+            if (!backupData.data || !backupData.timestamp) {
+                Swal.fire('خطأ', 'ملف النسخة الاحتياطية غير صالح', 'error');
+                return;
+            }
+            
+            const result = await Swal.fire({
+                title: 'تأكيد الاستيراد',
+                html: `<div style="font-family: Cairo; text-align: right;">
+                    <p>هل تريد استيراد هذه النسخة واستعادة البيانات؟</p>
+                    <p style="color: #666;">التاريخ: ${new Date(backupData.timestamp).toLocaleString('ar-DZ')}</p>
+                    <p style="color: #d32f2f; font-weight: 700;">⚠️ سيتم استبدال البيانات الحالية</p>
+                </div>`,
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonText: 'استيراد واستعادة',
+                cancelButtonText: 'إلغاء',
+                confirmButtonColor: '#4caf50'
+            });
+            
+            if (result.isConfirmed) {
+                await db.ref('data').set(backupData.data);
+                
+                // حفظ نسخة محلية أيضاً
+                let localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+                localBackups.unshift(backupData);
+                localBackups = localBackups.slice(0, 10);
+                localStorage.setItem('auto_backups', JSON.stringify(localBackups));
+                
+                Swal.fire('نجح', 'تم استيراد واستعادة البيانات بنجاح', 'success');
+                renderSystem();
+                openBackupManager();
+            }
+            
+        } catch (error) {
+            Swal.fire('خطأ', 'فشل قراءة الملف: ' + error.message, 'error');
+        }
+    };
+    
+    input.click();
+}
+
+// تحديث العد التنازلي في المودال
+// استعادة نسخة محلية واحدة
+async function restoreSingleLocalBackup(index) {
+    const localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+    const backup = localBackups[index];
+    
+    if (!backup) {
+        Swal.fire('خطأ', 'النسخة غير موجودة', 'error');
+        return;
+    }
+    
+    const result = await Swal.fire({
+        title: 'تأكيد الاستعادة',
+        html: `<div style="font-family: Cairo; text-align: right;">
+            <p>هل تريد استعادة هذه النسخة؟</p>
+            <p style="color: #d32f2f; font-weight: 700;">⚠️ سيتم استبدال البيانات الحالية</p>
+        </div>`,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'استعادة',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#4caf50'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            await db.ref('data').set(backup.data);
+            Swal.fire('نجح', 'تمت الاستعادة بنجاح', 'success');
+            renderSystem();
+        } catch (error) {
+            Swal.fire('خطأ', 'فشلت الاستعادة', 'error');
+        }
+    }
+}
+
+// حذف نسخة محلية واحدة
+async function deleteSingleLocalBackup(index) {
+    const result = await Swal.fire({
+        title: 'تأكيد الحذف',
+        text: 'هل تريد حذف هذه النسخة؟',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'حذف',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#f44336'
+    });
+    
+    if (result.isConfirmed) {
+        let localBackups = JSON.parse(localStorage.getItem('auto_backups') || '[]');
+        localBackups.splice(index, 1);
+        localStorage.setItem('auto_backups', JSON.stringify(localBackups));
+        
+        // تحديث العداد
+        await updateBackupCount();
+        
+        Swal.fire('تم', 'تم حذف النسخة', 'success');
+        openBackupManager(); // إعادة فتح النافذة
+    }
+}
+
+// استعادة نسخة سحابية واحدة
+async function restoreSingleCloudBackup(backupKey) {
+    try {
+        const snapshot = await db.ref('backups/' + backupKey).once('value');
+        const backup = snapshot.val();
+        
+        if (!backup) {
+            Swal.fire('خطأ', 'النسخة غير موجودة', 'error');
+            return;
+        }
+        
+        const result = await Swal.fire({
+            title: 'تأكيد الاستعادة',
+            html: `<div style="font-family: Cairo; text-align: right;">
+                <p>هل تريد استعادة هذه النسخة من السحابة؟</p>
+                <p style="color: #d32f2f; font-weight: 700;">⚠️ سيتم استبدال البيانات الحالية</p>
+            </div>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'استعادة',
+            cancelButtonText: 'إلغاء',
+            confirmButtonColor: '#4caf50'
+        });
+        
+        if (result.isConfirmed) {
+            await db.ref('data').set(backup.data);
+            Swal.fire('نجح', 'تمت الاستعادة من السحابة بنجاح', 'success');
+            renderSystem();
+        }
+    } catch (error) {
+        Swal.fire('خطأ', 'فشلت الاستعادة', 'error');
+    }
+}
+
+// حذف نسخة سحابية واحدة
+async function deleteSingleCloudBackup(backupKey) {
+    const result = await Swal.fire({
+        title: 'تأكيد الحذف',
+        text: 'هل تريد حذف هذه النسخة من السحابة؟',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'حذف',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#f44336'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            await db.ref('backups/' + backupKey).remove();
+            
+            // تحديث العداد
+            await updateBackupCount();
+            
+            Swal.fire('تم', 'تم حذف النسخة من السحابة', 'success');
+            openBackupManager(); // إعادة فتح النافذة
+        } catch (error) {
+            Swal.fire('خطأ', 'فشل الحذف', 'error');
+        }
+    }
+}
+
+// حذف جميع النسخ المحلية
+async function deleteAllLocalBackups() {
+    const result = await Swal.fire({
+        title: 'تأكيد حذف الكل',
+        html: `<div style="font-family: Cairo; text-align: right;">
+            <p style="font-size: 16px; color: #d32f2f; font-weight: 700;">⚠️ هل أنت متأكد؟</p>
+            <p>سيتم حذف جميع النسخ المحلية من جهازك</p>
+        </div>`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'حذف الكل',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#d32f2f'
+    });
+    
+    if (result.isConfirmed) {
+        localStorage.removeItem('auto_backups');
+        localStorage.removeItem('auto_backup_latest');
+        
+        // تحديث العداد
+        await updateBackupCount();
+        
+        Swal.fire('تم', 'تم حذف جميع النسخ المحلية', 'success');
+        openBackupManager();
+    }
+}
+
+// حذف جميع النسخ السحابية
+async function deleteAllCloudBackups() {
+    const result = await Swal.fire({
+        title: 'تأكيد حذف الكل من السحابة',
+        html: `<div style="font-family: Cairo; text-align: right;">
+            <p style="font-size: 16px; color: #c62828; font-weight: 700;">⛔ تحذير خطير!</p>
+            <p>سيتم حذف جميع النسخ من قاعدة البيانات</p>
+            <p style="color: #d32f2f; font-weight: 700;">هذا الإجراء لا يمكن التراجع عنه!</p>
+        </div>`,
+        icon: 'error',
+        showCancelButton: true,
+        confirmButtonText: 'حذف الكل من السحابة',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#c62828'
+    });
+    
+    if (result.isConfirmed) {
+        try {
+            await db.ref('backups').remove();
+            
+            // تحديث العداد
+            await updateBackupCount();
+            
+            Swal.fire('تم', 'تم حذف جميع النسخ من السحابة', 'success');
+            openBackupManager();
+        } catch (error) {
+            Swal.fire('خطأ', 'فشل الحذف', 'error');
+        }
+    }
+}
 
 window.onload = function() {
     // دالة حساب الأسبوع السابق (الأحد - السبت) تلقائياً
@@ -294,19 +1965,63 @@ window.onload = function() {
     updateTicker(); 
     loadArchive();
 };
-
 async function login(){
     let p = document.getElementById("pass-code").value; 
     let u = document.getElementById("user-role").value;
+    
+    if(!p) {
+        Swal.fire({
+            icon: 'warning',
+            title: 'تنبيه',
+            text: 'الرجاء إدخال كلمة المرور',
+            timer: 2000,
+            showConfirmButton: false
+        });
+        return;
+    }
+    
+    // عرض مؤشر تحميل
+    const loginBtn = document.getElementById('login-btn');
+    const originalBtnContent = loginBtn.innerHTML;
+    loginBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> جاري التحقق...';
+    loginBtn.disabled = true;
     
     // جلب كلمة المرور من Firebase أولاً، إذا لم توجد نستخدم localStorage أو الافتراضي
     const snapshot = await db.ref('passwords/' + u).once('value');
     const cloudPass = snapshot.val() || localStorage.getItem("pass_" + u) || "1111";
 
-    if(p !== cloudPass) return Swal.fire("خطأ", "كلمة المرور خاطئة", "error");
+    if(p !== cloudPass) {
+        loginBtn.innerHTML = originalBtnContent;
+        loginBtn.disabled = false;
+        
+        // تأثير اهتزاز للكارت عند خطأ كلمة المرور
+        const loginCard = document.querySelector('.login-card');
+        loginCard.style.animation = 'shake 0.5s';
+        setTimeout(() => loginCard.style.animation = '', 500);
+        
+        return Swal.fire({
+            icon: "error",
+            title: "خطأ في كلمة المرور",
+            text: "كلمة المرور غير صحيحة، حاول مرة أخرى",
+            confirmButtonColor: '#d32f2f'
+        });
+    }
     
     currentUser = u;
     currentWeek = document.getElementById("week-picker").value;
+    
+    // رسالة ترحيب جميلة
+    Swal.fire({
+        icon: 'success',
+        title: `مرحباً بك 👋`,
+        html: `<div style="font-size: 18px; font-weight: 700;">
+                  ${currentUser}
+               </div>`,
+        timer: 1500,
+        showConfirmButton: false,
+        timerProgressBar: true
+    });
+    
     document.getElementById("login-page").classList.add("hidden");
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
@@ -315,13 +2030,21 @@ async function login(){
         document.getElementById("status-panel").classList.remove("hidden");
         document.getElementById("master-clock-bar").classList.remove("hidden");
         document.getElementById("master-notif-panel").classList.remove("hidden");
+        document.getElementById("backup-panel").classList.remove("hidden");
         document.getElementById("unit-clock-bar").classList.add("hidden");
         document.getElementById("master-reveal-btn").classList.remove("hidden");
         updateStatusPanel();
+        
+        // تفعيل النسخ الاحتياطي التلقائي
+        initAutoBackup();
     } else { 
         checkNotifications(); 
     }
     renderSystem();
+    
+    // بدء مراقبة الاتصال للحفظ التلقائي
+    monitorConnectionInApp();
+    
     // هذا الجزء يوضع داخل دالة login لتغيير اسم الزر تلقائياً
 const monthlyBtn = document.getElementById('main-monthly-btn');
 if (monthlyBtn) {
@@ -331,6 +2054,9 @@ if (monthlyBtn) {
         monthlyBtn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري`;
     }
 }
+
+// تحميل الأرشيف بعد تسجيل الدخول
+loadArchive();
 }
 
 // دالة الحفظ السحابي الجديدة
@@ -504,88 +2230,525 @@ function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u
 function sendNotif() { let target = document.getElementById("notif-target").value; let msg = document.getElementById("notif-msg").value; if(!msg) return; db.ref('notifications/' + target).set(msg); Swal.fire("تم الإرسال سحابياً", "", "success"); document.getElementById("notif-msg").value = ""; }
 function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
 function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
-// --- كود الأرشيف المطور (سنة > شهر > أسبوع) ---
-let globalArchiveData = {}; 
+// ==================== نظام الأرشيف المتطور ====================
+let globalArchiveData = {};
+let currentArchiveView = 'timeline';
+let selectedArchiveWeek = null;
 
+const CATEGORIES = [
+    { label: 'الإسعاف',       color: '#4caf50', cols: [0,1,2,3]   },
+    { label: 'حوادث المرور',  color: '#ff9800', cols: [4,5,6,7]   },
+    { label: 'الحرائق',       color: '#f44336', cols: [8,9,10,11] },
+    { label: 'مختلفة',        color: '#2196f3', cols: [12,13,14,15]}
+];
+const MONTHS_AR = ["جانفي","فيفري","مارس","أفريل","ماي","جوان","جويلية","أوت","سبتمبر","أكتوبر","نوفمبر","ديسمبر"];
+
+// تحميل بيانات الأرشيف من Firebase
 async function loadArchive() {
     try {
-        // جلب البيانات من Firebase
+        console.log('📂 جاري تحميل الأرشيف من Firebase...');
         const snapshot = await db.ref('data').once('value');
         globalArchiveData = snapshot.val() || {};
-        
+
+        const keys = Object.keys(globalArchiveData);
+        console.log('✅ بيانات الأرشيف:', keys.length, 'أسبوع:', keys);
+
         const yearSelect = document.getElementById("arc-year");
-        if(!yearSelect) return; 
-        
+        if (!yearSelect) { console.warn('⚠️ عنصر arc-year غير موجود'); return; }
+
         yearSelect.innerHTML = '<option value="">-- اختر السنة --</option>';
-        
-        // استخراج السنوات وتصفيتهما
-        let years = [...new Set(Object.keys(globalArchiveData).map(w => w.split('-')[0]))];
-        years.sort().reverse().forEach(y => {
+
+        // فلترة السنوات حسب المستخدم الحالي
+        let years = new Set();
+        keys.forEach(w => {
+            if (currentUser === "المديـــــرية") {
+                years.add(w.split('-')[0]);
+            } else {
+                // الوحدة: فقط السنوات التي فيها بياناتها
+                if (globalArchiveData[w] && globalArchiveData[w][currentUser]) {
+                    years.add(w.split('-')[0]);
+                }
+            }
+        });
+
+        [...years].sort().reverse().forEach(y => {
             yearSelect.innerHTML += `<option value="${y}">${y}</option>`;
         });
-    } catch(e) { 
-        console.error("خطأ في تحميل الأرشيف:", e); 
+
+        // تعبئة قوائم المقارنة
+        fillCompareWeeks();
+        console.log('✅ تم تحميل الأرشيف بنجاح - السنوات المتاحة:', [...years]);
+
+    } catch(e) {
+        console.error("❌ خطأ في تحميل الأرشيف:", e);
     }
 }
 
+// تحديث فلتر الشهر
 function updateMonthFilter() {
     const year = document.getElementById("arc-year").value;
     const monthSelect = document.getElementById("arc-month");
     monthSelect.innerHTML = '<option value="">-- اختر الشهر --</option>';
+    if (!year) return;
     
-    if(!year) return;
-    
-    const months = ["جانفي", "فيفري", "مارس", "أفريل", "ماي", "جوان", "جويلية", "أوت", "سبتمبر", "أكتوبر", "نوفمبر", "ديسمبر"];
-    months.forEach((m, index) => {
-        monthSelect.innerHTML += `<option value="${index + 1}">${m}</option>`;
-    });
-}
-
-function updateWeekFilter() {
-    const year = document.getElementById("arc-year").value;
-    const month = document.getElementById("arc-month").value;
-    const weekSelect = document.getElementById("arc-week");
-    weekSelect.innerHTML = '<option value="">-- اختر الأسبوع --</option>';
-    
-    if(!year || !month) return;
-    
+    let months = new Set();
     Object.keys(globalArchiveData).forEach(w => {
         let [y, wk] = w.split('-W');
-        if(y === year) {
-            // نتحقق إذا كان الأسبوع يقع ضمن الشهر المختار
-            let d = new Date(year, 0, 1 + (wk - 1) * 7);
-            if(d.getMonth() + 1 == month) {
-                weekSelect.innerHTML += `<option value="${w}">الأسبوع رقم ${wk}</option>`;
-            }
+        if (y !== year) return;
+        
+        // للوحدة العادية: تحقق من وجود بياناتها
+        if (currentUser !== "المديـــــرية") {
+            if (!(globalArchiveData[w] && globalArchiveData[w][currentUser])) return;
         }
+        
+        let d = new Date(year, 0, 1 + (wk - 1) * 7);
+        months.add(d.getMonth() + 1);
+    });
+    
+    if (months.size === 0) {
+        monthSelect.innerHTML = '<option value="">لا توجد بيانات لهذه السنة</option>';
+        return;
+    }
+    
+    [...months].sort((a,b) => a-b).forEach(m => {
+        monthSelect.innerHTML += `<option value="${m}">${MONTHS_AR[m-1]}</option>`;
+    });
+
+    // إعادة تعيين الأسبوع المختار عند تغيير الشهر
+    selectedArchiveWeek = null;
+    document.getElementById('archive-content-area').innerHTML = '';
+}
+
+// تعبئة قوائم المقارنة
+function fillCompareWeeks() {
+    // للوحدة العادية: فقط الأسابيع التي فيها بياناتها
+    let weeks = Object.keys(globalArchiveData).filter(w => {
+        if (currentUser === "المديـــــرية") return true;
+        return !!(globalArchiveData[w] && globalArchiveData[w][currentUser]);
+    }).sort().reverse();
+
+    const selects = ['compare-week-1', 'compare-week-2'];
+    selects.forEach(id => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.innerHTML = '<option value="">-- اختر أسبوع --</option>';
+        weeks.forEach(w => {
+            el.innerHTML += `<option value="${w}">${w}</option>`;
+        });
     });
 }
 
-function loadArchivedWeek() {
-    const selectedWeek = document.getElementById("arc-week").value;
+// تحديد طريقة العرض
+function setArchiveView(view) {
+    currentArchiveView = view;
+    const timelineBtn = document.getElementById('view-timeline-btn');
+    const compareBtn  = document.getElementById('view-compare-btn');
+    const compareArea = document.getElementById('compare-area');
     
-    if (selectedWeek) {
-        // 1. تحديث قيمة مدخل التاريخ الرئيسي في الصفحة
-        document.getElementById("week-picker").value = selectedWeek;
-        
-        // 2. استدعاء الدالة التي تقوم بتحديث الجداول والبيانات
-        changeWeek(); 
-        
-        // 3. رسالة تأكيد للمستخدم (تظهر وتختفي بسرعة)
-        Swal.fire({
-            icon: 'success',
-            title: 'تم تحميل البيانات',
-            text: 'أسبوع: ' + selectedWeek,
-            timer: 1500,
-            showConfirmButton: false,
-            toast: true,
-            position: 'top-end'
-        });
-
-        // 4. الصعود للأعلى لمشاهدة الجدول
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (view === 'timeline') {
+        timelineBtn.style.background = 'var(--primary)';
+        compareBtn.style.background  = '#607d8b';
+        compareArea.style.display    = 'none';
+        loadArchiveView();
+    } else {
+        compareBtn.style.background  = '#1a237e';
+        timelineBtn.style.background = '#607d8b';
+        compareArea.style.display    = 'block';
+        fillCompareWeeks();
+        document.getElementById('archive-content-area').innerHTML = '';
     }
 }
+
+// تحميل عرض الأرشيف حسب الاختيار
+function loadArchiveView() {
+    const year  = document.getElementById("arc-year").value;
+    const month = document.getElementById("arc-month").value;
+    if (!year || !month) return;
+    
+    // فلترة الأسابيع: تلك التي تحتوي بيانات للمستخدم الحالي
+    let weeks = Object.keys(globalArchiveData).filter(w => {
+        let [y, wk] = w.split('-W');
+        if (y !== year) return false;
+        let d = new Date(year, 0, 1 + (wk - 1) * 7);
+        if ((d.getMonth() + 1) != month) return false;
+        
+        // للوحدات العادية: تحقق من وجود بياناتها في هذا الأسبوع
+        if (currentUser !== "المديـــــرية") {
+            return !!(globalArchiveData[w] && globalArchiveData[w][currentUser]);
+        }
+        return true;
+    }).sort();
+    
+    if (weeks.length === 0) {
+        document.getElementById('archive-content-area').innerHTML = `
+            <div style="text-align:center; padding:40px; color:#999;">
+                <i class="fa-solid fa-folder-open" style="font-size:48px; margin-bottom:15px; display:block;"></i>
+                <p style="font-size:16px; font-weight:700;">لا توجد بيانات محفوظة لهذا الشهر</p>
+                <p style="font-size:13px; color:#bbb;">تأكد من حفظ البيانات أولاً بالضغط على "حفظ أونلاين"</p>
+            </div>`;
+        return;
+    }
+    
+    renderTimeline(weeks, year, month);
+}
+
+// حساب إجماليات أسبوع معين - حسب المستخدم الحالي
+// البنية: data/2026-W07/unitName/daily/[day]/[col]
+function calcWeekTotals(weekKey) {
+    const weekData = globalArchiveData[weekKey] || {};
+    let totals = new Array(16).fill(0);
+
+    if (currentUser === "المديـــــرية") {
+        // المتحكم: يجمع كل الوحدات
+        Object.keys(weekData).forEach(unitName => {
+            if (unitName === "المديـــــرية") return;
+            const daily = (weekData[unitName] || {}).daily || {};
+            Object.values(daily).forEach(row => {
+                if (!row) return;
+                Object.entries(row).forEach(([i, v]) => {
+                    totals[parseInt(i)] += parseInt(v) || 0;
+                });
+            });
+        });
+    } else {
+        // وحدة عادية: تجمع بياناتها فقط
+        const daily = (weekData[currentUser] || {}).daily || {};
+        Object.values(daily).forEach(row => {
+            if (!row) return;
+            Object.entries(row).forEach(([i, v]) => {
+                totals[parseInt(i)] += parseInt(v) || 0;
+            });
+        });
+    }
+
+    return totals;
+}
+
+// حساب مجموع فئة معينة
+function catTotal(totals, cols) {
+    return cols.reduce((s, i) => s + (totals[i] || 0), 0);
+}
+
+// ========== عرض المخطط الزمني ==========
+function renderTimeline(weeks, year, month) {
+    // حساب البيانات لكل أسبوع
+    const weeksData = weeks.map(w => ({
+        key: w,
+        num: w.split('-W')[1],
+        totals: calcWeekTotals(w)
+    }));
+    
+    // أعلى قيمة إجمالي للرسم النسبي
+    const maxTotal = Math.max(...weeksData.map(d => catTotal(d.totals, [1,5,9,13])), 1);
+    
+    let html = `
+        <!-- بطاقات ملخص الشهر -->
+        <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:25px;">
+            ${CATEGORIES.map(cat => {
+                const monthTotal = weeksData.reduce((s, d) => s + catTotal(d.totals, cat.cols), 0);
+                return `
+                <div style="background:${cat.color}15; border:2px solid ${cat.color}; border-radius:12px; padding:15px; text-align:center;">
+                    <div style="font-size:28px; font-weight:900; color:${cat.color};">${monthTotal}</div>
+                    <div style="font-size:13px; font-weight:700; color:#555; margin-top:5px;">${cat.label}</div>
+                </div>`;
+            }).join('')}
+        </div>
+        
+        <!-- المخطط الزمني -->
+        <div style="margin-bottom:20px;">
+            <h4 style="margin:0 0 15px 0; color:var(--primary); font-weight:900;">
+                <i class="fa-solid fa-timeline"></i> 
+                المخطط الزمني - ${MONTHS_AR[month-1]} ${year}
+            </h4>
+            <div style="display:flex; gap:12px; overflow-x:auto; padding-bottom:10px;">
+                ${weeksData.map(d => {
+                    const grandTotal  = catTotal(d.totals, [1,5,9,13]);
+                    const heightPct   = Math.max(Math.round((grandTotal / maxTotal) * 100), 8);
+                    const isSelected  = selectedArchiveWeek === d.key;
+                    
+                    return `
+                    <div onclick="selectArchiveWeek('${d.key}')" style="
+                        flex: 0 0 110px;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                    ">
+                        <!-- عمود الرسم البياني -->
+                        <div style="height:120px; display:flex; align-items:flex-end; margin-bottom:8px; background:#f5f5f5; border-radius:8px; padding:5px; position:relative;">
+                            ${CATEGORIES.map(cat => {
+                                const val = catTotal(d.totals, cat.cols);
+                                const pct = grandTotal > 0 ? Math.round((val / Math.max(grandTotal,1)) * heightPct) : 0;
+                                return pct > 0 ? `<div style="
+                                    flex:1;
+                                    height:${pct * 1.1}px;
+                                    background:${cat.color};
+                                    margin:0 1px;
+                                    border-radius:4px 4px 0 0;
+                                    min-height:4px;
+                                    transition:0.3s;
+                                " title="${cat.label}: ${val}"></div>` : '';
+                            }).join('')}
+                        </div>
+                        <!-- بطاقة الأسبوع -->
+                        <div style="
+                            background: ${isSelected ? 'var(--primary)' : 'white'};
+                            color: ${isSelected ? 'white' : '#333'};
+                            border: 2px solid ${isSelected ? 'var(--primary)' : '#e0e0e0'};
+                            border-radius: 10px;
+                            padding: 10px 8px;
+                            text-align: center;
+                            box-shadow: ${isSelected ? '0 4px 15px rgba(26,35,126,0.3)' : '0 2px 8px rgba(0,0,0,0.08)'};
+                            transition: all 0.3s;
+                        " onmouseover="if('${d.key}'!==selectedArchiveWeek) { this.style.borderColor='var(--primary)'; this.style.background='#f0f4ff'; }"
+                           onmouseout="if('${d.key}'!==selectedArchiveWeek) { this.style.borderColor='#e0e0e0'; this.style.background='white'; }">
+                            <div style="font-size:11px; opacity:0.8; margin-bottom:3px;">أسبوع</div>
+                            <div style="font-size:18px; font-weight:900;">${d.num}</div>
+                            <div style="font-size:20px; font-weight:900; color:${isSelected ? '#ffd700' : 'var(--primary)'}; margin:3px 0;">${grandTotal}</div>
+                            <div style="font-size:10px; opacity:0.7;">إجمالي</div>
+                        </div>
+                    </div>`;
+                }).join('')}
+            </div>
+            
+            <!-- مفتاح الألوان -->
+            <div style="display:flex; gap:15px; margin-top:10px; flex-wrap:wrap;">
+                ${CATEGORIES.map(cat => `
+                    <div style="display:flex; align-items:center; gap:6px;">
+                        <div style="width:14px; height:14px; background:${cat.color}; border-radius:3px;"></div>
+                        <span style="font-size:12px; color:#555;">${cat.label}</span>
+                    </div>`).join('')}
+            </div>
+        </div>
+        
+        <!-- لوحة التفاصيل -->
+        <div id="archive-detail-panel"></div>
+    `;
+    
+    document.getElementById('archive-content-area').innerHTML = html;
+    
+    // عرض أول أسبوع تلقائياً (الأحدث = آخر عنصر)
+    if (weeksData.length > 0) {
+        const autoWeek = selectedArchiveWeek && weeks.includes(selectedArchiveWeek)
+            ? selectedArchiveWeek
+            : weeksData[weeksData.length - 1].key;
+        selectedArchiveWeek = autoWeek;
+        renderArchiveDetail(autoWeek);
+    }
+}
+
+// اختيار أسبوع من المخطط الزمني
+function selectArchiveWeek(weekKey) {
+    selectedArchiveWeek = weekKey;
+    const year  = document.getElementById("arc-year").value;
+    const month = document.getElementById("arc-month").value;
+    let weeks = Object.keys(globalArchiveData).filter(w => {
+        let [y, wk] = w.split('-W');
+        if (y !== year) return false;
+        let d = new Date(year, 0, 1 + (wk - 1) * 7);
+        return (d.getMonth() + 1) == month;
+    }).sort();
+    renderTimeline(weeks, year, month);
+}
+
+// ========== عرض تفاصيل الأسبوع ==========
+function renderArchiveDetail(weekKey) {
+    const totals     = calcWeekTotals(weekKey);
+    const weekNum    = weekKey.split('-W')[1];
+    const grandTotal = catTotal(totals, [1,5,9,13]);
+    const unitLabel  = currentUser === "المديـــــرية" ? "جميع الوحدات" : currentUser;
+    
+    const colLabels = ['ع ع','ع ت','مسعف','وفاة'];
+    
+    let html = `
+        <div style="background:#f8f9fa; border-radius:12px; border:2px solid var(--primary); overflow:hidden; margin-top:5px;">
+            
+            <!-- رأس اللوحة -->
+            <div style="background:var(--primary); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <div style="font-size:18px; font-weight:900;">
+                        <i class="fa-solid fa-calendar-week"></i> تفاصيل الأسبوع ${weekNum}
+                    </div>
+                    <div style="font-size:13px; opacity:0.85; margin-top:3px;">${weekKey} — ${unitLabel}</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:36px; font-weight:900; color:#ffd700;">${grandTotal}</div>
+                    <div style="font-size:12px; opacity:0.85;">إجمالي التدخلات</div>
+                </div>
+                <button onclick="loadWeekIntoMainTable('${weekKey}')" class="btn" 
+                    style="background:white; color:var(--primary); margin:0; font-size:13px;">
+                    <i class="fa-solid fa-eye"></i> عرض في الجدول الرئيسي
+                </button>
+            </div>
+            
+            <!-- بطاقات الفئات -->
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:0; border-bottom:2px solid #e0e0e0;">
+                ${CATEGORIES.map(cat => {
+                    const total = catTotal(totals, cat.cols);
+                    const cols  = cat.cols.map((ci, i) => `
+                        <div style="display:flex; justify-content:space-between; padding:4px 0; border-bottom:1px solid #eee; font-size:13px;">
+                            <span style="color:#666;">${colLabels[i]}</span>
+                            <span style="font-weight:700;">${totals[ci] || 0}</span>
+                        </div>`).join('');
+                    return `
+                    <div style="padding:15px; border-left:1px solid #e0e0e0; background:white;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <span style="font-weight:900; font-size:14px; color:${cat.color};">${cat.label}</span>
+                            <span style="font-size:22px; font-weight:900; color:${cat.color};">${total}</span>
+                        </div>
+                        ${cols}
+                    </div>`;
+                }).join('')}
+            </div>
+            
+            <!-- شريط تفصيلي -->
+            <div style="padding:15px 20px; background:white; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                <span style="font-size:13px; font-weight:700; color:#555;">نسبة التوزيع:</span>
+                <div style="flex:1; height:20px; border-radius:10px; overflow:hidden; display:flex; min-width:200px;">
+                    ${CATEGORIES.map(cat => {
+                        const val = catTotal(totals, cat.cols);
+                        const pct = grandTotal > 0 ? Math.round((val / grandTotal) * 100) : 0;
+                        return pct > 0 ? `<div style="
+                            width:${pct}%;
+                            background:${cat.color};
+                            display:flex; align-items:center; justify-content:center;
+                            font-size:11px; color:white; font-weight:700;
+                            transition:0.3s;
+                        " title="${cat.label}: ${val} (${pct}%)">${pct > 10 ? pct+'%' : ''}</div>` : '';
+                    }).join('')}
+                </div>
+                <button onclick="printWeekReport('${weekKey}')" class="btn" style="background:#2e7d32; margin:0; padding:8px 15px; font-size:13px;">
+                    <i class="fa-solid fa-print"></i> طباعة
+                </button>
+            </div>
+        </div>
+    `;
+    
+    document.getElementById('archive-detail-panel').innerHTML = html;
+}
+
+// تحميل أسبوع في الجدول الرئيسي
+function loadWeekIntoMainTable(weekKey) {
+    document.getElementById("week-picker").value = weekKey;
+    changeWeek();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+    Swal.fire({
+        icon: 'success',
+        title: 'تم تحميل البيانات',
+        text: 'أسبوع: ' + weekKey,
+        timer: 1500,
+        showConfirmButton: false,
+        toast: true,
+        position: 'top-end'
+    });
+}
+
+// ========== المقارنة بين أسبوعين ==========
+function runComparison() {
+    const w1 = document.getElementById('compare-week-1').value;
+    const w2 = document.getElementById('compare-week-2').value;
+    
+    if (!w1 || !w2) {
+        Swal.fire('تنبيه', 'الرجاء اختيار أسبوعين للمقارنة', 'warning');
+        return;
+    }
+    if (w1 === w2) {
+        Swal.fire('تنبيه', 'الرجاء اختيار أسبوعين مختلفين', 'warning');
+        return;
+    }
+    
+    const t1 = calcWeekTotals(w1);
+    const t2 = calcWeekTotals(w2);
+    const gt1 = catTotal(t1, [1,5,9,13]);
+    const gt2 = catTotal(t2, [1,5,9,13]);
+    const diff = gt2 - gt1;
+    const diffPct = gt1 > 0 ? Math.round(((gt2 - gt1) / gt1) * 100) : 0;
+    const diffColor = diff > 0 ? '#f44336' : diff < 0 ? '#4caf50' : '#607d8b';
+    const diffIcon  = diff > 0 ? '▲' : diff < 0 ? '▼' : '●';
+    
+    let html = `
+        <!-- رأس المقارنة -->
+        <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:10px; align-items:center; margin-bottom:20px;">
+            <div style="background:var(--primary); color:white; padding:15px; border-radius:12px; text-align:center;">
+                <div style="font-size:13px; opacity:0.85; margin-bottom:5px;">الأسبوع الأول</div>
+                <div style="font-size:22px; font-weight:900;">${w1}</div>
+                <div style="font-size:32px; font-weight:900; color:#ffd700; margin-top:5px;">${gt1}</div>
+                <div style="font-size:12px; opacity:0.8;">إجمالي</div>
+            </div>
+            <div style="text-align:center; padding:10px;">
+                <div style="font-size:24px; font-weight:900; color:${diffColor};">${diffIcon} ${Math.abs(diff)}</div>
+                <div style="font-size:13px; color:${diffColor}; font-weight:700;">(${diffPct > 0 ? '+' : ''}${diffPct}%)</div>
+                <div style="font-size:11px; color:#888; margin-top:5px;">فرق</div>
+            </div>
+            <div style="background:#37474f; color:white; padding:15px; border-radius:12px; text-align:center;">
+                <div style="font-size:13px; opacity:0.85; margin-bottom:5px;">الأسبوع الثاني</div>
+                <div style="font-size:22px; font-weight:900;">${w2}</div>
+                <div style="font-size:32px; font-weight:900; color:#ffd700; margin-top:5px;">${gt2}</div>
+                <div style="font-size:12px; opacity:0.8;">إجمالي</div>
+            </div>
+        </div>
+        
+        <!-- مقارنة تفصيلية لكل فئة -->
+        <div style="display:grid; grid-template-columns:repeat(2,1fr); gap:12px;">
+            ${CATEGORIES.map(cat => {
+                const v1 = catTotal(t1, cat.cols);
+                const v2 = catTotal(t2, cat.cols);
+                const d  = v2 - v1;
+                const dc = d > 0 ? '#f44336' : d < 0 ? '#4caf50' : '#607d8b';
+                const di = d > 0 ? '▲' : d < 0 ? '▼' : '—';
+                const maxV = Math.max(v1, v2, 1);
+                return `
+                <div style="background:white; border:2px solid ${cat.color}30; border-radius:12px; padding:15px; border-right:4px solid ${cat.color};">
+                    <div style="font-weight:900; color:${cat.color}; margin-bottom:12px; font-size:15px;">${cat.label}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+                        <span style="font-size:22px; font-weight:900; color:var(--primary);">${v1}</span>
+                        <span style="font-size:14px; font-weight:900; color:${dc};">${di} ${Math.abs(d)}</span>
+                        <span style="font-size:22px; font-weight:900; color:#37474f;">${v2}</span>
+                    </div>
+                    <div style="display:flex; gap:3px; height:8px; border-radius:5px; overflow:hidden; background:#f5f5f5;">
+                        <div style="width:${Math.round(v1/maxV*100)}%; background:var(--primary); border-radius:5px; transition:0.5s;"></div>
+                    </div>
+                    <div style="display:flex; gap:3px; height:8px; border-radius:5px; overflow:hidden; background:#f5f5f5; margin-top:3px;">
+                        <div style="width:${Math.round(v2/maxV*100)}%; background:#37474f; border-radius:5px; transition:0.5s;"></div>
+                    </div>
+                    <div style="display:flex; justify-content:space-between; margin-top:4px;">
+                        <span style="font-size:10px; color:#888;">أسبوع 1</span>
+                        <span style="font-size:10px; color:#888;">أسبوع 2</span>
+                    </div>
+                </div>`;
+            }).join('')}
+        </div>
+        
+        <!-- نتيجة المقارنة -->
+        <div style="background:${diff > 0 ? '#fff3e0' : diff < 0 ? '#e8f5e9' : '#f5f5f5'}; border-radius:10px; padding:15px; margin-top:15px; text-align:center; border:2px solid ${diffColor}30;">
+            <span style="font-weight:900; font-size:15px; color:${diffColor};">
+                ${diff > 0 ? '📈 ارتفع النشاط بمقدار ' + diff + ' تدخل (' + diffPct + '%)' :
+                  diff < 0 ? '📉 انخفض النشاط بمقدار ' + Math.abs(diff) + ' تدخل (' + Math.abs(diffPct) + '%)' :
+                  '➖ لا يوجد فرق بين الأسبوعين'}
+            </span>
+        </div>
+    `;
+    
+    document.getElementById('comparison-result').innerHTML = html;
+}
+
+// ========== طباعة التقرير ==========
+function printArchiveReport() {
+    const year  = document.getElementById("arc-year").value;
+    const month = document.getElementById("arc-month").value;
+    if (!year || !month) {
+        Swal.fire('تنبيه', 'الرجاء اختيار السنة والشهر أولاً', 'warning');
+        return;
+    }
+    window.print();
+}
+
+function printWeekReport(weekKey) {
+    loadWeekIntoMainTable(weekKey);
+    setTimeout(() => window.print(), 800);
+}
+
+// دوال قديمة للتوافق
+function updateWeekFilter() {}
+function loadArchivedWeek() {}
 // دالة تجميع الحصيلة الشهرية من السحابة
 async function generateMonthlyReport() {
     // 1. إظهار رسالة انتظار للمستخدم
@@ -661,6 +2824,37 @@ async function generateMonthlyReport() {
     for(let i=2026; i<=2030; i++) yr.innerHTML += `<option value="${i}">${i}</option>`;
 })();
 
+// تفعيل زر Enter للانتقال التلقائي بين الخلايا
+document.addEventListener('keydown', function(e) {
+    // التحقق من أن الزر المضغوط هو Enter
+    if (e.key === 'Enter' || e.keyCode === 13) {
+        const target = e.target;
+        
+        // التحقق من أن العنصر النشط هو input من نوع editable
+        if (target.classList.contains('editable') || target.classList.contains('d-input') || target.classList.contains('m-input')) {
+            e.preventDefault(); // منع السلوك الافتراضي
+            
+            // الحصول على جميع حقول الإدخال المرئية
+            const inputs = Array.from(document.querySelectorAll('.editable, .d-input, .m-input')).filter(input => {
+                return input.offsetParent !== null; // فقط العناصر المرئية
+            });
+            
+            // العثور على موقع الحقل الحالي
+            const currentIndex = inputs.indexOf(target);
+            
+            // الانتقال إلى الحقل التالي
+            if (currentIndex > -1 && currentIndex < inputs.length - 1) {
+                inputs[currentIndex + 1].focus();
+                inputs[currentIndex + 1].select(); // تحديد النص لسهولة الكتابة
+            } else if (currentIndex === inputs.length - 1) {
+                // إذا كنا في آخر حقل، نرجع للأول
+                inputs[0].focus();
+                inputs[0].select();
+            }
+        }
+    }
+});
+
 async function getMonthly() {
     const year = document.getElementById("m-year").value;
     const month = document.getElementById("m-month").value;
@@ -714,30 +2908,6 @@ async function getMonthly() {
     // النزول تلقائياً لمشاهدة الجدول
     document.getElementById("monthly-report-area").scrollIntoView({ behavior: 'smooth' });
 }
-</script>
-</body>
+    </script>
+  </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
