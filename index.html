@@ -268,7 +268,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
           </div>
         </div>
         
-        <!-- لوحة النسخ الاحتياطي التلقائي - المتحكم الرئيسي فقط -->
+        <!-- لوحة النسخ الاحتياطي التلقائي - المديـــــرية فقط -->
         <div id="backup-panel" class="hidden no-print" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 15px; padding: 20px; margin-bottom: 20px; color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
             <div style="display: flex; align-items: center; gap: 10px;">
@@ -743,7 +743,7 @@ function checkDatabaseConnection() {
             loginBtn.style.cursor = 'not-allowed';
             
             // حفظ تلقائي عند فقدان الاتصال (للمتحكم الرئيسي فقط)
-            if (currentUser === "المتحكم الرئيسي") {
+            if (currentUser === "المديـــــرية") {
                 createAutoBackup();
                 console.log('تم الحفظ التلقائي بسبب فقدان الاتصال');
             }
@@ -755,7 +755,7 @@ function checkDatabaseConnection() {
 function monitorConnectionInApp() {
     const connectedRef = db.ref('.info/connected');
     connectedRef.on('value', (snap) => {
-        if (snap.val() === false && currentUser === "المتحكم الرئيسي") {
+        if (snap.val() === false && currentUser === "المديـــــرية") {
             // إنشاء نسخة احتياطية عند فقدان الاتصال
             createAutoBackup();
             
@@ -776,7 +776,7 @@ function monitorConnectionInApp() {
 setTimeout(checkDatabaseConnection, 500);
 
 let myChart = null;
-const unitConfig = {"المتحكم الرئيسي": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
+const unitConfig = {"المديـــــرية": [], "الرئيسية": ["الوادي", "كوينين"], "المركز المتقدم": ["الوادي"], "الرباح": ["الرباح", "البياضة", "النخلة", "العقلة"], "ميه ونسة": ["أميه ونسة", "واد العلنده"], "قمار": ["قمار", "تغزوت", "ورماس"], "الدبيلة": ["الدبيلة", "حساني عبد الكريم", "الطريفاوي"], "حاسي خليفة": ["الطريفاوي", "حاسي خليفة"], "المقرن": ["المقرن", "سيدي عون"], "الرقيبة": ["الرقيبة"], "الحمراية": ["الحمراية"], "الطالب العربي": ["الطالب العربي", "بن قشة"], "دوار الماء": ["دوار الماء"]};
 let currentUser = ""; let currentWeek = "";
 
 // متغيرات النسخ الاحتياطي
@@ -809,7 +809,7 @@ async function initAutoBackup() {
 function handleBeforeUnload(e) {
     const autoBackupEnabled = localStorage.getItem('auto_backup_enabled') !== 'false';
     
-    if (autoBackupEnabled && currentUser === "المتحكم الرئيسي") {
+    if (autoBackupEnabled && currentUser === "المديـــــرية") {
         // إنشاء نسخة احتياطية
         createAutoBackup();
         
@@ -2004,7 +2004,7 @@ window.onload = function() {
     
     Object.keys(unitConfig).forEach(u => {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
-        if(u !== "المتحكم الرئيسي") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
+        if(u !== "المديـــــرية") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
 
     // تشغيل الساعة وتحديث البيانات
@@ -2075,7 +2075,7 @@ async function login(){
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
     
-    if(currentUser === "المتحكم الرئيسي") {
+    if(currentUser === "المديـــــرية") {
         document.getElementById("status-panel").classList.remove("hidden");
         document.getElementById("master-clock-bar").classList.remove("hidden");
         document.getElementById("master-notif-panel").classList.remove("hidden");
@@ -2100,7 +2100,7 @@ async function login(){
     // هذا الجزء يوضع داخل دالة login لتغيير اسم الزر تلقائياً
 const monthlyBtn = document.getElementById('main-monthly-btn');
 if (monthlyBtn) {
-    if (currentUser === "المتحكم الرئيسي") {
+    if (currentUser === "المديـــــرية") {
         monthlyBtn.innerHTML = `<i class="fa-solid fa-chart-line"></i> استخراج المجموع الشهري للولاية`;
     } else {
         monthlyBtn.innerHTML = `<i class="fa-solid fa-calendar-check"></i> استخراج مجموع الوحدة الشهري`;
@@ -2115,7 +2115,7 @@ loadArchive();
 
 // حفظ البيانات محلياً (للوحدات فقط)
 function saveLocally() {
-    if (currentUser === "المتحكم الرئيسي") return;
+    if (currentUser === "المديـــــرية") return;
     
     let w = document.getElementById("week-picker").value;
     let daily = []; 
@@ -2148,7 +2148,7 @@ function saveLocally() {
 
 // إرسال البيانات إلى المديرية (Firebase)
 async function sendToDirectorate() {
-    if (currentUser === "المتحكم الرئيسي") return;
+    if (currentUser === "المديـــــرية") return;
     
     let w = document.getElementById("week-picker").value;
     
@@ -2272,8 +2272,8 @@ function checkSentStatus() {
     let w = currentWeek;
     let isSent = localStorage.getItem(w + "_sent_" + currentUser) === 'true';
     
-    if (currentUser === "المتحكم الرئيسي") {
-        // المتحكم الرئيسي يرى زر الحفظ العادي
+    if (currentUser === "المديـــــرية") {
+        // المديـــــرية يرى زر الحفظ العادي
         document.getElementById('master-save-btn').classList.remove('hidden');
         document.getElementById('local-save-btn').classList.add('hidden');
         document.getElementById('send-to-directorate-btn').classList.add('hidden');
@@ -2373,7 +2373,7 @@ async function renderSystem(){
         console.log('🔄 تم تحديث البيانات تلقائياً للأسبوع:', currentWeek);
         
         // إشعار بسيط عند التحديث (فقط للمتحكم الرئيسي)
-        if (currentUser === "المتحكم الرئيسي" && snapshot.exists()) {
+        if (currentUser === "المديـــــرية" && snapshot.exists()) {
             showUpdateNotification();
         }
     });
@@ -2388,7 +2388,7 @@ function updateTablesWithData(cloudData, days) {
         let data = getUnitDataLocal(currentWeek, i, "daily", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f9f9f9;">${days[i]}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") {
+            if(currentUser === "المديـــــرية") {
                 tr += `<td class="d-val" data-day="${i}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
             } else {
                 tr += `<td><input type="number" class="editable d-input" data-day="${i}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
@@ -2400,13 +2400,13 @@ function updateTablesWithData(cloudData, days) {
 
     let mBody = document.getElementById("muni-body"); 
     mBody.innerHTML = "";
-    let munis = (currentUser === "المتحكم الرئيسي") ? getAllMunis() : unitConfig[currentUser];
+    let munis = (currentUser === "المديـــــرية") ? getAllMunis() : unitConfig[currentUser];
     
     munis.forEach(m => {
         let data = getUnitDataLocal(currentWeek, m, "muni", cloudData);
         let tr = `<tr><td style="font-weight:900; background:#f5f5f5;">${m}</td>`;
         for(let j=0; j<16; j++){
-            if(currentUser === "المتحكم الرئيسي") {
+            if(currentUser === "المديـــــرية") {
                 tr += `<td class="m-val" data-muni="${m}" data-col="${j}" style="font-weight:800;">${data[j]}</td>`;
             } else {
                 tr += `<td><input type="number" class="editable m-input" data-muni="${m}" data-col="${j}" value="${data[j]}" oninput="calculate()"></td>`;
@@ -2472,9 +2472,9 @@ function showUpdateNotification() {
 
 function getUnitDataLocal(week, key, type, cloudData) {
     let res = new Array(16).fill(0);
-    if(currentUser === "المتحكم الرئيسي") {
+    if(currentUser === "المديـــــرية") {
         Object.keys(unitConfig).forEach(u => {
-            if(u === "المتحكم الرئيسي") return;
+            if(u === "المديـــــرية") return;
             let uData = cloudData[u] ? cloudData[u][type] : null;
             if(uData) { let d = uData[key]; if(d) d.forEach((v, i) => res[i] += parseInt(v) || 0); }
         });
@@ -2593,7 +2593,7 @@ function changeWeek(){
 let statusPanelListener = null;
 
 async function updateStatusPanel() { 
-    if(currentUser !== "المتحكم الرئيسي") return; 
+    if(currentUser !== "المديـــــرية") return; 
     
     const grid = document.getElementById("status-grid"); 
     if (!grid) return;
@@ -2611,7 +2611,7 @@ async function updateStatusPanel() {
         grid.innerHTML = "";
         
         Object.keys(unitConfig).forEach(u => { 
-            if(u === "المتحكم الرئيسي") return; 
+            if(u === "المديـــــرية") return; 
             let isSent = !!cloudData[u]; 
             grid.innerHTML += `
                 <div style="
@@ -2630,9 +2630,9 @@ async function updateStatusPanel() {
     });
 }
 async function changeMyPassword() { const { value: p } = await Swal.fire({ title: 'تغيير الكود أونلاين', input: 'text' }); if(p) { await db.ref('passwords/' + currentUser).set(p); localStorage.setItem("pass_" + currentUser, p); Swal.fire("تم التحديث", "", "success"); } }
-async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المتحكم الرئيسي") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
+async function revealUnitPass() { let opts = {}; Object.keys(unitConfig).forEach(u => { if(u !== "المديـــــرية") opts[u]=u; }); const { value: unit } = await Swal.fire({ title: 'كشف الكود', input: 'select', inputOptions: opts }); if(unit) { const snap = await db.ref('passwords/' + unit).once('value'); Swal.fire('الكود السحابي', `<b style="font-size:30px;">${snap.val() || "1111"}</b>`, 'info'); } }
 function updateTicker() { let total = 0; db.ref('data/' + currentWeek).once('value').then(snap => { const data = snap.val() || {}; Object.values(data).forEach(u => { if(u.daily) u.daily.forEach(row => { total += (parseInt(row[1])||0) + (parseInt(row[5])||0) + (parseInt(row[9])||0) + (parseInt(row[13])||0); }); }); document.getElementById('ticker-text').innerText = `إحصائيات الأسبوع الحالي للولاية: (${total}) تدخل • مصلحة الوقاية • منظومة الحصيلة الرقمية •`; }); }
-function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المتحكم الرئيسي") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
+function getAllMunis() { let a = []; Object.keys(unitConfig).forEach(u => { if(u!=="المديـــــرية") unitConfig[u].forEach(m => { if(!a.includes(m)) a.push(m); }); }); return a; }
 function sendNotif() { let target = document.getElementById("notif-target").value; let msg = document.getElementById("notif-msg").value; if(!msg) return; db.ref('notifications/' + target).set(msg); Swal.fire("تم الإرسال سحابياً", "", "success"); document.getElementById("notif-msg").value = ""; }
 function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
 function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
@@ -2667,7 +2667,7 @@ async function loadArchive() {
         // فلترة السنوات حسب المستخدم الحالي
         let years = new Set();
         keys.forEach(w => {
-            if (currentUser === "المتحكم الرئيسي") {
+            if (currentUser === "المديـــــرية") {
                 years.add(w.split('-')[0]);
             } else {
                 // الوحدة: فقط السنوات التي فيها بياناتها
@@ -2703,7 +2703,7 @@ function updateMonthFilter() {
         if (y !== year) return;
         
         // للوحدة العادية: تحقق من وجود بياناتها
-        if (currentUser !== "المتحكم الرئيسي") {
+        if (currentUser !== "المديـــــرية") {
             if (!(globalArchiveData[w] && globalArchiveData[w][currentUser])) return;
         }
         
@@ -2729,7 +2729,7 @@ function updateMonthFilter() {
 function fillCompareWeeks() {
     // للوحدة العادية: فقط الأسابيع التي فيها بياناتها
     let weeks = Object.keys(globalArchiveData).filter(w => {
-        if (currentUser === "المتحكم الرئيسي") return true;
+        if (currentUser === "المديـــــرية") return true;
         return !!(globalArchiveData[w] && globalArchiveData[w][currentUser]);
     }).sort().reverse();
 
@@ -2779,7 +2779,7 @@ function loadArchiveView() {
         if ((d.getMonth() + 1) != month) return false;
         
         // للوحدات العادية: تحقق من وجود بياناتها في هذا الأسبوع
-        if (currentUser !== "المتحكم الرئيسي") {
+        if (currentUser !== "المديـــــرية") {
             return !!(globalArchiveData[w] && globalArchiveData[w][currentUser]);
         }
         return true;
@@ -2804,10 +2804,10 @@ function calcWeekTotals(weekKey) {
     const weekData = globalArchiveData[weekKey] || {};
     let totals = new Array(16).fill(0);
 
-    if (currentUser === "المتحكم الرئيسي") {
+    if (currentUser === "المديـــــرية") {
         // المتحكم: يجمع كل الوحدات
         Object.keys(weekData).forEach(unitName => {
-            if (unitName === "المتحكم الرئيسي") return;
+            if (unitName === "المديـــــرية") return;
             const daily = (weekData[unitName] || {}).daily || {};
             Object.values(daily).forEach(row => {
                 if (!row) return;
@@ -2961,7 +2961,7 @@ function renderArchiveDetail(weekKey) {
     const totals     = calcWeekTotals(weekKey);
     const weekNum    = weekKey.split('-W')[1];
     const grandTotal = catTotal(totals, [1,5,9,13]);
-    const unitLabel  = currentUser === "المتحكم الرئيسي" ? "جميع الوحدات" : currentUser;
+    const unitLabel  = currentUser === "المديـــــرية" ? "جميع الوحدات" : currentUser;
     
     const colLabels = ['ع ع','ع ت','مسعف','وفاة'];
     
@@ -3181,8 +3181,8 @@ async function generateMonthlyReport() {
             
             // الدوران على الوحدات داخل كل أسبوع
             Object.keys(unitsInData).forEach(unitName => {
-                // شرط: إذا كان المستخدم "المتحكم الرئيسي" يجمع الكل، وإذا كانت وحدة تجمع حصتها فقط
-                if (currentUser === "المتحكم الرئيسي" || unitName === currentUser) {
+                // شرط: إذا كان المستخدم "المديـــــرية" يجمع الكل، وإذا كانت وحدة تجمع حصتها فقط
+                if (currentUser === "المديـــــرية" || unitName === currentUser) {
                     let unitData = unitsInData[unitName].daily || [];
                     
                     unitData.forEach(row => {
@@ -3279,8 +3279,8 @@ async function getMonthly() {
         let d = new Date(y, 0, 1 + (w - 1) * 7);
         if(y === year && (d.getMonth() + 1) == month) {
             Object.keys(allData[wk]).forEach(unit => {
-                // تجميع إذا كان العضو هو المتحكم الرئيسي أو الوحدة نفسها
-                if(currentUser === "المتحكم الرئيسي" || unit === currentUser) {
+                // تجميع إذا كان العضو هو المديـــــرية أو الوحدة نفسها
+                if(currentUser === "المديـــــرية" || unit === currentUser) {
                     let data = allData[wk][unit].daily;
                     if(data) {
                         found = true;
@@ -3318,3 +3318,4 @@ async function getMonthly() {
     </script>
   </body>
 </html>
+
