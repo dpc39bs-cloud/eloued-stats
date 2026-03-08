@@ -2692,6 +2692,7 @@ function updateTableFoot(id, totals, targetIndices) {
     foot.innerHTML = html;
 }
 function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
+
 function getWeekDays(w) { 
     if(!w) return ["-","-","-","-","-","-","-"]; 
     let [year, week] = w.split('-W'); 
@@ -3693,6 +3694,7 @@ async function getMonthly() {
     </script>
   </body>
 </html>
+
 
 
 
