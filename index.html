@@ -2222,6 +2222,9 @@ async function login(){
     document.body.style.overflowY = "auto";
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
+    document.getElementById("btn-print").classList.remove("hidden");
+    document.getElementById("btn-change-pass").classList.remove("hidden");
+    document.getElementById("btn-logout").classList.remove("hidden");
     
     if(currentUser === "المديـــــرية") {
         document.getElementById("status-panel").classList.remove("hidden");
@@ -2234,9 +2237,6 @@ async function login(){
         document.getElementById("master-reveal-btn").classList.remove("hidden");
         document.getElementById("btn-dashboard").classList.remove("hidden");
         document.getElementById("btn-reports").classList.remove("hidden");
-        document.getElementById("btn-print").classList.remove("hidden");
-        document.getElementById("btn-change-pass").classList.remove("hidden");
-        document.getElementById("btn-logout").classList.remove("hidden");
         updateStatusPanel();
         
         // تفعيل نظام الإشعارات الذكية
