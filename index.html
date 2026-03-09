@@ -17,13 +17,14 @@
     </script>
     <style>
       /* تجميع كل الستايلات الأصلية كما هي بدون تغيير */
+* { box-sizing: border-box; }
 :root { --primary:#11995e; --accent:#c62828; --success:#2e7d32; --danger:#d32f2f; --bg:#f4f7f9; --warning: #ffc107; }
-body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; }
+body { font-family: 'Cairo', sans-serif; background: var(--bg); margin: 0; direction: rtl; overflow-x: hidden; overflow-y: hidden; }
 .hidden { display: none !important; }
 input::-webkit-outer-spin-button, input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 input[type=number] { -moz-appearance: textfield; }
-.container { zoom: 90%; padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
-#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://i.ibb.co/twcywxj9/22.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+.container { padding: 20px; width: 98%; margin: auto; background: white; min-height: 100vh; }
+#login-page { background: linear-gradient(rgba(26, 35, 126, 0.88), rgba(13, 71, 161, 0.85)), url('https://www.wilaya-eloued.dz/images/slider/s1.jpg'); background-size: cover; background-position: center; height: 100vh; width: 100vw; display: flex; flex-direction: column; justify-content: center; align-items: center; overflow: hidden; position: fixed; top: 0; left: 0; }
 .header-official { text-align: center; color: white; margin-bottom: 15px; line-height: 1.2; }
 .header-official h1 { margin: 0; font-size: 2.5rem; font-weight: 900; text-shadow: 2px 2px 5px rgba(0,0,0,0.5); }
 .header-official h2 { margin: 5px 0; font-size: 1.8rem; font-weight: 700; color: #ffd700; }
@@ -49,7 +50,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
 @media print {
     @page { size: A4 landscape; margin: 5mm !important; }
     .no-print, .btn, .stats-ticker, #archive-section, #mainChart, .internal-clock-bar, #status-panel, #week-picker, #master-notif-panel, #unit-notification { display: none !important; }
-    .container { zoom: 100% !important; width: 100% !important; padding: 0 !important; }
+    .container { width: 100% !important; padding: 0 !important; }
     .print-section { page-break-after: always; display: block; width: 100% !important; }
     .editable { border: none !important; background: transparent !important; box-shadow: none !important; width: 100% !important; font-size: 18px !important; color: black !important; }
 }
@@ -539,6 +540,14 @@ th { background: var(--primary) !important; color: white !important; font-size: 
               <button onclick="printArchiveReport()" class="btn" style="background:var(--success); margin:0; padding:8px 15px; font-size:13px;">
                 <i class="fa-solid fa-print"></i> طباعة التقرير
               </button>
+
+              <button onclick="openDashboardModal()" id="btn-dashboard" class="btn hidden" style="background:#11995e; margin:0; padding:8px 15px; font-size:13px;">
+                <i class="fa-solid fa-chart-line"></i> لوحة المعلومات
+              </button>
+
+              <button onclick="openReportsModal()" id="btn-reports" class="btn hidden" style="background:#1a237e; margin:0; padding:8px 15px; font-size:13px;">
+                <i class="fa-solid fa-chart-pie"></i> التقارير
+              </button>
             </div>
           </div>
 
@@ -585,18 +594,132 @@ th { background: var(--primary) !important; color: white !important; font-size: 
         </div>
         <div id="archive-container"></div>
 
-        <!-- ==================== لوحة المعلومات التفاعلية ==================== -->
-        <div id="dashboard-section" class="hidden no-print" style="background:#fff; padding:20px; border-radius:15px; border:2px solid var(--primary); margin-bottom: 20px;">
+        </div>
+
+        <!-- ==================== التقارير المتقدمة ==================== -->
+        <div id="reports-section" class="hidden no-print" style="background:#fff; padding:20px; border-radius:15px; border:2px solid var(--primary); margin-bottom: 20px;">
+          
           <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
             <h3 style="margin:0; color:var(--primary); font-weight:900; font-size:20px;">
-              <i class="fa-solid fa-chart-line"></i> لوحة المعلومات
+              <i class="fa-solid fa-chart-pie"></i> التقارير المتقدمة
             </h3>
-            <button onclick="refreshDashboard()" class="btn" style="background:var(--success); margin:0; padding:8px 15px; font-size:13px;">
-              <i class="fa-solid fa-rotate"></i> تحديث
+          </div>
+
+          <!-- أزرار اختيار نوع التقرير -->
+          <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-bottom:20px;">
+            <button onclick="showReport('monthly-comparison')" class="btn" style="background:#2196f3; margin:0; justify-content:center;">
+              <i class="fa-solid fa-code-compare"></i>
+              مقارنة بين شهرين
+            </button>
+            <button onclick="showReport('units-performance')" class="btn" style="background:#ff9800; margin:0; justify-content:center;">
+              <i class="fa-solid fa-ranking-star"></i>
+              أداء الوحدات
+            </button>
+            <button onclick="showReport('annual-report')" class="btn" style="background:#4caf50; margin:0; justify-content:center;">
+              <i class="fa-solid fa-calendar-days"></i>
+              التقرير السنوي
             </button>
           </div>
-          <div id="dashboard-content"></div>
+
+          <div id="report-content-old"></div>
         </div>
+
+        <!-- ==================== لوحة الإشعارات الذكية ==================== -->
+        <div id="notifications-panel" class="no-print" style="position:fixed; top:80px; left:20px; width:350px; max-height:500px; overflow-y:auto; z-index:9998; display:none;">
+          <div style="background:white; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.2); overflow:hidden;">
+            
+            <!-- رأس اللوحة -->
+            <div style="background:linear-gradient(135deg, var(--primary), #0d7377); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-bell" style="font-size:20px;"></i>
+                <span style="font-weight:900; font-size:16px;">الإشعارات</span>
+                <span id="notif-count" style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:12px; font-size:12px; font-weight:700;">0</span>
+              </div>
+              <button onclick="closeNotificationsPanel()" style="background:transparent; border:none; color:white; cursor:pointer; font-size:20px;">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+
+            <!-- قائمة الإشعارات -->
+            <div id="notifications-list" style="max-height:400px; overflow-y:auto;">
+              <div style="padding:40px 20px; text-align:center; color:#999;">
+                <i class="fa-solid fa-bell-slash" style="font-size:48px; margin-bottom:10px; opacity:0.3;"></i>
+                <p style="margin:0; font-size:14px;">لا توجد إشعارات</p>
+              </div>
+            </div>
+
+            <!-- أزرار الإجراءات -->
+            <div style="border-top:1px solid #eee; padding:10px 15px; display:flex; gap:8px;">
+              <button onclick="markAllAsRead()" class="btn" style="flex:1; margin:0; padding:8px; font-size:12px; background:#95a5a6;">
+                <i class="fa-solid fa-check-double"></i> تحديد الكل كمقروء
+              </button>
+              <button onclick="clearAllNotifications()" class="btn" style="flex:1; margin:0; padding:8px; font-size:12px; background:#e74c3c;">
+                <i class="fa-solid fa-trash"></i> حذف الكل
+              </button>
+            </div>
+          </div>
+        </div>
+
+
+        <!-- ==================== لوحة الوفيات ==================== -->
+        <div id="deaths-panel" class="no-print" style="position:fixed; width:360px; max-height:500px; overflow-y:auto; z-index:999999; display:none;">
+          <div style="background:white; border-radius:15px; box-shadow:0 8px 30px rgba(0,0,0,0.25); overflow:hidden;">
+            <!-- رأس اللوحة -->
+            <div style="background:linear-gradient(135deg,#c0392b,#e74c3c); color:white; padding:15px 20px; display:flex; justify-content:space-between; align-items:center;">
+              <div style="display:flex; align-items:center; gap:10px;">
+                <i class="fa-solid fa-heart-crack" style="font-size:20px;"></i>
+                <span style="font-weight:900; font-size:16px;">الوفيات</span>
+                <span id="deaths-panel-count" style="background:rgba(255,255,255,0.3); padding:2px 8px; border-radius:12px; font-size:14px; font-weight:900;">0</span>
+              </div>
+              <button onclick="closeDeathsPanel()" style="background:transparent; border:none; color:white; cursor:pointer; font-size:20px;">
+                <i class="fa-solid fa-times"></i>
+              </button>
+            </div>
+            <!-- قائمة التفاصيل -->
+            <div id="deaths-panel-list" style="max-height:380px; overflow-y:auto;"></div>
+          </div>
+        </div>
+
+        <!-- زر الإشعارات العائم -->
+        <button id="notifications-bell" onclick="toggleNotificationsPanel()" class="no-print" style="
+          position:fixed;
+          top:20px;
+          left:20px;
+          width:50px;
+          height:50px;
+          border-radius:50%;
+          background:linear-gradient(135deg, var(--primary), #0d7377);
+          border:none;
+          color:white;
+          font-size:22px;
+          cursor:pointer;
+          box-shadow:0 4px 15px rgba(0,0,0,0.3);
+          z-index:9999;
+          transition:all 0.3s;
+          display:none;
+          align-items:center;
+          justify-content:center;
+        " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+          <i class="fa-solid fa-bell"></i>
+          <span id="bell-badge" style="
+            position:absolute;
+            top:-5px;
+            right:-5px;
+            background:#e74c3c;
+            color:white;
+            border-radius:50%;
+            width:24px;
+            height:24px;
+            display:none;
+            align-items:center;
+            justify-content:center;
+            font-size:11px;
+            font-weight:900;
+            box-shadow:0 2px 8px rgba(231,76,60,0.5);
+            animation:pulse 2s infinite;
+          ">0</span>
+        </button>
+
       </div>
       <div class="no-print" style="text-align:center; padding-bottom: 100px;">
         <!-- زر الحفظ المحلي (للوحدات فقط) -->
@@ -617,11 +740,11 @@ th { background: var(--primary) !important; color: white !important; font-size: 
           حفظ أونلاين ✅
         </button>
         
-        <button class="btn" style="background:#e67e22" onclick="window.print()">
+        <button id="btn-print" class="btn hidden" style="background:#e67e22" onclick="window.print()">
           <i class="fa-solid fa-print"></i>
           طباعة
         </button>
-        <button class="btn" style="background:#673ab7" onclick="changeMyPassword()">
+        <button id="btn-change-pass" class="btn hidden" style="background:#673ab7" onclick="changeMyPassword()">
           <i class="fa-solid fa-key"></i>
           الكود
         </button>
@@ -629,7 +752,7 @@ th { background: var(--primary) !important; color: white !important; font-size: 
           <i class="fa-solid fa-eye"></i>
           كشف
         </button>
-        <button class="btn" style="background:#546e7a" onclick="location.reload()">
+        <button id="btn-logout" class="btn hidden" style="background:#546e7a" onclick="location.reload()">
           <i class="fa-solid fa-door-open"></i>
           خروج
         </button>
@@ -1967,22 +2090,19 @@ async function deleteAllCloudBackups() {
 // حساب رقم الأسبوع السابق (للعمل عليه)
 function getCurrentWeekNumber() {
     const now = new Date();
-    const year = now.getFullYear();
-    
-    // نسخة من التاريخ الحالي
-    const target = new Date(now.valueOf());
-    const dayNr = (now.getDay() + 6) % 7; // الإثنين = 0
-    target.setDate(target.getDate() - dayNr + 3);
-    
-    // أول خميس في السنة
-    const jan4 = new Date(target.getFullYear(), 0, 4);
-    const dayDiff = (target - jan4) / 86400000;
-    const weekNum = 1 + Math.ceil(dayDiff / 7);
-    
-    // نرجع الأسبوع السابق (لأننا نعمل على الأسبوع الماضي)
-    const previousWeek = weekNum - 1;
-    
-    return `${year}-W${previousWeek.toString().padStart(2, '0')}`;
+    // الأحد يبدأ أسبوعاً جديداً → نحوله لاثنين ISO
+    const d = new Date(now);
+    if (d.getDay() === 0) d.setDate(d.getDate() + 1);
+
+    const year = d.getFullYear();
+    const jan4 = new Date(year, 0, 4);
+    let isoMonday = new Date(jan4);
+    isoMonday.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+
+    // الأسبوع السابق (نعمل على الأسبوع الماضي)
+    const weekNum = Math.floor((d - isoMonday) / (7 * 86400000));
+
+    return `${year}-W${weekNum.toString().padStart(2, '0')}`;
 }
 
 // التحقق من تغيير الأسبوع تلقائياً
@@ -2017,31 +2137,13 @@ function checkAndUpdateWeek() {
 }
 
 window.onload = function() {
-    // دالة حساب الأسبوع السابق (الأحد - السبت) تلقائياً
-    function getAutoPreviousWeek() {
-        const now = new Date();
-        // طرح 7 أيام للحصول على تاريخ الأسبوع الماضي
-        const pastDate = new Date(now.getTime());
-        pastDate.setDate(now.getDate() - 7);
-        
-        const year = pastDate.getFullYear();
-        const firstDayOfYear = new Date(year, 0, 1);
-        
-        // حساب عدد الأيام المنقضية
-        const days = Math.floor((pastDate - firstDayOfYear) / (24 * 60 * 60 * 1000));
-        
-        // حساب رقم الأسبوع (نظام الأحد كأول يوم في الأسبوع)
-        const weekNumber = Math.ceil((days + firstDayOfYear.getDay() + 1) / 7);
-        
-        // تنسيق النتيجة لتكون YYYY-Www (مثلاً 2026-W08)
-        return year + "-W" + (weekNumber < 10 ? "0" + weekNumber : weekNumber);
-    }
-
-    // تعيين القيمة تلقائياً بدلاً من التثبيت اليدوي
-    currentWeek = getAutoPreviousWeek(); 
+    // حساب الأسبوع السابق تلقائياً (للعمل عليه)
+    currentWeek = getCurrentWeekNumber();
     
-    // تحديث واجهة اختيار الأسبوع لتظهر القيمة المحسوبة تلقائياً
+    // تحديث واجهة اختيار الأسبوع
     document.getElementById("week-picker").value = currentWeek;
+    
+    console.log('📅 الأسبوع الحالي:', currentWeek);
     
     const userSelect = document.getElementById("user-role");
     const notifTarget = document.getElementById("notif-target");
@@ -2050,7 +2152,6 @@ window.onload = function() {
         userSelect.innerHTML += `<option value="${u}">${u}</option>`;
         if(u !== "المديـــــرية") notifTarget.innerHTML += `<option value="${u}">${u}</option>`;
     });
-
 
     // تشغيل الساعة وتحديث البيانات
     setInterval(updateClock, 1000);
@@ -2118,6 +2219,7 @@ async function login(){
     });
     
     document.getElementById("login-page").classList.add("hidden");
+    document.body.style.overflowY = "auto";
     document.getElementById("app-content").classList.remove("hidden");
     document.getElementById("user-tag").innerText = "الوحدة: " + currentUser;
     
@@ -2126,16 +2228,33 @@ async function login(){
         document.getElementById("master-clock-bar").classList.remove("hidden");
         document.getElementById("master-notif-panel").classList.remove("hidden");
         document.getElementById("backup-panel").classList.remove("hidden");
-        document.getElementById("dashboard-section").classList.remove("hidden");
+        
+        
         document.getElementById("unit-clock-bar").classList.add("hidden");
         document.getElementById("master-reveal-btn").classList.remove("hidden");
+        document.getElementById("btn-dashboard").classList.remove("hidden");
+        document.getElementById("btn-reports").classList.remove("hidden");
+        document.getElementById("btn-print").classList.remove("hidden");
+        document.getElementById("btn-change-pass").classList.remove("hidden");
+        document.getElementById("btn-logout").classList.remove("hidden");
         updateStatusPanel();
-        refreshDashboard();
+        
+        // تفعيل نظام الإشعارات الذكية
+        initNotificationsSystem();
+        
+        // تفعيل اختصارات لوحة المفاتيح
+        initKeyboardShortcuts();
         
         // تفعيل النسخ الاحتياطي التلقائي
         initAutoBackup();
     } else { 
-        checkNotifications(); 
+        checkNotifications();
+        
+        // تفعيل نظام الإشعارات للوحدات
+        initNotificationsSystem();
+        
+        // تفعيل اختصارات لوحة المفاتيح
+        initKeyboardShortcuts();
     }
     renderSystem();
     
@@ -2711,29 +2830,31 @@ function updateTableFoot(id, totals, targetIndices) {
     foot.innerHTML = html;
 }
 function updateChart(t) { const ctx = document.getElementById('mainChart').getContext('2d'); if(myChart) myChart.destroy(); myChart = new Chart(ctx, { type: 'bar', data: { labels: ['الإسعاف', 'حوادث', 'الحرائق', 'مختلفة'], datasets: [{ label: 'الإحصائيات', data: [t[1], t[5], t[9], t[13]], backgroundColor: ['#4caf50', '#ff9800', '#f44336', '#2196f3'] }] }, options: { responsive: true, maintainAspectRatio: false } }); }
-function getWeekDays(w) { 
-    if(!w) return ["-","-","-","-","-","-","-"]; 
-    let [year, week] = w.split('-W'); 
-    
-    // تحديد التاريخ بناءً على رقم الأسبوع
-    let d = new Date(year, 0, 1 + (week - 1) * 7); 
-    
-    // البحث عن يوم الأحد
-    while (d.getDay() !== 0) d.setDate(d.getDate() - 1); 
-    
-    // زيادة يوم واحد كما طلبت لضبط الحساب
-    d.setDate(d.getDate() + 1); 
-    
-    let days = []; 
-    for(let i=0; i<7; i++) { 
-        let n = new Date(d); 
-        n.setDate(d.getDate() + i); 
-        
-        // استخراج التاريخ فقط بصيغة YYYY-MM-DD
-        let dateStr = n.toISOString().split('T')[0]; 
-        days.push(dateStr); 
-    } 
-    return days; 
+function getWeekDays(w) {
+    if(!w) return ["-","-","-","-","-","-","-"];
+    let [year, week] = w.split('-W');
+    year = parseInt(year); week = parseInt(week);
+
+    // ISO week: الاثنين = بداية، أسبوعنا: الأحد = بداية (= اثنين ISO - 1)
+    let jan4 = new Date(year, 0, 4);
+    let isoMonday = new Date(jan4);
+    isoMonday.setDate(jan4.getDate() - (jan4.getDay() || 7) + 1);
+    isoMonday.setDate(isoMonday.getDate() + (week - 1) * 7);
+
+    // الأحد = يوم قبل الاثنين ISO
+    let weekStart = new Date(isoMonday);
+    weekStart.setDate(isoMonday.getDate() - 1);
+
+    let days = [];
+    for(let i = 0; i < 7; i++) {
+        let n = new Date(weekStart);
+        n.setDate(weekStart.getDate() + i);
+        let dateStr = n.getFullYear() + '-' +
+            String(n.getMonth()+1).padStart(2,'0') + '-' +
+            String(n.getDate()).padStart(2,'0');
+        days.push(dateStr);
+    }
+    return days;
 }
 function changeWeek(){ 
     cleanupListeners(); // إيقاف الـ listeners القديمة
@@ -2919,114 +3040,1948 @@ async function unlockUnitInput(unit, week, reason) {
 }
 function checkNotifications() { db.ref('notifications/' + currentUser).on('value', (snap) => { let msg = snap.val(); if(msg) { document.getElementById("notif-text").innerText = msg; document.getElementById("unit-notification").classList.remove("hidden"); } else { document.getElementById("unit-notification").classList.add("hidden"); } }); }
 function clearNotif() { db.ref('notifications/' + currentUser).remove(); }
-// ==================== لوحة المعلومات التفاعلية ====================
+// ==================== اختصارات لوحة المفاتيح ====================
 
-async function refreshDashboard() {
-    if (currentUser !== "المديـــــرية") {
-        Swal.fire('تنبيه', 'لوحة المعلومات متاحة للمديرية فقط', 'info');
+let shortcutsEnabled = true;
+let shortcutsHelpVisible = false;
+
+// تفعيل الاختصارات
+function initKeyboardShortcuts() {
+    document.addEventListener('keydown', handleKeyboardShortcut);
+    console.log('⌨️ تم تفعيل اختصارات لوحة المفاتيح');
+    
+    // إظهار تلميح الاختصارات لأول مرة
+    const firstTime = localStorage.getItem('shortcuts_shown');
+    if (!firstTime) {
+        setTimeout(() => {
+            showShortcutsTip();
+            localStorage.setItem('shortcuts_shown', 'true');
+        }, 3000);
+    }
+}
+
+function handleKeyboardShortcut(e) {
+    if (!shortcutsEnabled) return;
+    
+    // تجاهل الاختصارات إذا كان المستخدم يكتب في حقل نصي
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        // السماح فقط بـ Ctrl+S و Ctrl+Enter داخل الحقول
+        if (!(e.ctrlKey && (e.key === 's' || e.key === 'Enter'))) {
+            return;
+        }
+    }
+    
+    // Ctrl + S: حفظ
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault();
+        if (currentUser === "المديـــــرية") {
+            saveData();
+        } else {
+            const isSent = localStorage.getItem(currentWeek + "_sent_" + currentUser) === 'true';
+            if (!isSent) {
+                saveLocally();
+            }
+        }
+        showShortcutFeedback('💾 حفظ');
         return;
     }
     
-    const content = document.getElementById('dashboard-content');
-    content.innerHTML = '<div style="text-align:center; padding:40px;"><i class="fa-solid fa-spinner fa-spin" style="font-size:32px; color:var(--primary);"></i><br><p style="margin-top:10px;">جاري التحميل...</p></div>';
+    // Ctrl + Enter: إرسال (للوحدات)
+    if (e.ctrlKey && e.key === 'Enter') {
+        e.preventDefault();
+        if (currentUser !== "المديـــــرية") {
+            const isSent = localStorage.getItem(currentWeek + "_sent_" + currentUser) === 'true';
+            if (!isSent) {
+                sendToDirectorate();
+            }
+        }
+        showShortcutFeedback('📤 إرسال');
+        return;
+    }
+    
+    // Ctrl + P: طباعة
+    if (e.ctrlKey && e.key === 'p') {
+        e.preventDefault();
+        window.print();
+        showShortcutFeedback('🖨️ طباعة');
+        return;
+    }
+    
+    // Ctrl + ←: الأسبوع السابق
+    if (e.ctrlKey && e.key === 'ArrowLeft') {
+        e.preventDefault();
+        navigateWeek(-1);
+        showShortcutFeedback('◀️ الأسبوع السابق');
+        return;
+    }
+    
+    // Ctrl + →: الأسبوع التالي
+    if (e.ctrlKey && e.key === 'ArrowRight') {
+        e.preventDefault();
+        navigateWeek(1);
+        showShortcutFeedback('▶️ الأسبوع التالي');
+        return;
+    }
+    
+    // Ctrl + D: لوحة المعلومات (للمديرية)
+    if (e.ctrlKey && e.key === 'd') {
+        e.preventDefault();
+        if (currentUser === "المديـــــرية") {
+            showShortcutFeedback('📊 لوحة المعلومات غير متاحة');
+        }
+        return;
+    }
+    
+    // Ctrl + R: التقارير (للمديرية)
+    if (e.ctrlKey && e.key === 'r') {
+        e.preventDefault();
+        if (currentUser === "المديـــــرية") {
+            openReportsModal();
+            showShortcutFeedback('📈 التقارير');
+        }
+        return;
+    }
+    
+    // Ctrl + F: البحث المتقدم
+    if (e.ctrlKey && e.key === 'f') {
+        e.preventDefault();
+        toggleAdvancedSearch();
+        showShortcutFeedback('🔍 البحث المتقدم');
+        return;
+    }
+    
+    // Ctrl + N: الإشعارات
+    if (e.ctrlKey && e.key === 'n') {
+        e.preventDefault();
+        toggleNotificationsPanel();
+        showShortcutFeedback('🔔 الإشعارات');
+        return;
+    }
+    
+    // F1 أو Ctrl + H: عرض مساعدة الاختصارات
+    if (e.key === 'F1' || (e.ctrlKey && e.key === 'h')) {
+        e.preventDefault();
+        showShortcutsHelp();
+        return;
+    }
+    
+    // ESC: إغلاق النوافذ المنبثقة
+    if (e.key === 'Escape') {
+        closeNotificationsPanel();
+        closeAdvancedSearch();
+        if (shortcutsHelpVisible) {
+            closeShortcutsHelp();
+        }
+        return;
+    }
+}
+
+// التنقل بين الأسابيع
+function navigateWeek(direction) {
+    const weekPicker = document.getElementById('week-picker');
+    const currentValue = weekPicker.value;
+    const [year, week] = currentValue.split('-W');
+    let newWeek = parseInt(week) + direction;
+    let newYear = parseInt(year);
+    
+    if (newWeek < 1) {
+        newWeek = 52;
+        newYear--;
+    } else if (newWeek > 52) {
+        newWeek = 1;
+        newYear++;
+    }
+    
+    const newValue = `${newYear}-W${newWeek.toString().padStart(2, '0')}`;
+    weekPicker.value = newValue;
+    changeWeek();
+}
+
+// عرض ملاحظة سريعة للاختصار
+function showShortcutFeedback(message) {
+    const feedback = document.createElement('div');
+    feedback.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 15px 30px;
+        border-radius: 12px;
+        font-size: 18px;
+        font-weight: 700;
+        z-index: 99999;
+        pointer-events: none;
+        animation: fadeInOut 1s ease-in-out;
+    `;
+    feedback.textContent = message;
+    document.body.appendChild(feedback);
+    
+    setTimeout(() => {
+        feedback.remove();
+    }, 1000);
+}
+
+// إضافة CSS للـ animation
+if (!document.getElementById('shortcuts-styles')) {
+    const style = document.createElement('style');
+    style.id = 'shortcuts-styles';
+    style.textContent = `
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+            20% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            80% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+        }
+    `;
+    document.head.appendChild(style);
+}
+
+// تلميح الاختصارات
+function showShortcutsTip() {
+    Swal.fire({
+        title: '⌨️ نصيحة سريعة!',
+        html: `
+            <div style="text-align: right; padding: 15px; line-height: 1.8;">
+                <p style="font-size: 16px; margin-bottom: 15px;">يمكنك استخدام اختصارات لوحة المفاتيح لتسريع عملك:</p>
+                <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; font-size: 14px;">
+                    <div style="margin-bottom: 8px;"><strong>Ctrl + S</strong> للحفظ السريع</div>
+                    <div style="margin-bottom: 8px;"><strong>Ctrl + P</strong> للطباعة</div>
+                    <div style="margin-bottom: 8px;"><strong>F1</strong> لعرض جميع الاختصارات</div>
+                </div>
+                <p style="font-size: 13px; color: #666; margin-top: 15px;">
+                    اضغط <strong>F1</strong> في أي وقت لعرض القائمة الكاملة
+                </p>
+            </div>
+        `,
+        icon: 'info',
+        confirmButtonText: 'فهمت',
+        confirmButtonColor: 'var(--primary)'
+    });
+}
+
+// عرض مساعدة الاختصارات
+function showShortcutsHelp() {
+    shortcutsHelpVisible = true;
+    
+    const shortcuts = [
+        { key: 'Ctrl + S', desc: 'حفظ البيانات', icon: '💾' },
+        { key: 'Ctrl + Enter', desc: 'إرسال إلى المديرية (للوحدات)', icon: '📤' },
+        { key: 'Ctrl + P', desc: 'طباعة', icon: '🖨️' },
+        { key: 'Ctrl + ←', desc: 'الأسبوع السابق', icon: '◀️' },
+        { key: 'Ctrl + →', desc: 'الأسبوع التالي', icon: '▶️' },
+        { key: 'Ctrl + R', desc: 'التقارير (للمديرية)', icon: '📈' },
+        { key: 'Ctrl + F', desc: 'البحث المتقدم', icon: '🔍' },
+        { key: 'Ctrl + N', desc: 'الإشعارات', icon: '🔔' },
+        { key: 'F1 أو Ctrl + H', desc: 'عرض المساعدة', icon: '❓' },
+        { key: 'ESC', desc: 'إغلاق النوافذ', icon: '❌' }
+    ];
+    
+    const html = `
+        <div style="text-align: right; max-height: 500px; overflow-y: auto;">
+            <div style="display: grid; gap: 10px; padding: 10px;">
+                ${shortcuts.map(s => `
+                    <div style="display: grid; grid-template-columns: 40px 150px 1fr; gap: 15px; align-items: center; background: #f8f9fa; padding: 12px; border-radius: 8px;">
+                        <div style="font-size: 24px; text-align: center;">${s.icon}</div>
+                        <div style="background: white; padding: 8px; border-radius: 6px; text-align: center; font-family: monospace; font-weight: 700; border: 2px solid #e0e0e0;">
+                            ${s.key}
+                        </div>
+                        <div style="font-size: 14px; color: #333;">${s.desc}</div>
+                    </div>
+                `).join('')}
+            </div>
+        </div>
+    `;
+    
+    Swal.fire({
+        title: '⌨️ اختصارات لوحة المفاتيح',
+        html: html,
+        width: 700,
+        confirmButtonText: 'حسناً',
+        confirmButtonColor: 'var(--primary)',
+        didClose: () => {
+            shortcutsHelpVisible = false;
+        }
+    });
+}
+
+function closeShortcutsHelp() {
+    Swal.close();
+    shortcutsHelpVisible = false;
+}
+
+// ==================== البحث المتقدم ====================
+
+let searchPanelVisible = false;
+
+// إضافة قسم البحث المتقدم للـ HTML
+function createAdvancedSearchPanel() {
+    const existingPanel = document.getElementById('advanced-search-panel');
+    if (existingPanel) return;
+    
+    const panel = document.createElement('div');
+    panel.id = 'advanced-search-panel';
+    panel.className = 'no-print';
+    panel.style.cssText = `
+        position: fixed;
+        top: 0;
+        right: -400px;
+        width: 400px;
+        height: 100vh;
+        background: white;
+        box-shadow: -5px 0 20px rgba(0,0,0,0.2);
+        z-index: 9997;
+        transition: right 0.3s ease;
+        overflow-y: auto;
+    `;
+    
+    panel.innerHTML = `
+        <div style="position: sticky; top: 0; background: linear-gradient(135deg, var(--primary), #0d7377); color: white; padding: 20px; z-index: 1;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                <h3 style="margin: 0; font-size: 20px; font-weight: 900;">
+                    <i class="fa-solid fa-magnifying-glass"></i> البحث المتقدم
+                </h3>
+                <button onclick="closeAdvancedSearch()" style="background: transparent; border: none; color: white; cursor: pointer; font-size: 24px;">
+                    <i class="fa-solid fa-times"></i>
+                </button>
+            </div>
+            <div style="font-size: 13px; opacity: 0.9;">ابحث في جميع البيانات المحفوظة</div>
+        </div>
+        
+        <div style="padding: 20px;">
+            <!-- فلاتر البحث -->
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333;">
+                    <i class="fa-solid fa-calendar-days"></i> نطاق التاريخ
+                </label>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                    <input type="date" id="search-date-from" class="input-field" style="margin: 0; font-size: 13px;" placeholder="من">
+                    <input type="date" id="search-date-to" class="input-field" style="margin: 0; font-size: 13px;" placeholder="إلى">
+                </div>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333;">
+                    <i class="fa-solid fa-building"></i> الوحدة
+                </label>
+                <select id="search-unit-filter" class="input-field" style="margin: 0; font-size: 13px;">
+                    <option value="">جميع الوحدات</option>
+                </select>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <label style="display: block; font-size: 12px; font-weight: bold; margin-bottom: 5px; color: #333;">
+                    <i class="fa-solid fa-layer-group"></i> نوع التدخل
+                </label>
+                <select id="search-category-filter" class="input-field" style="margin: 0; font-size: 13px;">
+                    <option value="">جميع الأنواع</option>
+                    <option value="ambulance">الإسعاف</option>
+                    <option value="traffic">حوادث المرور</option>
+                    <option value="fire">الحرائق</option>
+                    <option value="other">مختلفة</option>
+                </select>
+            </div>
+            
+            <!-- فلاتر إضافية -->
+            <div style="background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                <div style="font-size: 13px; font-weight: bold; margin-bottom: 10px; color: #333;">فلاتر ذكية:</div>
+                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="filter-with-deaths" style="cursor: pointer;">
+                    <span>💔 فقط الأسابيع التي بها وفيات</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; margin-bottom: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="filter-high-activity" style="cursor: pointer;">
+                    <span>📈 النشاط المرتفع (>100 تدخل)</span>
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 13px;">
+                    <input type="checkbox" id="filter-low-activity" style="cursor: pointer;">
+                    <span>📉 النشاط المنخفض (<20 تدخل)</span>
+                </label>
+            </div>
+            
+            <!-- زر البحث -->
+            <button onclick="performAdvancedSearch()" class="btn" style="width: 100%; margin: 0; background: var(--primary); justify-content: center; font-size: 15px; padding: 12px;">
+                <i class="fa-solid fa-search"></i>
+                بحث
+            </button>
+            
+            <!-- نتائج البحث -->
+            <div id="search-results-container" style="margin-top: 20px;"></div>
+        </div>
+    `;
+    
+    document.body.appendChild(panel);
+    
+    // ملء قائمة الوحدات
+    const unitSelect = document.getElementById('search-unit-filter');
+    Object.keys(unitConfig).forEach(unit => {
+        if (unit !== "المديـــــرية") {
+            const option = document.createElement('option');
+            option.value = unit;
+            option.textContent = unit;
+            unitSelect.appendChild(option);
+        }
+    });
+}
+
+// فتح/إغلاق لوحة البحث
+function toggleAdvancedSearch() {
+    createAdvancedSearchPanel();
+    const panel = document.getElementById('advanced-search-panel');
+    searchPanelVisible = !searchPanelVisible;
+    panel.style.right = searchPanelVisible ? '0' : '-400px';
+}
+
+function closeAdvancedSearch() {
+    const panel = document.getElementById('advanced-search-panel');
+    if (panel) {
+        panel.style.right = '-400px';
+        searchPanelVisible = false;
+    }
+}
+
+// تنفيذ البحث المتقدم
+async function performAdvancedSearch() {
+    const dateFrom = document.getElementById('search-date-from').value;
+    const dateTo = document.getElementById('search-date-to').value;
+    const unitFilter = document.getElementById('search-unit-filter').value;
+    const categoryFilter = document.getElementById('search-category-filter').value;
+    const withDeaths = document.getElementById('filter-with-deaths').checked;
+    const highActivity = document.getElementById('filter-high-activity').checked;
+    const lowActivity = document.getElementById('filter-low-activity').checked;
+    
+    const resultsContainer = document.getElementById('search-results-container');
+    resultsContainer.innerHTML = '<div style="text-align: center; padding: 20px;"><i class="fa-solid fa-spinner fa-spin" style="font-size: 32px; color: var(--primary);"></i><br><p style="margin-top: 10px; font-size: 14px;">جاري البحث...</p></div>';
+    
+    try {
+        const snapshot = await db.ref('data').once('value');
+        const allData = snapshot.val() || {};
+        
+        let results = [];
+        
+        Object.keys(allData).forEach(week => {
+            // فلترة بالتاريخ
+            if (dateFrom || dateTo) {
+                const [year, weekNum] = week.split('-W');
+                const weekDate = new Date(year, 0, 1 + (parseInt(weekNum) - 1) * 7);
+                
+                if (dateFrom && weekDate < new Date(dateFrom)) return;
+                if (dateTo && weekDate > new Date(dateTo)) return;
+            }
+            
+            Object.keys(allData[week]).forEach(unit => {
+                if (unit === "المديـــــرية") return;
+                
+                // فلترة بالوحدة
+                if (unitFilter && unit !== unitFilter) return;
+                
+                const unitData = allData[week][unit];
+                if (!unitData.daily) return;
+                
+                let totals = { ambulance: 0, traffic: 0, fire: 0, other: 0, deaths: 0 };
+                
+                unitData.daily.forEach(day => {
+                    if (day) {
+                        totals.ambulance += parseInt(day[1]) || 0;
+                        totals.traffic += parseInt(day[5]) || 0;
+                        totals.fire += parseInt(day[9]) || 0;
+                        totals.other += parseInt(day[13]) || 0;
+                        totals.deaths += (parseInt(day[3]) || 0) + (parseInt(day[7]) || 0) + 
+                                        (parseInt(day[11]) || 0) + (parseInt(day[15]) || 0);
+                    }
+                });
+                
+                const total = totals.ambulance + totals.traffic + totals.fire + totals.other;
+                
+                // فلترة بنوع التدخل
+                if (categoryFilter) {
+                    if (categoryFilter === 'ambulance' && totals.ambulance === 0) return;
+                    if (categoryFilter === 'traffic' && totals.traffic === 0) return;
+                    if (categoryFilter === 'fire' && totals.fire === 0) return;
+                    if (categoryFilter === 'other' && totals.other === 0) return;
+                }
+                
+                // الفلاتر الذكية
+                if (withDeaths && totals.deaths === 0) return;
+                if (highActivity && total <= 100) return;
+                if (lowActivity && total >= 20) return;
+                
+                results.push({
+                    week,
+                    unit,
+                    totals,
+                    total
+                });
+            });
+        });
+        
+        // ترتيب النتائج
+        results.sort((a, b) => {
+            const weekA = a.week.split('-W').map(n => parseInt(n));
+            const weekB = b.week.split('-W').map(n => parseInt(n));
+            if (weekA[0] !== weekB[0]) return weekB[0] - weekA[0];
+            return weekB[1] - weekA[1];
+        });
+        
+        displaySearchResults(results);
+        
+    } catch (error) {
+        resultsContainer.innerHTML = `
+            <div style="text-align: center; padding: 20px; color: #e74c3c;">
+                <i class="fa-solid fa-exclamation-triangle" style="font-size: 32px;"></i>
+                <p style="margin-top: 10px; font-size: 14px;">خطأ في البحث: ${error.message}</p>
+            </div>
+        `;
+    }
+}
+
+// عرض نتائج البحث
+function displaySearchResults(results) {
+    const container = document.getElementById('search-results-container');
+    
+    if (results.length === 0) {
+        container.innerHTML = `
+            <div style="text-align: center; padding: 30px; background: #f8f9fa; border-radius: 8px;">
+                <i class="fa-solid fa-search" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                <p style="margin: 0; font-size: 14px; color: #666;">لم يتم العثور على نتائج</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = `
+        <div style="background: #e8f5e9; padding: 12px; border-radius: 8px; margin-bottom: 15px; text-align: center;">
+            <div style="font-size: 24px; font-weight: 900; color: #4caf50;">${results.length}</div>
+            <div style="font-size: 12px; color: #666;">نتيجة</div>
+        </div>
+        
+        <div style="display: grid; gap: 10px;">
+            ${results.map(result => `
+                <div style="background: white; border: 1px solid #e0e0e0; border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.2s;" 
+                     onmouseover="this.style.boxShadow='0 4px 12px rgba(0,0,0,0.1)'; this.style.borderColor='var(--primary)';"
+                     onmouseout="this.style.boxShadow='none'; this.style.borderColor='#e0e0e0';">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 8px;">
+                        <div>
+                            <div style="font-weight: 900; font-size: 14px; color: #333;">${result.unit}</div>
+                            <div style="font-size: 12px; color: #999; margin-top: 2px;">${result.week}</div>
+                        </div>
+                        <div style="text-align: left;">
+                            <div style="font-size: 20px; font-weight: 900; color: var(--primary);">${result.total}</div>
+                            ${result.totals.deaths > 0 ? `<div style="font-size: 11px; color: #e74c3c; font-weight: 700;">💔 ${result.totals.deaths}</div>` : ''}
+                        </div>
+                    </div>
+                    <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; font-size: 11px;">
+                        <div style="background: #4caf5015; padding: 4px; border-radius: 4px; text-align: center;">
+                            🚑 ${result.totals.ambulance}
+                        </div>
+                        <div style="background: #ff980015; padding: 4px; border-radius: 4px; text-align: center;">
+                            🚗 ${result.totals.traffic}
+                        </div>
+                        <div style="background: #f4433615; padding: 4px; border-radius: 4px; text-align: center;">
+                            🔥 ${result.totals.fire}
+                        </div>
+                        <div style="background: #2196f315; padding: 4px; border-radius: 4px; text-align: center;">
+                            ⚠️ ${result.totals.other}
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+    
+    container.innerHTML = html;
+}
+
+// ==================== نظام الإشعارات الذكية ====================
+
+let notificationsData = [];
+let notificationsInterval = null;
+
+// تهيئة نظام الإشعارات
+function initNotificationsSystem() {
+    // إظهار زر الإشعارات
+    const nb=document.getElementById('notifications-bell'); nb.style.display='flex'; nb.style.alignItems='center'; nb.style.justifyContent='center';
+    
+    // تحميل الإشعارات المحفوظة
+    loadSavedNotifications();
+    
+    // بدء المراقبة الذكية
+    startSmartMonitoring();
+    
+    // التحقق من الإشعارات كل دقيقة
+    notificationsInterval = setInterval(() => {
+        checkForNewNotifications();
+    }, 60000); // كل دقيقة
+    
+    console.log('✅ تم تفعيل نظام الإشعارات الذكية');
+}
+
+// تحميل الإشعارات المحفوظة
+function loadSavedNotifications() {
+    const saved = localStorage.getItem('notifications_' + currentUser);
+    if (saved) {
+        try {
+            notificationsData = JSON.parse(saved);
+            updateNotificationsBadge();
+            renderNotificationsList();
+        } catch(e) {
+            console.error('خطأ في تحميل الإشعارات:', e);
+        }
+    }
+}
+
+// حفظ الإشعارات
+function saveNotifications() {
+    localStorage.setItem('notifications_' + currentUser, JSON.stringify(notificationsData));
+}
+
+// إضافة إشعار جديد
+function addNotification(notification) {
+    const newNotif = {
+        id: Date.now(),
+        timestamp: new Date().toISOString(),
+        read: false,
+        ...notification
+    };
+    
+    notificationsData.unshift(newNotif);
+    
+    // الاحتفاظ بآخر 50 إشعار فقط
+    if (notificationsData.length > 50) {
+        notificationsData = notificationsData.slice(0, 50);
+    }
+    
+    saveNotifications();
+    updateNotificationsBadge();
+    renderNotificationsList();
+    
+    // إظهار toast notification
+    showToastNotification(newNotif);
+    
+    // صوت تنبيه (اختياري)
+    playNotificationSound();
+}
+
+// المراقبة الذكية
+function startSmartMonitoring() {
+    if (currentUser === "المديـــــرية") {
+        // إشعارات للمديرية
+        monitorNewSubmissions();
+        monitorLateUnits();
+        monitorAbnormalData();
+    } else {
+        // إشعارات للوحدات
+        monitorSubmissionDeadline();
+        monitorDataValidation();
+    }
+}
+
+// مراقبة البيانات الجديدة (للمديرية)
+async function monitorNewSubmissions() {
+    const lastCheck = localStorage.getItem('lastSubmissionCheck_' + currentUser);
+    const now = Date.now();
+    
+    if (lastCheck && (now - parseInt(lastCheck)) < 3600000) {
+        return; // تم الفحص مؤخراً (آخر ساعة)
+    }
     
     try {
         const snapshot = await db.ref(`data/${currentWeek}`).once('value');
         const weekData = snapshot.val() || {};
         
-        let totals = { ambulance: 0, traffic: 0, fire: 0, other: 0, deaths: 0 };
-        let unitsList = [];
-        
         Object.keys(weekData).forEach(unit => {
-            if (unit !== "المديـــــرية" && weekData[unit].daily) {
-                let unitTotal = 0;
-                weekData[unit].daily.forEach(day => {
-                    if (day) {
-                        const amb = parseInt(day[1]) || 0;
-                        const traf = parseInt(day[5]) || 0;
-                        const fir = parseInt(day[9]) || 0;
-                        const oth = parseInt(day[13]) || 0;
-                        
-                        totals.ambulance += amb;
-                        totals.traffic += traf;
-                        totals.fire += fir;
-                        totals.other += oth;
-                        totals.deaths += (parseInt(day[3]) || 0) + (parseInt(day[7]) || 0) + (parseInt(day[11]) || 0) + (parseInt(day[15]) || 0);
-                        
-                        unitTotal += amb + traf + fir + oth;
-                    }
-                });
-                unitsList.push({ unit, total: unitTotal });
+            if (unit !== "المديـــــرية" && weekData[unit].sentAt) {
+                const sentTime = new Date(weekData[unit].sentAt).getTime();
+                const lastCheckTime = parseInt(lastCheck) || 0;
+                
+                if (sentTime > lastCheckTime) {
+                    addNotification({
+                        type: 'new_submission',
+                        title: '📥 بيانات جديدة',
+                        message: `تم استلام بيانات من وحدة: ${unit}`,
+                        unit: unit,
+                        week: currentWeek,
+                        icon: 'fa-inbox',
+                        color: '#4caf50'
+                    });
+                }
             }
         });
         
-        const grandTotal = totals.ambulance + totals.traffic + totals.fire + totals.other;
-        
-        // ترتيب الوحدات
-        unitsList.sort((a, b) => b.total - a.total);
-        
-        const html = `
-            <!-- البطاقات الإحصائية -->
-            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:12px; margin-bottom:25px;">
-                ${renderDashCard('الإسعاف', totals.ambulance, '#4caf50', 'fa-ambulance')}
-                ${renderDashCard('حوادث المرور', totals.traffic, '#ff9800', 'fa-car-burst')}
-                ${renderDashCard('الحرائق', totals.fire, '#f44336', 'fa-fire-flame-curved')}
-                ${renderDashCard('مختلفة', totals.other, '#2196f3', 'fa-ellipsis')}
-                ${renderDashCard('الوفيات', totals.deaths, '#e74c3c', 'fa-heart-crack', true)}
-            </div>
-            
-            <!-- الإجمالي -->
-            <div style="background:linear-gradient(135deg, var(--primary), #0d7377); color:white; padding:25px; border-radius:15px; text-align:center; margin-bottom:25px; box-shadow:0 8px 20px rgba(0,0,0,0.15);">
-                <div style="font-size:16px; opacity:0.9; margin-bottom:8px;">إجمالي التدخلات هذا الأسبوع</div>
-                <div style="font-size:56px; font-weight:900; text-shadow:2px 2px 4px rgba(0,0,0,0.3);">${grandTotal}</div>
-                <div style="font-size:13px; opacity:0.8; margin-top:8px;">الأسبوع ${currentWeek}</div>
-            </div>
-            
-            <!-- ترتيب الوحدات -->
-            <div style="background:#f8f9fa; padding:20px; border-radius:12px;">
-                <h4 style="margin:0 0 15px 0; font-weight:900; color:#333;">
-                    <i class="fa-solid fa-ranking-star"></i> ترتيب الوحدات
-                </h4>
-                <div style="display:grid; gap:10px;">
-                    ${unitsList.slice(0, 10).map((item, idx) => {
-                        const pct = grandTotal > 0 ? Math.round((item.total / grandTotal) * 100) : 0;
-                        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : `${idx + 1}.`;
-                        return `
-                            <div style="background:white; padding:12px; border-radius:8px; display:grid; grid-template-columns:40px 1fr auto; gap:10px; align-items:center; box-shadow:0 2px 5px rgba(0,0,0,0.05);">
-                                <div style="font-size:20px; text-align:center; font-weight:900;">${medal}</div>
-                                <div>
-                                    <div style="font-weight:700; font-size:14px; margin-bottom:3px;">${item.unit}</div>
-                                    <div style="background:#e0e0e0; height:6px; border-radius:3px; overflow:hidden;">
-                                        <div style="width:${pct}%; height:100%; background:var(--primary); transition:width 0.5s;"></div>
-                                    </div>
-                                </div>
-                                <div style="text-align:left;">
-                                    <div style="font-size:20px; font-weight:900; color:var(--primary);">${item.total}</div>
-                                    <div style="font-size:11px; color:#999;">${pct}%</div>
-                                </div>
-                            </div>
-                        `;
-                    }).join('')}
-                </div>
-            </div>
-        `;
-        
-        content.innerHTML = html;
-        
-    } catch (error) {
-        content.innerHTML = `<div style="text-align:center; padding:40px; color:#e74c3c;">
-            <i class="fa-solid fa-exclamation-triangle" style="font-size:32px;"></i>
-            <p style="margin-top:10px;">خطأ في تحميل البيانات: ${error.message}</p>
-        </div>`;
+        localStorage.setItem('lastSubmissionCheck_' + currentUser, now.toString());
+    } catch(e) {
+        console.error('خطأ في مراقبة البيانات الجديدة:', e);
     }
 }
 
-function renderDashCard(label, value, color, icon, isWarning = false) {
+// مراقبة الوحدات المتأخرة (للمديرية)
+async function monitorLateUnits() {
+    try {
+        const snapshot = await db.ref(`data/${currentWeek}`).once('value');
+        const weekData = snapshot.val() || {};
+        
+        const allUnits = Object.keys(unitConfig).filter(u => u !== "المديـــــرية");
+        const submittedUnits = Object.keys(weekData).filter(u => u !== "المديـــــرية");
+        const lateUnits = allUnits.filter(u => !submittedUnits.includes(u));
+        
+        if (lateUnits.length > 0) {
+            // التحقق من اليوم (إذا كان السبت مساءً أو الأحد)
+            const now = new Date();
+            const dayOfWeek = now.getDay();
+            const hour = now.getHours();
+            
+            if ((dayOfWeek === 6 && hour >= 16) || dayOfWeek === 0) {
+                const lastWarning = localStorage.getItem('lateUnitsWarning_' + currentWeek);
+                if (!lastWarning || (Date.now() - parseInt(lastWarning)) > 86400000) { // مرة في اليوم
+                    addNotification({
+                        type: 'late_units',
+                        title: '⏰ وحدات متأخرة',
+                        message: `${lateUnits.length} وحدة لم ترسل بياناتها بعد`,
+                        units: lateUnits,
+                        week: currentWeek,
+                        icon: 'fa-clock',
+                        color: '#ff9800'
+                    });
+                    localStorage.setItem('lateUnitsWarning_' + currentWeek, Date.now().toString());
+                }
+            }
+        }
+    } catch(e) {
+        console.error('خطأ في مراقبة الوحدات المتأخرة:', e);
+    }
+}
+
+// مراقبة البيانات غير الطبيعية (للمديرية)
+async function monitorAbnormalData() {
+    try {
+        const snapshot = await db.ref(`data/${currentWeek}`).once('value');
+        const weekData = snapshot.val() || {};
+        
+        Object.keys(weekData).forEach(unit => {
+            if (unit !== "المديـــــرية" && weekData[unit].daily) {
+                let totals = { ambulance: 0, traffic: 0, fire: 0, other: 0, deaths: 0 };
+                
+                weekData[unit].daily.forEach(day => {
+                    if (day) {
+                        totals.ambulance += parseInt(day[1]) || 0;
+                        totals.traffic += parseInt(day[5]) || 0;
+                        totals.fire += parseInt(day[9]) || 0;
+                        totals.other += parseInt(day[13]) || 0;
+                        totals.deaths += (parseInt(day[3]) || 0) + (parseInt(day[7]) || 0) + 
+                                        (parseInt(day[11]) || 0) + (parseInt(day[15]) || 0);
+                    }
+                });
+                
+                const total = totals.ambulance + totals.traffic + totals.fire + totals.other;
+                
+                // تنبيه إذا كان هناك وفيات
+                if (totals.deaths > 0) {
+                    const deathNotifKey = `death_${unit}_${currentWeek}`;
+                    if (!localStorage.getItem(deathNotifKey)) {
+                        addNotification({
+                            type: 'deaths_alert',
+                            title: '💔 تنبيه وفيات',
+                            message: `${totals.deaths} وفاة مسجلة في ${unit}`,
+                            unit: unit,
+                            week: currentWeek,
+                            deaths: totals.deaths,
+                            icon: 'fa-heart-crack',
+                            color: '#e74c3c',
+                            priority: 'high'
+                        });
+                        localStorage.setItem(deathNotifKey, 'true');
+                    }
+                }
+                
+                // تنبيه إذا كان العدد مرتفع جداً (أكثر من 200)
+                if (total > 200) {
+                    const highNotifKey = `high_${unit}_${currentWeek}`;
+                    if (!localStorage.getItem(highNotifKey)) {
+                        addNotification({
+                            type: 'high_activity',
+                            title: '📈 نشاط مرتفع',
+                            message: `${unit}: ${total} تدخل هذا الأسبوع`,
+                            unit: unit,
+                            week: currentWeek,
+                            total: total,
+                            icon: 'fa-arrow-trend-up',
+                            color: '#ff9800'
+                        });
+                        localStorage.setItem(highNotifKey, 'true');
+                    }
+                }
+            }
+        });
+    } catch(e) {
+        console.error('خطأ في مراقبة البيانات:', e);
+    }
+}
+
+// مراقبة موعد الإرسال (للوحدات)
+function monitorSubmissionDeadline() {
+    const now = new Date();
+    const dayOfWeek = now.getDay();
+    const hour = now.getHours();
+    
+    // التحقق من حالة الإرسال
+    const isSent = localStorage.getItem(currentWeek + "_sent_" + currentUser) === 'true';
+    
+    if (!isSent) {
+        // تنبيه يوم الجمعة بعد الظهر
+        if (dayOfWeek === 5 && hour >= 14) {
+            const fridayWarning = localStorage.getItem('fridayWarning_' + currentWeek);
+            if (!fridayWarning) {
+                addNotification({
+                    type: 'deadline_warning',
+                    title: '⏰ تذكير مهم',
+                    message: 'لم تقم بإرسال بيانات هذا الأسبوع بعد',
+                    week: currentWeek,
+                    icon: 'fa-calendar-xmark',
+                    color: '#ff9800',
+                    priority: 'medium'
+                });
+                localStorage.setItem('fridayWarning_' + currentWeek, 'true');
+            }
+        }
+        
+        // تنبيه يوم السبت
+        if (dayOfWeek === 6) {
+            const saturdayWarning = localStorage.getItem('saturdayWarning_' + currentWeek);
+            if (!saturdayWarning) {
+                addNotification({
+                    type: 'deadline_urgent',
+                    title: '🚨 تنبيه عاجل',
+                    message: 'آخر يوم لإرسال البيانات - يرجى الإرسال اليوم!',
+                    week: currentWeek,
+                    icon: 'fa-triangle-exclamation',
+                    color: '#e74c3c',
+                    priority: 'high'
+                });
+                localStorage.setItem('saturdayWarning_' + currentWeek, 'true');
+            }
+        }
+    }
+}
+
+// التحقق من صحة البيانات (للوحدات)
+function monitorDataValidation() {
+    const emptyCount = document.querySelectorAll('.d-input, .m-input').length;
+    const filledCount = Array.from(document.querySelectorAll('.d-input, .m-input'))
+        .filter(input => input.value && input.value.trim() !== '').length;
+    
+    const completionPct = emptyCount > 0 ? Math.round((filledCount / emptyCount) * 100) : 0;
+    
+    if (completionPct < 50 && completionPct > 0) {
+        const lowCompletion = localStorage.getItem('lowCompletion_' + currentWeek);
+        if (!lowCompletion) {
+            addNotification({
+                type: 'data_incomplete',
+                title: '📝 بيانات غير مكتملة',
+                message: `تم ملء ${completionPct}% فقط من البيانات`,
+                week: currentWeek,
+                completion: completionPct,
+                icon: 'fa-clipboard-question',
+                color: '#2196f3'
+            });
+            localStorage.setItem('lowCompletion_' + currentWeek, 'true');
+        }
+    }
+}
+
+// التحقق من الإشعارات الجديدة
+async function checkForNewNotifications() {
+    if (currentUser === "المديـــــرية") {
+        await monitorNewSubmissions();
+        await monitorLateUnits();
+        await monitorAbnormalData();
+    } else {
+        monitorSubmissionDeadline();
+        monitorDataValidation();
+    }
+}
+
+// عرض/إخفاء لوحة الإشعارات
+function toggleNotificationsPanel() {
+    const panel = document.getElementById('notifications-panel');
+    if (panel.style.display === 'none' || panel.style.display === '') {
+        panel.style.display = 'block';
+        // تحديد جميع الإشعارات كمقروءة عند فتح اللوحة
+        setTimeout(() => {
+            markAllAsRead();
+        }, 1000);
+    } else {
+        panel.style.display = 'none';
+    }
+}
+
+function closeNotificationsPanel() {
+    document.getElementById('notifications-panel').style.display = 'none';
+}
+
+// تحديث شارة العدد
+function updateNotificationsBadge() {
+    const unreadCount = notificationsData.filter(n => !n.read).length;
+    const badge = document.getElementById('bell-badge');
+    const count = document.getElementById('notif-count');
+    
+    if (unreadCount > 0) {
+        badge.style.display = 'flex';
+        badge.textContent = unreadCount > 9 ? '9+' : unreadCount;
+        count.textContent = unreadCount;
+    } else {
+        badge.style.display = 'none';
+        count.textContent = '0';
+    }
+}
+
+// عرض قائمة الإشعارات
+function renderNotificationsList() {
+    const list = document.getElementById('notifications-list');
+    
+    if (notificationsData.length === 0) {
+        list.innerHTML = `
+            <div style="padding:40px 20px; text-align:center; color:#999;">
+                <i class="fa-solid fa-bell-slash" style="font-size:48px; margin-bottom:10px; opacity:0.3;"></i>
+                <p style="margin:0; font-size:14px;">لا توجد إشعارات</p>
+            </div>
+        `;
+        return;
+    }
+    
+    const html = notificationsData.map(notif => {
+        const time = new Date(notif.timestamp);
+        const timeAgo = getTimeAgo(time);
+        const priorityBorder = notif.priority === 'high' ? '3px' : notif.priority === 'medium' ? '2px' : '0px';
+        
+        return `
+            <div onclick="markAsRead('${notif.id}')" style="
+                padding:15px;
+                border-bottom:1px solid #f0f0f0;
+                cursor:pointer;
+                background:${notif.read ? 'white' : '#f0f4ff'};
+                border-right:${priorityBorder} solid ${notif.color || '#2196f3'};
+                transition:background 0.3s;
+            " onmouseover="this.style.background='#f8f9fa'" onmouseout="this.style.background='${notif.read ? 'white' : '#f0f4ff'}'">
+                <div style="display:flex; gap:12px;">
+                    <div style="flex-shrink:0;">
+                        <div style="width:40px; height:40px; border-radius:50%; background:${notif.color}15; display:flex; align-items:center; justify-content:center;">
+                            <i class="fa-solid ${notif.icon}" style="color:${notif.color}; font-size:18px;"></i>
+                        </div>
+                    </div>
+                    <div style="flex:1; min-width:0;">
+                        <div style="display:flex; justify-content:space-between; align-items:start; margin-bottom:5px;">
+                            <span style="font-weight:900; font-size:14px; color:#333;">${notif.title}</span>
+                            ${!notif.read ? '<div style="width:8px; height:8px; border-radius:50%; background:#2196f3; flex-shrink:0;"></div>' : ''}
+                        </div>
+                        <p style="margin:0; font-size:13px; color:#666; line-height:1.4;">${notif.message}</p>
+                        <div style="margin-top:8px; font-size:11px; color:#999;">
+                            <i class="fa-solid fa-clock"></i> ${timeAgo}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+    
+    list.innerHTML = html;
+}
+
+// تحديد إشعار كمقروء
+function markAsRead(id) {
+    const notif = notificationsData.find(n => n.id == id);
+    if (notif) {
+        notif.read = true;
+        saveNotifications();
+        updateNotificationsBadge();
+        renderNotificationsList();
+    }
+}
+
+// تحديد الكل كمقروء
+function markAllAsRead() {
+    notificationsData.forEach(n => n.read = true);
+    saveNotifications();
+    updateNotificationsBadge();
+    renderNotificationsList();
+}
+
+// حذف جميع الإشعارات
+function clearAllNotifications() {
+    Swal.fire({
+        title: 'هل أنت متأكد؟',
+        text: 'سيتم حذف جميع الإشعارات',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonText: 'نعم، احذف',
+        cancelButtonText: 'إلغاء',
+        confirmButtonColor: '#e74c3c'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            notificationsData = [];
+            saveNotifications();
+            updateNotificationsBadge();
+            renderNotificationsList();
+            Swal.fire('تم الحذف', 'تم حذف جميع الإشعارات', 'success');
+        }
+    });
+}
+
+// حساب الوقت منذ الإشعار
+function getTimeAgo(date) {
+    const now = new Date();
+    const diff = now - date;
+    const minutes = Math.floor(diff / 60000);
+    const hours = Math.floor(diff / 3600000);
+    const days = Math.floor(diff / 86400000);
+    
+    if (minutes < 1) return 'الآن';
+    if (minutes < 60) return `منذ ${minutes} دقيقة`;
+    if (hours < 24) return `منذ ${hours} ساعة`;
+    return `منذ ${days} يوم`;
+}
+
+// إظهار toast notification
+function showToastNotification(notif) {
+    Swal.fire({
+        icon: notif.priority === 'high' ? 'warning' : 'info',
+        title: notif.title,
+        text: notif.message,
+        toast: true,
+        position: 'top-end',
+        showConfirmButton: false,
+        timer: 5000,
+        timerProgressBar: true,
+        customClass: {
+            popup: 'colored-toast'
+        }
+    });
+}
+
+// صوت التنبيه (اختياري)
+function playNotificationSound() {
+    // يمكن إضافة صوت تنبيه هنا
+    // const audio = new Audio('notification.mp3');
+    // audio.play();
+}
+
+// إيقاف نظام الإشعارات
+function stopNotificationsSystem() {
+    if (notificationsInterval) {
+        clearInterval(notificationsInterval);
+        notificationsInterval = null;
+    }
+}
+
+// ==================== التقارير المتقدمة ====================
+
+async function showReport(type) {
+    if (currentUser !== "المديـــــرية") {
+        Swal.fire('تنبيه', 'التقارير متاحة للمديرية فقط', 'info');
+        return;
+    }
+
+    // تفريغ المحتوى السابق وإظهار loading
+    document.getElementById('report-content').innerHTML = `
+        <div style="text-align:center;padding:60px;color:#999;">
+            <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;margin-bottom:15px;display:block;color:#1a237e;"></i>
+            <p style="font-size:14px;margin:0;">جاري التحميل...</p>
+        </div>`;
+
+    // scroll للأعلى
+    const body = document.getElementById('rep-modal-body');
+    if (body) body.scrollTop = 0;
+
+    if (type === 'monthly-comparison') {
+        await showMonthlyComparisonReport();
+    } else if (type === 'units-performance') {
+        await showUnitsPerformanceReport();
+    } else if (type === 'annual-report') {
+        await showAnnualReport();
+    }
+}
+
+// ==================== تقرير مقارنة بين شهرين ====================
+
+async function showMonthlyComparisonReport() {
+    const snapshot = await db.ref('data').once('value');
+    const allData = snapshot.val() || {};
+    
+    // استخراج الأشهر المتاحة
+    let months = new Set();
+    Object.keys(allData).forEach(week => {
+        const [year, weekNum] = week.split('-W');
+        const date = new Date(year, 0, 1 + (parseInt(weekNum) - 1) * 7);
+        months.add(`${date.getFullYear()}-${(date.getMonth() + 1).toString().padStart(2, '0')}`);
+    });
+    
+    const monthsArray = Array.from(months).sort().reverse();
+    const monthsOptions = monthsArray.map(m => {
+        const [y, mon] = m.split('-');
+        return `<option value="${m}">${MONTHS_AR[parseInt(mon)-1]} ${y}</option>`;
+    }).join('');
+    
+    const html = `
+        <div style="background:#f8f9fa; padding:20px; border-radius:12px;">
+            <h4 style="margin:0 0 15px 0; color:#2196f3; font-weight:900;">
+                <i class="fa-solid fa-code-compare"></i> مقارنة بين شهرين
+            </h4>
+            <div style="display:grid; grid-template-columns:1fr 1fr auto; gap:12px; margin-bottom:15px;">
+                <select id="compare-month-1" class="input-field" style="margin:0;">
+                    <option value="">-- الشهر الأول --</option>
+                    ${monthsOptions}
+                </select>
+                <select id="compare-month-2" class="input-field" style="margin:0;">
+                    <option value="">-- الشهر الثاني --</option>
+                    ${monthsOptions}
+                </select>
+                <button onclick="runMonthlyComparison()" class="btn" style="background:#2196f3; margin:0;">
+                    <i class="fa-solid fa-chart-line"></i> مقارنة
+                </button>
+            </div>
+            <div id="monthly-comparison-result"></div>
+        </div>
+    `;
+    
+    document.getElementById('report-content').innerHTML = html;
+}
+
+async function runMonthlyComparison() {
+    const month1 = document.getElementById('compare-month-1').value;
+    const month2 = document.getElementById('compare-month-2').value;
+    
+    if (!month1 || !month2) {
+        Swal.fire('تنبيه', 'الرجاء اختيار شهرين للمقارنة', 'warning');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'جاري المقارنة...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    const snapshot = await db.ref('data').once('value');
+    const allData = snapshot.val() || {};
+    
+    const data1 = calculateMonthData(allData, month1);
+    const data2 = calculateMonthData(allData, month2);
+    
+    Swal.close();
+    
+    const [y1, m1] = month1.split('-');
+    const [y2, m2] = month2.split('-');
+    
+    const totalDiff = data2.total - data1.total;
+    const totalDiffPct = data1.total > 0 ? Math.round((totalDiff / data1.total) * 100) : 0;
+    
+    const html = `
+        <div style="margin-top:20px; background:white; padding:20px; border-radius:12px; border:2px solid #2196f3;">
+            
+            <!-- ملخص المقارنة -->
+            <div style="background:linear-gradient(135deg, #2196f3, #1976d2); color:white; padding:20px; border-radius:10px; margin-bottom:20px; text-align:center;">
+                <div style="font-size:16px; opacity:0.9; margin-bottom:10px;">النتيجة الإجمالية</div>
+                <div style="display:grid; grid-template-columns:1fr auto 1fr; gap:15px; align-items:center;">
+                    <div>
+                        <div style="font-size:14px; opacity:0.8;">${MONTHS_AR[parseInt(m1)-1]} ${y1}</div>
+                        <div style="font-size:36px; font-weight:900; margin:5px 0;">${data1.total}</div>
+                    </div>
+                    <div style="font-size:40px;">
+                        ${totalDiff > 0 ? '📈' : totalDiff < 0 ? '📉' : '➡️'}
+                    </div>
+                    <div>
+                        <div style="font-size:14px; opacity:0.8;">${MONTHS_AR[parseInt(m2)-1]} ${y2}</div>
+                        <div style="font-size:36px; font-weight:900; margin:5px 0;">${data2.total}</div>
+                    </div>
+                </div>
+                <div style="margin-top:15px; font-size:18px; font-weight:700;">
+                    ${totalDiff > 0 ? 'زيادة' : totalDiff < 0 ? 'نقصان' : 'استقرار'} بمقدار 
+                    <span style="background:rgba(255,255,255,0.2); padding:5px 10px; border-radius:5px;">
+                        ${totalDiff > 0 ? '+' : ''}${totalDiff} (${totalDiffPct > 0 ? '+' : ''}${totalDiffPct}%)
+                    </span>
+                </div>
+            </div>
+            
+            <!-- مقارنة تفصيلية -->
+            ${renderDetailedComparison(data1, data2, month1, month2)}
+            
+            <!-- تحليل إضافي -->
+            ${renderComparisonAnalysis(data1, data2)}
+        </div>
+    `;
+    
+    document.getElementById('monthly-comparison-result').innerHTML = html;
+}
+
+function calculateMonthData(allData, monthStr) {
+    const [year, month] = monthStr.split('-');
+    let totals = { 
+        ambulance: 0, traffic: 0, fire: 0, other: 0,
+        deaths: { ambulance: 0, traffic: 0, fire: 0, other: 0 }
+    };
+    
+    Object.keys(allData).forEach(week => {
+        const [y, w] = week.split('-W');
+        const date = new Date(y, 0, 1 + (parseInt(w) - 1) * 7);
+        if (date.getFullYear() == year && (date.getMonth() + 1) == parseInt(month)) {
+            Object.keys(allData[week]).forEach(unit => {
+                if (unit !== "المديـــــرية" && allData[week][unit].daily) {
+                    allData[week][unit].daily.forEach(day => {
+                        if (day) {
+                            totals.ambulance += parseInt(day[1]) || 0;
+                            totals.traffic += parseInt(day[5]) || 0;
+                            totals.fire += parseInt(day[9]) || 0;
+                            totals.other += parseInt(day[13]) || 0;
+                            
+                            totals.deaths.ambulance += parseInt(day[3]) || 0;
+                            totals.deaths.traffic += parseInt(day[7]) || 0;
+                            totals.deaths.fire += parseInt(day[11]) || 0;
+                            totals.deaths.other += parseInt(day[15]) || 0;
+                        }
+                    });
+                }
+            });
+        }
+    });
+    
+    totals.total = totals.ambulance + totals.traffic + totals.fire + totals.other;
+    totals.deaths.total = totals.deaths.ambulance + totals.deaths.traffic + totals.deaths.fire + totals.deaths.other;
+    return totals;
+}
+
+function renderDetailedComparison(data1, data2, month1, month2) {
+    const [y1, m1] = month1.split('-');
+    const [y2, m2] = month2.split('-');
+    
+    const categories = [
+        { key: 'ambulance', label: 'الإسعاف', color: '#4caf50', icon: 'fa-ambulance' },
+        { key: 'traffic', label: 'حوادث المرور', color: '#ff9800', icon: 'fa-car-burst' },
+        { key: 'fire', label: 'الحرائق', color: '#f44336', icon: 'fa-fire-flame-curved' },
+        { key: 'other', label: 'مختلفة', color: '#2196f3', icon: 'fa-ellipsis' }
+    ];
+    
+    const maxVal = Math.max(...categories.map(cat => Math.max(data1[cat.key], data2[cat.key])));
+    
     return `
-        <div style="background:${isWarning && value > 0 ? color : color + '15'}; border:2px solid ${color}; border-radius:12px; padding:15px; text-align:center; ${isWarning && value > 0 ? 'animation:pulse 2s infinite;' : ''}">
-            <i class="fa-solid ${icon}" style="font-size:24px; color:${isWarning && value > 0 ? 'white' : color}; margin-bottom:8px;"></i>
-            <div style="font-size:32px; font-weight:900; color:${isWarning && value > 0 ? 'white' : color}; margin:8px 0;">${value}</div>
-            <div style="font-size:11px; font-weight:700; color:${isWarning && value > 0 ? 'white' : '#666'};">${label}</div>
+        <div style="margin-bottom:20px;">
+            <h5 style="margin:0 0 15px 0; font-weight:900; color:#333;">
+                <i class="fa-solid fa-chart-column"></i> المقارنة التفصيلية
+            </h5>
+            ${categories.map(cat => {
+                const val1 = data1[cat.key];
+                const val2 = data2[cat.key];
+                const death1 = data1.deaths[cat.key];
+                const death2 = data2.deaths[cat.key];
+                const diff = val2 - val1;
+                const diffPct = val1 > 0 ? Math.round((diff / val1) * 100) : 0;
+                const pct1 = maxVal > 0 ? (val1 / maxVal) * 100 : 0;
+                const pct2 = maxVal > 0 ? (val2 / maxVal) * 100 : 0;
+                
+                return `
+                    <div style="background:#f8f9fa; padding:15px; border-radius:8px; margin-bottom:12px;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <i class="fa-solid ${cat.icon}" style="color:${cat.color}; font-size:20px;"></i>
+                                <span style="font-weight:700; font-size:16px;">${cat.label}</span>
+                            </div>
+                            <div style="text-align:left;">
+                                <span style="font-weight:900; font-size:20px; color:${diff > 0 ? '#27ae60' : diff < 0 ? '#e74c3c' : '#95a5a6'};">
+                                    ${diff > 0 ? '↑' : diff < 0 ? '↓' : '→'} ${Math.abs(diff)}
+                                </span>
+                                <span style="font-size:14px; color:#666; margin-right:5px;">
+                                    (${diffPct > 0 ? '+' : ''}${diffPct}%)
+                                </span>
+                            </div>
+                        </div>
+                        
+                        <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
+                            <div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px; color:#666; margin-bottom:5px;">
+                                    <span>${MONTHS_AR[parseInt(m1)-1]} ${y1}</span>
+                                    <span style="font-weight:700; color:${cat.color};">${val1}</span>
+                                </div>
+                                <div style="background:#e0e0e0; height:24px; border-radius:4px; overflow:hidden; position:relative;">
+                                    <div style="width:${pct1}%; height:100%; background:${cat.color}; transition:width 0.5s;"></div>
+                                    ${death1 > 0 ? `<div style="position:absolute; top:0; right:5px; line-height:24px; font-size:11px; font-weight:700; color:white;">💀 ${death1}</div>` : ''}
+                                </div>
+                            </div>
+                            <div>
+                                <div style="display:flex; justify-content:space-between; font-size:12px; color:#666; margin-bottom:5px;">
+                                    <span>${MONTHS_AR[parseInt(m2)-1]} ${y2}</span>
+                                    <span style="font-weight:700; color:${cat.color};">${val2}</span>
+                                </div>
+                                <div style="background:#e0e0e0; height:24px; border-radius:4px; overflow:hidden; position:relative;">
+                                    <div style="width:${pct2}%; height:100%; background:${cat.color}; transition:width 0.5s;"></div>
+                                    ${death2 > 0 ? `<div style="position:absolute; top:0; right:5px; line-height:24px; font-size:11px; font-weight:700; color:white;">💀 ${death2}</div>` : ''}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('')}
+        </div>
+    `;
+}
+
+function renderComparisonAnalysis(data1, data2) {
+    const diff = data2.total - data1.total;
+    const deathDiff = data2.deaths.total - data1.deaths.total;
+    
+    let insights = [];
+    
+    if (diff > 0) {
+        insights.push(`📈 زيادة في إجمالي التدخلات بمقدار ${diff} تدخل`);
+    } else if (diff < 0) {
+        insights.push(`📉 نقصان في إجمالي التدخلات بمقدار ${Math.abs(diff)} تدخل`);
+    } else {
+        insights.push(`➡️ استقرار في إجمالي التدخلات`);
+    }
+    
+    if (deathDiff > 0) {
+        insights.push(`⚠️ زيادة في الوفيات بمقدار ${deathDiff} حالة`);
+    } else if (deathDiff < 0) {
+        insights.push(`✅ انخفاض في الوفيات بمقدار ${Math.abs(deathDiff)} حالة`);
+    }
+    
+    // أكثر فئة تغيراً
+    const changes = [
+        { label: 'الإسعاف', diff: data2.ambulance - data1.ambulance },
+        { label: 'حوادث المرور', diff: data2.traffic - data1.traffic },
+        { label: 'الحرائق', diff: data2.fire - data1.fire },
+        { label: 'مختلفة', diff: data2.other - data1.other }
+    ];
+    
+    const maxChange = changes.reduce((max, c) => Math.abs(c.diff) > Math.abs(max.diff) ? c : max);
+    if (Math.abs(maxChange.diff) > 0) {
+        insights.push(`🔍 أكبر تغيير في فئة: ${maxChange.label} (${maxChange.diff > 0 ? '+' : ''}${maxChange.diff})`);
+    }
+    
+    return `
+        <div style="background:#fff3cd; border:2px solid #ffc107; padding:15px; border-radius:8px;">
+            <h5 style="margin:0 0 10px 0; font-weight:900; color:#856404;">
+                <i class="fa-solid fa-lightbulb"></i> الملاحظات والتحليل
+            </h5>
+            <ul style="margin:0; padding-right:20px; line-height:1.8;">
+                ${insights.map(insight => `<li>${insight}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+// ==================== تقرير أداء الوحدات ====================
+
+function resetUnitsReport() {
+    showUnitsPerformanceReport(null, null);
+}
+
+function reloadUnitsReport() {
+    const from = document.getElementById('units-from-date')?.value;
+    const to   = document.getElementById('units-to-date')?.value;
+    if (from && to && from <= to) showUnitsPerformanceReport(from, to);
+}
+
+async function showUnitsPerformanceReport(fromDate=null, toDate=null) {
+    Swal.fire({
+        title: 'جاري تحميل البيانات...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    const snapshot = await db.ref('data').once('value');
+    const allData = snapshot.val() || {};
+
+    // قائمة الأسابيع المتاحة مرتبة
+    const allWeeks = Object.keys(allData).sort();
+
+    const fDate = fromDate || '0000-00-00';
+    const tDate = toDate   || '9999-99-99';
+
+    // حساب أداء كل وحدة — يوماً بيوم
+    let unitsData = {};
+
+    Object.keys(allData).forEach(week => {
+        const weekDays = getWeekDays(week); // [أحد, اثنين, ..., سبت]
+        Object.keys(allData[week]).forEach(unit => {
+            if (unit !== "المديـــــرية" && allData[week][unit].daily) {
+                if (!unitsData[unit]) {
+                    unitsData[unit] = {
+                        ambulance: 0, traffic: 0, fire: 0, other: 0,
+                        deaths: 0, weeks: 0, municipalities: new Set()
+                    };
+                }
+
+                let weekHasData = false;
+                allData[week][unit].daily.forEach((day, idx) => {
+                    if (!day) return;
+                    const dayDate = weekDays[idx]; // تاريخ اليوم
+                    if (!dayDate || dayDate < fDate || dayDate > tDate) return; // خارج النطاق
+                    weekHasData = true;
+                    unitsData[unit].ambulance += parseInt(day[1]) || 0;
+                    unitsData[unit].traffic   += parseInt(day[5]) || 0;
+                    unitsData[unit].fire      += parseInt(day[9]) || 0;
+                    unitsData[unit].other     += parseInt(day[13]) || 0;
+                    unitsData[unit].deaths    += (parseInt(day[3])||0)+(parseInt(day[7])||0)+
+                                                 (parseInt(day[11])||0)+(parseInt(day[15])||0);
+                });
+                if (weekHasData) unitsData[unit].weeks++;
+                
+                // جمع البلديات
+                if (allData[week][unit].muni) {
+                    Object.keys(allData[week][unit].muni).forEach(m => {
+                        unitsData[unit].municipalities.add(m);
+                    });
+                }
+            }
+        });
+    });
+    
+    // حساب المجاميع وترتيب الوحدات
+    let unitsList = [];
+    Object.keys(unitsData).forEach(unit => {
+        const data = unitsData[unit];
+        data.total = data.ambulance + data.traffic + data.fire + data.other;
+        data.average = data.weeks > 0 ? Math.round(data.total / data.weeks) : 0;
+        data.muniCount = data.municipalities.size;
+        unitsList.push({ unit, ...data });
+    });
+    
+    unitsList.sort((a, b) => b.total - a.total);
+    
+    Swal.close();
+    
+    // حساب إجماليات ضمن النطاق المختار — يوماً بيوم
+    let wAmb=0, wTraf=0, wFir=0, wOth=0, wDeath=0, wdAmb=0, wdTraf=0, wdFir=0, wdOth=0;
+    Object.keys(allData).forEach(week => {
+        const wDays2 = getWeekDays(week);
+        Object.keys(allData[week]).forEach(unit => {
+            if (unit === "المديـــــرية") return;
+            const ud = allData[week][unit];
+            if (ud.daily) ud.daily.forEach((day, idx) => {
+                if (!day) return;
+                const dd = wDays2[idx];
+                if (!dd || dd < fDate || dd > tDate) return;
+                wAmb   += parseInt(day[1])  || 0;
+                wTraf  += parseInt(day[5])  || 0;
+                wFir   += parseInt(day[9])  || 0;
+                wOth   += parseInt(day[13]) || 0;
+                wdAmb  += parseInt(day[3])  || 0;
+                wdTraf += parseInt(day[7])  || 0;
+                wdFir  += parseInt(day[11]) || 0;
+                wdOth  += parseInt(day[15]) || 0;
+                wDeath += (parseInt(day[3])||0)+(parseInt(day[7])||0)+(parseInt(day[11])||0)+(parseInt(day[15])||0);
+            });
+        });
+    });
+    const wTotal = wAmb + wTraf + wFir + wOth;
+
+    function dashCard(label, value, color, icon, warn=false) {
+        const bg = warn && value > 0 ? color : color+'15';
+        const fg = warn && value > 0 ? 'white' : color;
+        return `<div style="background:${bg};border:2px solid ${color};border-radius:12px;padding:15px;text-align:center;${warn&&value>0?'animation:pulse 2s infinite;':''}">
+            <i class="fa-solid ${icon}" style="font-size:24px;color:${fg};margin-bottom:8px;display:block;"></i>
+            <div style="font-size:32px;font-weight:900;color:${fg};margin:8px 0;">${value}</div>
+            <div style="font-size:11px;font-weight:700;color:${warn&&value>0?'white':'#666'};">${label}</div>
+        </div>`;
+    }
+
+    // تحديد تواريخ الفترة الافتراضية من بداية السنة إلى نهاية الشهر الحالي
+    function weekToStartDate(w) { return getWeekDays(w)[0]; }
+    function weekToEndDate(w)   { return getWeekDays(w)[6]; }
+
+    // التواريخ الافتراضية: أول أسبوع → نهاية الشهر الحالي
+    const now = new Date();
+    const defaultFrom = now.getFullYear() + '-01-01';
+    const lastDay = new Date(now.getFullYear(), now.getMonth()+1, 0);
+    const defaultTo = lastDay.getFullYear()+'-'+String(lastDay.getMonth()+1).padStart(2,'0')+'-'+String(lastDay.getDate()).padStart(2,'0');
+
+    const fromDateStr = fromDate || defaultFrom;
+    const toDateStr   = toDate   || defaultTo;
+
+    const html = `
+        <div style="background:#f8f9fa; padding:20px; border-radius:12px;">
+            <h4 style="margin:0 0 15px 0; color:#ff9800; font-weight:900;">
+                <i class="fa-solid fa-ranking-star"></i> تقرير أداء الوحدات
+            </h4>
+
+            <!-- فلتر التواريخ -->
+            <div style="background:white;border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;box-shadow:0 2px 6px rgba(0,0,0,0.07);">
+                <span style="font-weight:700;font-size:13px;color:#555;white-space:nowrap;"><i class="fa-solid fa-calendar-days"></i> الفترة:</span>
+                <input type="date" id="units-from-date" value="${fromDateStr}" onchange="reloadUnitsReport()"
+                    style="font-family:Cairo;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-weight:700;color:#333;min-width:150px;flex:1;">
+                <span style="font-weight:700;color:#aaa;">←</span>
+                <input type="date" id="units-to-date" value="${toDateStr}" onchange="reloadUnitsReport()"
+                    style="font-family:Cairo;padding:7px 10px;border:1.5px solid #ddd;border-radius:8px;font-size:13px;font-weight:700;color:#333;min-width:150px;flex:1;">
+                <button onclick="resetUnitsReport()" title="إلغاء الفلترة" style="background:#95a5a6;color:white;border:none;border-radius:8px;padding:7px 12px;cursor:pointer;font-family:Cairo;font-size:12px;font-weight:700;white-space:nowrap;">
+                    <i class="fa-solid fa-rotate-left"></i> إعادة تعيين
+                </button>
+            </div>
+
+            <!-- البطاقات الإحصائية للأسبوع الحالي -->
+            <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
+                ${dashCard('الإسعاف', wAmb, '#4caf50', 'fa-ambulance')}
+                ${dashCard('حوادث المرور', wTraf, '#ff9800', 'fa-car')}
+                ${dashCard('الحرائق', wFir, '#f44336', 'fa-fire-flame-curved')}
+                ${dashCard('مختلفة', wOth, '#2196f3', 'fa-triangle-exclamation')}
+                <div onclick="showDeathsBreakdown(event,${wdAmb},${wdTraf},${wdFir},${wdOth})" style="cursor:pointer;" title="اضغط لتفاصيل الوفيات">${dashCard('الوفيات', wDeath, '#e74c3c', 'fa-heart-crack', true)}</div>
+            </div>
+
+            <!-- إجمالي التدخلات -->
+            <div style="background:linear-gradient(135deg,#11995e,#0d7377);color:white;border-radius:14px;padding:24px;text-align:center;margin-bottom:20px;">
+                <div style="font-size:14px;font-weight:700;opacity:0.9;margin-bottom:8px;">إجمالي التدخلات كامل الفترة</div>
+                <div style="font-size:64px;font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.3);line-height:1;">${wTotal}</div>
+                
+            </div>
+
+            ${renderUnitsRanking(unitsList)}
+            ${renderMunicipalitiesActivity(unitsList)}
+        </div>
+    `;
+    
+    document.getElementById('report-content').innerHTML = html;
+    loadMunisTable();
+}
+
+function renderUnitsRanking(unitsList) {
+    const maxTotal = unitsList[0]?.total || 1;
+
+    function miniCircle(val, total, color) {
+        const r = 16, circ = 2 * Math.PI * r, size = 40;
+        const dash = total > 0 ? (val / total) * circ : 0;
+        return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;">
+            <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+            <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+                stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"/>
+            <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="central"
+                style="transform:rotate(90deg);transform-origin:${size/2}px ${size/2}px;
+                font-family:Cairo,sans-serif;font-weight:900;font-size:${val>99?8:10}px;fill:${color};">
+                ${val}
+            </text>
+        </svg>`;
+    }
+
+    return `
+        <div style="background:white;padding:20px;border-radius:10px;margin-bottom:20px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <h5 style="margin:0 0 15px 0;font-weight:900;color:#333;">
+                <i class="fa-solid fa-ranking-star"></i> ترتيب الوحدات حسب عدد التدخلات
+            </h5>
+            <div style="display:grid;gap:10px;">
+                ${unitsList.map((item, idx) => {
+                    const pct = Math.round((item.total / maxTotal) * 100);
+                    const rankColor = idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : idx === 2 ? '#cd7c2f' : '#6b7280';
+                    const deathBadge = item.deaths > 0
+                        ? `<span style="background:#e74c3c;color:white;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;">💀 ${item.deaths}</span>`
+                        : '';
+                    return `
+                    <div style="background:#f8f9fa;border-radius:10px;padding:14px 16px;border-right:4px solid ${rankColor};">
+
+                        <!-- صف 1: رقم | اسم | شريط | عدد -->
+                        <div style="display:grid;grid-template-columns:28px 1fr auto auto;align-items:center;gap:10px;margin-bottom:10px;">
+                            <div style="width:26px;height:26px;border-radius:50%;background:${rankColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">${idx+1}</div>
+                            <div>
+                                <div style="font-weight:900;font-size:14px;margin-bottom:5px;text-align:right;">${item.unit} ${deathBadge}</div>
+                                <div style="background:#e0e0e0;height:6px;border-radius:3px;overflow:hidden;">
+                                    <div style="width:${pct}%;height:100%;background:${rankColor};border-radius:3px;float:right;"></div>
+                                </div>
+                            </div>
+                            <span style="font-size:22px;font-weight:900;color:${rankColor};">${item.total}</span>
+                        </div>
+
+                        <!-- صف 2: دوائر | معدل -->
+                        <div style="display:flex;align-items:center;gap:8px;padding-right:38px;">
+                            <div style="flex:1;display:flex;justify-content:space-around;">
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                                    ${miniCircle(item.ambulance, item.total, '#4caf50')}
+                                    <span style="font-size:14px;">🚑</span>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                                    ${miniCircle(item.traffic, item.total, '#ff9800')}
+                                    <span style="font-size:14px;">🚗</span>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                                    ${miniCircle(item.fire, item.total, '#f44336')}
+                                    <span style="font-size:14px;">🔥</span>
+                                </div>
+                                <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                                    ${miniCircle(item.other, item.total, '#2196f3')}
+                                    <span style="font-size:14px;">⚠️</span>
+                                </div>
+                            </div>
+                            <span style="font-size:11px;color:#999;white-space:nowrap;">معدل: ${item.average || item.total}/أسبوع</span>
+                        </div>
+
+                    </div>`;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderMunicipalitiesActivity(unitsList) {
+    return `
+        <div style="background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
+            <h5 style="margin:0 0 15px 0;font-weight:900;color:#333;">
+                <i class="fa-solid fa-city"></i> أكثر البلديات نشاطاً
+            </h5>
+            <div id="munis-table-container">
+                <div style="text-align:center;padding:20px;color:#999;">
+                    <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+async function loadMunisTable() {
+    // كامل الفترة مثل ترتيب الوحدات
+    const snapshot = await db.ref('data').once('value');
+    const allData = snapshot.val() || {};
+
+    let munisMap = {};
+    const validMunis = getAllMunis();
+
+    Object.keys(allData).forEach(week => {
+        Object.keys(allData[week]).forEach(unit => {
+            if (unit === "المديـــــرية") return;
+            const uData = allData[week][unit];
+            if (!uData.muni) return;
+            Object.keys(uData.muni).forEach(muniName => {
+                const md = uData.muni[muniName];
+                if (!md) return;
+                if (!validMunis.includes(muniName)) return;
+                if (!munisMap[muniName]) munisMap[muniName] = { amb:0, traf:0, fir:0, oth:0, deaths:0 };
+                munisMap[muniName].amb    += parseInt(md[1])  || 0;
+                munisMap[muniName].traf   += parseInt(md[5])  || 0;
+                munisMap[muniName].fir    += parseInt(md[9])  || 0;
+                munisMap[muniName].oth    += parseInt(md[13]) || 0;
+                munisMap[muniName].deaths += (parseInt(md[3])||0)+(parseInt(md[7])||0)+(parseInt(md[11])||0)+(parseInt(md[15])||0);
+            });
+        });
+    });
+
+    const munisList = Object.entries(munisMap).map(([name, d]) => ({
+        name, ambulance: d.amb, traffic: d.traf, fire: d.fir, other: d.oth, deaths: d.deaths,
+        total: d.amb + d.traf + d.fir + d.oth
+    })).sort((a,b) => b.total - a.total);
+
+    const maxTotal = munisList[0]?.total || 1;
+    const container = document.getElementById('munis-table-container');
+    if (!container) return;
+
+    if (munisList.length === 0) {
+        container.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">لا توجد بيانات</p>';
+        return;
+    }
+
+    function miniCircle(val, total, color) {
+        const r = 16, circ = 2 * Math.PI * r, size = 40;
+        const dash = total > 0 ? (val / total) * circ : 0;
+        return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;">
+            <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+            <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+                stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"/>
+            <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="central"
+                style="transform:rotate(90deg);transform-origin:${size/2}px ${size/2}px;
+                font-family:Cairo,sans-serif;font-weight:900;font-size:${val>99?8:10}px;fill:${color};">
+                ${val}
+            </text>
+        </svg>`;
+    }
+
+    container.innerHTML = `<div style="display:grid;gap:10px;">
+        ${munisList.map((item, idx) => {
+            const pct = Math.round((item.total / maxTotal) * 100);
+            const rankColor = idx === 0 ? '#f59e0b' : idx === 1 ? '#94a3b8' : idx === 2 ? '#cd7c2f' : '#6b7280';
+            return `
+            <div style="background:#f8f9fa;border-radius:10px;padding:14px 16px;border-right:4px solid ${rankColor};">
+
+                <!-- صف 1: رقم | اسم+شريط | عدد -->
+                <div style="display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;margin-bottom:10px;">
+                    <div style="width:26px;height:26px;border-radius:50%;background:${rankColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">${idx+1}</div>
+                    <div>
+                        <div style="font-weight:900;font-size:14px;margin-bottom:5px;text-align:right;">${item.name} ${item.deaths>0?`<span style="background:#e74c3c;color:white;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;">💀 ${item.deaths}</span>`:''}</div>
+                        <div style="background:#e0e0e0;height:6px;border-radius:3px;overflow:hidden;">
+                            <div style="width:${pct}%;height:100%;background:${rankColor};border-radius:3px;float:right;"></div>
+                        </div>
+                    </div>
+                    <span style="font-size:22px;font-weight:900;color:${rankColor};">${item.total}</span>
+                </div>
+
+                <!-- صف 2: دوائر موزعة -->
+                <div style="display:flex;align-items:center;gap:8px;padding-right:38px;">
+                    <div style="flex:1;display:flex;justify-content:space-around;">
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                            ${miniCircle(item.ambulance, item.total, '#4caf50')}
+                            <span style="font-size:14px;">🚑</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                            ${miniCircle(item.traffic, item.total, '#ff9800')}
+                            <span style="font-size:14px;">🚗</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                            ${miniCircle(item.fire, item.total, '#f44336')}
+                            <span style="font-size:14px;">🔥</span>
+                        </div>
+                        <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">
+                            ${miniCircle(item.other, item.total, '#2196f3')}
+                            <span style="font-size:14px;">⚠️</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>`;
+        }).join('')}
+    </div>`;
+}
+
+
+// ==================== التقرير السنوي ====================
+
+async function showAnnualReport() {
+    const html = `
+        <div style="background:#f8f9fa; padding:20px; border-radius:12px;">
+            <h4 style="margin:0 0 15px 0; color:#4caf50; font-weight:900;">
+                <i class="fa-solid fa-calendar-days"></i> التقرير السنوي
+            </h4>
+            <div style="display:flex; gap:12px; margin-bottom:15px;">
+                <select id="annual-year" class="input-field" style="flex:1; margin:0;">
+                    <option value="">-- اختر السنة --</option>
+                    <option value="2024">2024</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                </select>
+                <button onclick="generateAnnualReport()" class="btn" style="background:#4caf50; margin:0;">
+                    <i class="fa-solid fa-file-lines"></i> إنشاء التقرير
+                </button>
+            </div>
+            <div id="annual-report-result"></div>
+        </div>
+    `;
+    
+    document.getElementById('report-content').innerHTML = html;
+}
+
+async function generateAnnualReport() {
+    const year = document.getElementById('annual-year').value;
+    
+    if (!year) {
+        Swal.fire('تنبيه', 'الرجاء اختيار السنة', 'warning');
+        return;
+    }
+    
+    Swal.fire({
+        title: 'جاري إنشاء التقرير السنوي...',
+        allowOutsideClick: false,
+        didOpen: () => { Swal.showLoading(); }
+    });
+    
+    const snapshot = await db.ref('data').once('value');
+    const allData = snapshot.val() || {};
+    
+    // حساب بيانات كل شهر
+    let monthlyData = {};
+    for (let m = 1; m <= 12; m++) {
+        const monthKey = `${year}-${m.toString().padStart(2, '0')}`;
+        monthlyData[m] = calculateMonthData(allData, monthKey);
+    }
+    
+    // حساب الإجماليات السنوية
+    let yearTotal = {
+        ambulance: 0, traffic: 0, fire: 0, other: 0,
+        deaths: { ambulance: 0, traffic: 0, fire: 0, other: 0, total: 0 }
+    };
+    
+    Object.values(monthlyData).forEach(m => {
+        yearTotal.ambulance += m.ambulance;
+        yearTotal.traffic += m.traffic;
+        yearTotal.fire += m.fire;
+        yearTotal.other += m.other;
+        yearTotal.deaths.ambulance += m.deaths.ambulance;
+        yearTotal.deaths.traffic += m.deaths.traffic;
+        yearTotal.deaths.fire += m.deaths.fire;
+        yearTotal.deaths.other += m.deaths.other;
+        yearTotal.deaths.total += m.deaths.total;
+    });
+    
+    yearTotal.total = yearTotal.ambulance + yearTotal.traffic + yearTotal.fire + yearTotal.other;
+    
+    // إيجاد أعلى وأدنى شهر
+    let maxMonth = { month: 1, total: 0 };
+    let minMonth = { month: 1, total: Infinity };
+    
+    Object.entries(monthlyData).forEach(([month, data]) => {
+        if (data.total > maxMonth.total) {
+            maxMonth = { month: parseInt(month), total: data.total };
+        }
+        if (data.total < minMonth.total && data.total > 0) {
+            minMonth = { month: parseInt(month), total: data.total };
+        }
+    });
+    
+    Swal.close();
+    
+    const html = `
+        <div style="background:white; padding:20px; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.1);">
+            
+            <!-- رأس التقرير -->
+            <div style="background:linear-gradient(135deg, #4caf50, #388e3c); color:white; padding:30px; border-radius:10px; text-align:center; margin-bottom:25px;">
+                <h3 style="margin:0 0 10px 0; font-size:32px; font-weight:900;">التقرير السنوي ${year}</h3>
+                <div style="font-size:48px; font-weight:900; margin:15px 0; text-shadow:2px 2px 4px rgba(0,0,0,0.3);">
+                    ${yearTotal.total.toLocaleString()}
+                </div>
+                <div style="font-size:16px; opacity:0.9;">إجمالي التدخلات</div>
+                ${yearTotal.deaths.total > 0 ? `
+                    <div style="background:rgba(231,76,60,0.9); padding:10px; border-radius:8px; margin-top:15px;">
+                        <span style="font-size:20px;">💔 ${yearTotal.deaths.total} وفاة</span>
+                    </div>
+                ` : ''}
+            </div>
+            
+            <!-- الإحصائيات الرئيسية -->
+            ${renderAnnualStats(yearTotal, monthlyData)}
+            
+            <!-- المخطط الشهري -->
+            ${renderMonthlyChart(monthlyData, year)}
+            
+            <!-- أعلى وأدنى شهر -->
+            ${renderMonthlyHighLow(maxMonth, minMonth, monthlyData)}
+            
+            <!-- التحليل الموسمي -->
+            ${renderSeasonalAnalysis(monthlyData)}
+        </div>
+    `;
+    
+    document.getElementById('annual-report-result').innerHTML = html;
+}
+
+function renderAnnualStats(yearTotal, monthlyData) {
+    const avgPerMonth = Math.round(yearTotal.total / 12);
+    const activeMonths = Object.values(monthlyData).filter(m => m.total > 0).length;
+    
+    return `
+        <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:15px; margin-bottom:25px;">
+            ${renderStatBox('الإسعاف', yearTotal.ambulance, yearTotal.total, '#4caf50', 'fa-ambulance', yearTotal.deaths.ambulance)}
+            ${renderStatBox('حوادث المرور', yearTotal.traffic, yearTotal.total, '#ff9800', 'fa-car-burst', yearTotal.deaths.traffic)}
+            ${renderStatBox('الحرائق', yearTotal.fire, yearTotal.total, '#f44336', 'fa-fire-flame-curved', yearTotal.deaths.fire)}
+            ${renderStatBox('مختلفة', yearTotal.other, yearTotal.total, '#2196f3', 'fa-ellipsis', yearTotal.deaths.other)}
+        </div>
+        
+        <div style="display:grid; grid-template-columns:repeat(2, 1fr); gap:15px; margin-bottom:25px;">
+            <div style="background:#f8f9fa; padding:20px; border-radius:10px; text-align:center;">
+                <div style="font-size:14px; color:#666; margin-bottom:8px;">المعدل الشهري</div>
+                <div style="font-size:36px; font-weight:900; color:#4caf50;">${avgPerMonth}</div>
+                <div style="font-size:12px; color:#999; margin-top:5px;">تدخل / شهر</div>
+            </div>
+            <div style="background:#f8f9fa; padding:20px; border-radius:10px; text-align:center;">
+                <div style="font-size:14px; color:#666; margin-bottom:8px;">الأشهر النشطة</div>
+                <div style="font-size:36px; font-weight:900; color:#2196f3;">${activeMonths}</div>
+                <div style="font-size:12px; color:#999; margin-top:5px;">من أصل 12 شهر</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderStatBox(label, value, total, color, icon, deaths) {
+    const pct = total > 0 ? Math.round((value / total) * 100) : 0;
+    
+    return `
+        <div style="background:${color}15; border:2px solid ${color}; border-radius:10px; padding:15px; text-align:center;">
+            <i class="fa-solid ${icon}" style="font-size:28px; color:${color}; margin-bottom:10px;"></i>
+            <div style="font-size:32px; font-weight:900; color:${color}; margin:10px 0;">${value.toLocaleString()}</div>
+            <div style="font-size:12px; font-weight:700; color:#666; margin-bottom:5px;">${label}</div>
+            <div style="font-size:16px; font-weight:700; color:${color};">${pct}%</div>
+            ${deaths > 0 ? `<div style="font-size:11px; color:#e74c3c; margin-top:5px; font-weight:700;">💀 ${deaths} وفاة</div>` : ''}
+        </div>
+    `;
+}
+
+function renderMonthlyChart(monthlyData, year) {
+    const maxVal = Math.max(...Object.values(monthlyData).map(m => m.total));
+    
+    return `
+        <div style="background:#f8f9fa; padding:20px; border-radius:10px; margin-bottom:25px;">
+            <h5 style="margin:0 0 20px 0; font-weight:900; color:#333;">
+                📈 الاتجاه الشهري لعام ${year}
+            </h5>
+            <div style="display:grid; grid-template-columns:repeat(12, 1fr); gap:8px; align-items:end; height:200px;">
+                ${Array.from({length: 12}, (_, i) => {
+                    const m = i + 1;
+                    const data = monthlyData[m] || { total: 0 };
+                    const height = maxVal > 0 ? (data.total / maxVal) * 100 : 0;
+                    
+                    return `
+                        <div style="display:flex; flex-direction:column; align-items:center; gap:5px; height:100%;">
+                            <div style="flex:1; display:flex; align-items:flex-end; width:100%;">
+                                <div style="width:100%; height:${height}%; background:linear-gradient(180deg, #4caf50, #81c784); border-radius:4px 4px 0 0; position:relative; transition:height 0.5s;" title="${data.total} تدخل">
+                                    ${data.total > 0 ? `<div style="position:absolute; top:-20px; left:50%; transform:translateX(-50%); font-size:11px; font-weight:700; color:#333; white-space:nowrap;">${data.total}</div>` : ''}
+                                </div>
+                            </div>
+                            <div style="font-size:10px; font-weight:700; color:#666; text-align:center;">
+                                ${MONTHS_AR[m-1].substring(0, 3)}
+                            </div>
+                        </div>
+                    `;
+                }).join('')}
+            </div>
+        </div>
+    `;
+}
+
+function renderMonthlyHighLow(maxMonth, minMonth, monthlyData) {
+    return `
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:15px; margin-bottom:25px;">
+            <div style="background:linear-gradient(135deg, #4caf50, #66bb6a); color:white; padding:20px; border-radius:10px; text-align:center;">
+                <div style="font-size:14px; opacity:0.9; margin-bottom:8px;">🏆 أعلى شهر</div>
+                <div style="font-size:32px; font-weight:900; margin:10px 0;">${MONTHS_AR[maxMonth.month-1]}</div>
+                <div style="font-size:24px; font-weight:700;">${maxMonth.total} تدخل</div>
+            </div>
+            <div style="background:linear-gradient(135deg, #2196f3, #42a5f5); color:white; padding:20px; border-radius:10px; text-align:center;">
+                <div style="font-size:14px; opacity:0.9; margin-bottom:8px;">📉 أدنى شهر</div>
+                <div style="font-size:32px; font-weight:900; margin:10px 0;">${MONTHS_AR[minMonth.month-1]}</div>
+                <div style="font-size:24px; font-weight:700;">${minMonth.total} تدخل</div>
+            </div>
+        </div>
+    `;
+}
+
+function renderSeasonalAnalysis(monthlyData) {
+    // تحليل فصلي: شتاء (12,1,2) - ربيع (3,4,5) - صيف (6,7,8) - خريف (9,10,11)
+    const seasons = {
+        winter: { months: [12, 1, 2], label: 'الشتاء', icon: '❄️', color: '#03a9f4' },
+        spring: { months: [3, 4, 5], label: 'الربيع', icon: '🌸', color: '#4caf50' },
+        summer: { months: [6, 7, 8], label: 'الصيف', icon: '☀️', color: '#ff9800' },
+        autumn: { months: [9, 10, 11], label: 'الخريف', icon: '🍂', color: '#ff5722' }
+    };
+    
+    let seasonalData = {};
+    Object.entries(seasons).forEach(([key, season]) => {
+        seasonalData[key] = {
+            ...season,
+            total: season.months.reduce((sum, m) => sum + ((monthlyData[m]?.total) || 0), 0)
+        };
+    });
+    
+    const maxSeason = Object.values(seasonalData).reduce((max, s) => s.total > max.total ? s : max);
+    
+    return `
+        <div style="background:#fff3cd; border:2px solid #ffc107; padding:20px; border-radius:10px;">
+            <h5 style="margin:0 0 15px 0; font-weight:900; color:#856404;">
+                <i class="fa-solid fa-cloud-sun"></i> التحليل الموسمي
+            </h5>
+            <div style="display:grid; grid-template-columns:repeat(4, 1fr); gap:12px; margin-bottom:15px;">
+                ${Object.values(seasonalData).map(season => `
+                    <div style="background:white; padding:15px; border-radius:8px; text-align:center; border:2px solid ${season.color};">
+                        <div style="font-size:32px; margin-bottom:5px;">${season.icon}</div>
+                        <div style="font-size:14px; font-weight:700; color:#666; margin-bottom:8px;">${season.label}</div>
+                        <div style="font-size:24px; font-weight:900; color:${season.color};">${season.total}</div>
+                    </div>
+                `).join('')}
+            </div>
+            <div style="background:white; padding:15px; border-radius:8px; text-align:center;">
+                <p style="margin:0; font-size:14px; line-height:1.6;">
+                    ${maxSeason.icon} <strong>${maxSeason.label}</strong> هو الفصل الأكثر نشاطاً بإجمالي 
+                    <strong style="color:${maxSeason.color};">${maxSeason.total}</strong> تدخل
+                </p>
+            </div>
         </div>
     `;
 }
@@ -3710,6 +5665,358 @@ async function getMonthly() {
     document.getElementById("monthly-report-area").scrollIntoView({ behavior: 'smooth' });
 }
     </script>
+
+<!-- ==================== مودال لوحة المعلومات ==================== -->
+
+<!-- ==================== مودال لوحة المعلومات ==================== -->
+<div id="dash-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;flex-direction:column;background:#f4f7f9;font-family:Cairo,sans-serif;direction:rtl;">
+  <div style="background:linear-gradient(135deg,#11995e,#0d7377);color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <i class="fa-solid fa-chart-line" style="font-size:22px;"></i>
+      <div>
+        <div style="font-size:18px;font-weight:900;">لوحة المعلومات التفاعلية</div>
+        <div style="font-size:11px;opacity:0.8;margin-top:2px;">إحصائيات الأسبوع الحالي</div>
+      </div>
+    </div>
+    <button onclick="closeDashboardModal()" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);color:white;padding:8px 18px;border-radius:10px;cursor:pointer;font-family:Cairo;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+    </button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px;" id="dash-modal-body">
+    <div id="dashboard-content">
+      <div style="text-align:center;padding:60px;color:#999;">
+        <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;display:block;margin-bottom:15px;color:#11995e;"></i>
+        <p style="font-size:14px;margin:0;">جاري التحميل...</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ==================== مودال التقارير ==================== -->
+<div id="rep-modal" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;z-index:99999;flex-direction:column;background:#f4f7f9;font-family:Cairo,sans-serif;direction:rtl;">
+  <div style="background:linear-gradient(135deg,#1a237e,#283593);color:white;padding:15px 20px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0;box-shadow:0 4px 15px rgba(0,0,0,0.2);">
+    <div style="display:flex;align-items:center;gap:10px;">
+      <i class="fa-solid fa-chart-pie" style="font-size:22px;"></i>
+      <div>
+        <div style="font-size:18px;font-weight:900;">التقارير المتقدمة</div>
+        <div style="font-size:11px;opacity:0.8;margin-top:2px;">تحليلات وإحصائيات معمقة</div>
+      </div>
+    </div>
+    <button onclick="closeReportsModal()" style="background:rgba(255,255,255,0.2);border:2px solid rgba(255,255,255,0.4);color:white;padding:8px 18px;border-radius:10px;cursor:pointer;font-family:Cairo;font-weight:700;font-size:14px;display:flex;align-items:center;gap:8px;">
+      <i class="fa-solid fa-arrow-right-from-bracket"></i> خروج
+    </button>
+  </div>
+  <div style="background:white;padding:12px 20px;border-bottom:2px solid #e0e0e0;flex-shrink:0;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-width:600px;margin:auto;">
+      <button onclick="showReport('monthly-comparison')" style="background:#2196f3;color:white;border:none;padding:12px;border-radius:10px;cursor:pointer;font-family:Cairo;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:5px;"><i class="fa-solid fa-code-compare" style="font-size:18px;"></i>مقارنة شهرين</button>
+      <button onclick="showReport('units-performance')" style="background:#ff9800;color:white;border:none;padding:12px;border-radius:10px;cursor:pointer;font-family:Cairo;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:5px;"><i class="fa-solid fa-ranking-star" style="font-size:18px;"></i>أداء الوحدات</button>
+      <button onclick="showReport('annual-report')" style="background:#4caf50;color:white;border:none;padding:12px;border-radius:10px;cursor:pointer;font-family:Cairo;font-weight:700;font-size:13px;display:flex;flex-direction:column;align-items:center;gap:5px;"><i class="fa-solid fa-calendar-days" style="font-size:18px;"></i>التقرير السنوي</button>
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:20px;" id="rep-modal-body">
+    <div id="report-content">
+      <div style="text-align:center;padding:60px;color:#999;">
+        <i class="fa-solid fa-chart-pie" style="font-size:60px;opacity:0.2;margin-bottom:15px;display:block;"></i>
+        <p style="font-size:16px;margin:0;">اختر نوع التقرير من الأعلى</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function openDashboardModal() {
+  if (currentUser !== "المديـــــرية") { Swal.fire("تنبيه","لوحة المعلومات متاحة للمديرية فقط","info"); return; }
+  document.getElementById("dash-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+  refreshDashboard();
+}
+function closeDashboardModal() {
+  document.getElementById("dash-modal").style.display = "none";
+  document.body.style.overflow = "";
+}
+async function refreshDashboard() {
+  const container = document.getElementById('dashboard-content');
+  container.innerHTML = `<div style="text-align:center;padding:60px;color:#999;">
+    <i class="fa-solid fa-spinner fa-spin" style="font-size:40px;display:block;margin-bottom:15px;color:#11995e;"></i>
+    <p style="font-size:14px;margin:0;">جاري التحميل...</p>
+  </div>`;
+
+  const snapshot = await db.ref('data/' + currentWeek).once('value');
+  const weekData = snapshot.val() || {};
+
+  let totals = { ambulance:0, traffic:0, fire:0, other:0, deaths:0, dAmb:0, dTraf:0, dFir:0, dOth:0 };
+  let unitsList = [];
+
+  Object.keys(weekData).forEach(unit => {
+    if (unit === "المديـــــرية") return;
+    const uData = weekData[unit];
+    let uAmb=0, uTraf=0, uFir=0, uOth=0, uDeath=0, udAmb=0, udTraf=0, udFir=0, udOth=0;
+    if (uData.daily) uData.daily.forEach(day => {
+      if (day) {
+        uAmb   += parseInt(day[1])  || 0;
+        uTraf  += parseInt(day[5])  || 0;
+        uFir   += parseInt(day[9])  || 0;
+        uOth   += parseInt(day[13]) || 0;
+        udAmb  += parseInt(day[3])  || 0;
+        udTraf += parseInt(day[7])  || 0;
+        udFir  += parseInt(day[11]) || 0;
+        udOth  += parseInt(day[15]) || 0;
+        uDeath += (parseInt(day[3])||0)+(parseInt(day[7])||0)+(parseInt(day[11])||0)+(parseInt(day[15])||0);
+      }
+    });
+    totals.ambulance += uAmb; totals.traffic += uTraf;
+    totals.fire += uFir; totals.other += uOth; totals.deaths += uDeath;
+    totals.dAmb += udAmb; totals.dTraf += udTraf; totals.dFir += udFir; totals.dOth += udOth;
+    unitsList.push({ unit, total: uAmb+uTraf+uFir+uOth, ambulance:uAmb, traffic:uTraf, fire:uFir, other:uOth, deaths:uDeath, average: uAmb+uTraf+uFir+uOth });
+  });
+
+  unitsList.sort((a,b) => b.total - a.total);
+  const grandTotal = totals.ambulance + totals.traffic + totals.fire + totals.other;
+
+  function dashCard(label, value, color, icon, warn=false) {
+    const bg = warn && value > 0 ? color : color+'15';
+    const fg = warn && value > 0 ? 'white' : color;
+    return `<div style="background:${bg};border:2px solid ${color};border-radius:12px;padding:15px;text-align:center;${warn&&value>0?'animation:pulse 2s infinite;':''}">
+      <i class="fa-solid ${icon}" style="font-size:24px;color:${fg};margin-bottom:8px;display:block;"></i>
+      <div style="font-size:32px;font-weight:900;color:${fg};margin:8px 0;">${value}</div>
+      <div style="font-size:11px;font-weight:700;color:${warn&&value>0?'white':'#666'};">${label}</div>
+    </div>`;
+  }
+
+  function miniCircle(val, total, color) {
+    const r=16, circ=2*Math.PI*r, size=40;
+    const dash = total>0 ? (val/total)*circ : 0;
+    return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+        stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"/>
+      <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="central"
+        style="transform:rotate(90deg);transform-origin:${size/2}px ${size/2}px;
+        font-family:Cairo,sans-serif;font-weight:900;font-size:${val>99?8:10}px;fill:${color};">
+        ${val}
+      </text>
+    </svg>`;
+  }
+
+  const maxTotal = unitsList[0]?.total || 1;
+
+  container.innerHTML = `
+    <div style="background:#f8f9fa;padding:20px;border-radius:12px;">
+
+      <!-- البطاقات -->
+      <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;">
+        ${dashCard('الإسعاف', totals.ambulance, '#4caf50', 'fa-ambulance')}
+        ${dashCard('حوادث المرور', totals.traffic, '#ff9800', 'fa-car')}
+        ${dashCard('الحرائق', totals.fire, '#f44336', 'fa-fire-flame-curved')}
+        ${dashCard('مختلفة', totals.other, '#2196f3', 'fa-triangle-exclamation')}
+        <div onclick="showDeathsBreakdown(event,${totals.dAmb},${totals.dTraf},${totals.dFir},${totals.dOth})" style="cursor:pointer;" title="اضغط لتفاصيل الوفيات">${dashCard('الوفيات', totals.deaths, '#e74c3c', 'fa-heart-crack', true)}</div>
+      </div>
+
+      <!-- الإجمالي -->
+      <div style="background:linear-gradient(135deg,#11995e,#0d7377);color:white;border-radius:14px;padding:24px;text-align:center;margin-bottom:20px;">
+        <div style="font-size:14px;font-weight:700;opacity:0.9;margin-bottom:8px;">إجمالي التدخلات هذا الأسبوع</div>
+        <div style="font-size:64px;font-weight:900;text-shadow:2px 2px 4px rgba(0,0,0,0.3);line-height:1;">${grandTotal}</div>
+        <div style="font-size:13px;opacity:0.8;margin-top:8px;">الأسبوع ${currentWeek}</div>
+      </div>
+
+      <!-- ترتيب الوحدات -->
+      <div style="background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-bottom:20px;">
+        <h5 style="margin:0 0 15px 0;font-weight:900;color:#333;">
+          <i class="fa-solid fa-ranking-star"></i> ترتيب الوحدات حسب عدد التدخلات
+        </h5>
+        <div style="display:grid;gap:10px;">
+          ${unitsList.map((item, idx) => {
+            const pct = Math.round((item.total / maxTotal) * 100);
+            const rankColor = idx===0?'#f59e0b':idx===1?'#94a3b8':idx===2?'#cd7c2f':'#6b7280';
+            const deathBadge = item.deaths>0 ? `<span style="background:#e74c3c;color:white;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;">💀 ${item.deaths}</span>` : '';
+            return `
+            <div style="background:#f8f9fa;border-radius:10px;padding:14px 16px;border-right:4px solid ${rankColor};">
+              <div style="display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;margin-bottom:10px;">
+                <div style="width:26px;height:26px;border-radius:50%;background:${rankColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">${idx+1}</div>
+                <div>
+                  <div style="font-weight:900;font-size:14px;margin-bottom:5px;text-align:right;">${item.unit} ${deathBadge}</div>
+                  <div style="background:#e0e0e0;height:6px;border-radius:3px;overflow:hidden;">
+                    <div style="width:${pct}%;height:100%;background:${rankColor};border-radius:3px;float:right;"></div>
+                  </div>
+                </div>
+                <span style="font-size:22px;font-weight:900;color:${rankColor};">${item.total}</span>
+              </div>
+              <div style="display:flex;align-items:center;gap:8px;padding-right:38px;">
+                <div style="flex:1;display:flex;justify-content:space-around;">
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.ambulance,item.total,'#4caf50')}<span style="font-size:14px;">🚑</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.traffic,item.total,'#ff9800')}<span style="font-size:14px;">🚗</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.fire,item.total,'#f44336')}<span style="font-size:14px;">🔥</span></div>
+                  <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.other,item.total,'#2196f3')}<span style="font-size:14px;">⚠️</span></div>
+                </div>
+              </div>
+            </div>`;
+          }).join('')}
+        </div>
+      </div>
+      <!-- أكثر البلديات نشاطاً -->
+      <div style="background:white;padding:20px;border-radius:10px;box-shadow:0 2px 8px rgba(0,0,0,0.1);margin-top:20px;" id="dash-munis-container">
+        <h5 style="margin:0 0 15px 0;font-weight:900;color:#333;">
+          <i class="fa-solid fa-city"></i> أكثر البلديات نشاطاً
+        </h5>
+        <div id="dash-munis-list">
+          <div style="text-align:center;padding:20px;color:#999;">
+            <i class="fa-solid fa-spinner fa-spin"></i> جاري التحميل...
+          </div>
+        </div>
+      </div>
+
+    </div>`;
+
+  // تحميل البلديات
+  loadDashMunis();
+}
+
+async function loadDashMunis() {
+  const snapshot = await db.ref('data/' + currentWeek).once('value');
+  const weekData = snapshot.val() || {};
+  const validMunis = getAllMunis();
+
+  let munisMap = {};
+  Object.keys(weekData).forEach(unit => {
+    if (unit === "المديـــــرية") return;
+    const uData = weekData[unit];
+    if (!uData.muni) return;
+    Object.keys(uData.muni).forEach(muniName => {
+      const md = uData.muni[muniName];
+      if (!md || !validMunis.includes(muniName)) return;
+      if (!munisMap[muniName]) munisMap[muniName] = { amb:0, traf:0, fir:0, oth:0, deaths:0 };
+      munisMap[muniName].amb    += parseInt(md[1])  || 0;
+      munisMap[muniName].traf   += parseInt(md[5])  || 0;
+      munisMap[muniName].fir    += parseInt(md[9])  || 0;
+      munisMap[muniName].oth    += parseInt(md[13]) || 0;
+      munisMap[muniName].deaths += (parseInt(md[3])||0)+(parseInt(md[7])||0)+(parseInt(md[11])||0)+(parseInt(md[15])||0);
+    });
+  });
+
+  const munisList = Object.entries(munisMap).map(([name, d]) => ({
+    name, ambulance:d.amb, traffic:d.traf, fire:d.fir, other:d.oth, deaths:d.deaths,
+    total: d.amb + d.traf + d.fir + d.oth
+  })).sort((a,b) => b.total - a.total);
+
+  const maxTotal = munisList[0]?.total || 1;
+  const container = document.getElementById('dash-munis-list');
+  if (!container) return;
+
+  if (munisList.length === 0) {
+    container.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">لا توجد بيانات</p>';
+    return;
+  }
+
+  function miniCircle(val, total, color) {
+    const r=16, circ=2*Math.PI*r, size=40;
+    const dash = total>0 ? (val/total)*circ : 0;
+    return `<svg width="${size}" height="${size}" style="transform:rotate(-90deg);display:block;">
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="#e0e0e0" stroke-width="4"/>
+      <circle cx="${size/2}" cy="${size/2}" r="${r}" fill="none" stroke="${color}" stroke-width="4"
+        stroke-dasharray="${dash} ${circ-dash}" stroke-linecap="round"/>
+      <text x="${size/2}" y="${size/2}" text-anchor="middle" dominant-baseline="central"
+        style="transform:rotate(90deg);transform-origin:${size/2}px ${size/2}px;
+        font-family:Cairo,sans-serif;font-weight:900;font-size:${val>99?8:10}px;fill:${color};">
+        ${val}
+      </text>
+    </svg>`;
+  }
+
+  container.innerHTML = `<div style="display:grid;gap:10px;">
+    ${munisList.map((item, idx) => {
+      const pct = Math.round((item.total / maxTotal) * 100);
+      const rankColor = idx===0?'#f59e0b':idx===1?'#94a3b8':idx===2?'#cd7c2f':'#6b7280';
+      return `
+      <div style="background:#f8f9fa;border-radius:10px;padding:14px 16px;border-right:4px solid ${rankColor};">
+        <div style="display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;margin-bottom:10px;">
+          <div style="width:26px;height:26px;border-radius:50%;background:${rankColor};color:white;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:12px;">${idx+1}</div>
+          <div>
+            <div style="font-weight:900;font-size:14px;margin-bottom:5px;text-align:right;">${item.name} ${item.deaths>0?`<span style="background:#e74c3c;color:white;padding:1px 7px;border-radius:10px;font-size:11px;font-weight:700;">💀 ${item.deaths}</span>`:''}</div>
+            <div style="background:#e0e0e0;height:6px;border-radius:3px;overflow:hidden;">
+              <div style="width:${pct}%;height:100%;background:${rankColor};border-radius:3px;float:right;"></div>
+            </div>
+          </div>
+          <span style="font-size:22px;font-weight:900;color:${rankColor};">${item.total}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;padding-right:38px;">
+          <div style="flex:1;display:flex;justify-content:space-around;">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.ambulance,item.total,'#4caf50')}<span style="font-size:14px;">🚑</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.traffic,item.total,'#ff9800')}<span style="font-size:14px;">🚗</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.fire,item.total,'#f44336')}<span style="font-size:14px;">🔥</span></div>
+            <div style="display:flex;flex-direction:column;align-items:center;gap:2px;">${miniCircle(item.other,item.total,'#2196f3')}<span style="font-size:14px;">⚠️</span></div>
+          </div>
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function showDeathsBreakdown(evt, dAmb, dTraf, dFir, dOth) {
+  const total = dAmb + dTraf + dFir + dOth;
+  const panel = document.getElementById('deaths-panel');
+  const list  = document.getElementById('deaths-panel-list');
+  const count = document.getElementById('deaths-panel-count');
+
+  count.textContent = total;
+
+  if (total === 0) {
+    list.innerHTML = `<div style="padding:40px 20px;text-align:center;color:#999;font-family:Cairo;">
+      <i class="fa-solid fa-heart" style="font-size:48px;margin-bottom:10px;opacity:0.2;display:block;color:#e74c3c;"></i>
+      <p style="margin:0;font-size:14px;">لا توجد وفيات مسجلة</p>
+    </div>`;
+    panel.style.display = 'block';
+    return;
+  }
+
+  const allItems = [
+    { label: 'الإسعاف والإجلاء', val: dAmb,  icon: '🚑', color: '#27ae60' },
+    { label: 'حوادث المرور',      val: dTraf, icon: '🚗', color: '#e67e22' },
+    { label: 'الحرائق',           val: dFir,  icon: '🔥', color: '#e74c3c' },
+    { label: 'العمليات المختلفة', val: dOth,  icon: '⚠️', color: '#2980b9' },
+  ].filter(it => it.val > 0);
+
+  list.innerHTML = allItems.map(it => `
+    <div style="padding:14px 20px; border-bottom:1px solid #f5f5f5; display:flex; align-items:center; gap:14px; direction:rtl;">
+      <div style="background:${it.color}22; border-radius:50%; width:44px; height:44px; display:flex; align-items:center; justify-content:center; font-size:22px; flex-shrink:0;">
+        ${it.icon}
+      </div>
+      <div style="flex:1; font-family:Cairo;">
+
+        <div style="font-size:13px; color:#555; margin-top:2px;">${it.val} وفاة في ${it.label}</div>
+      </div>
+      <div style="background:${it.color}; color:white; border-radius:50%; width:34px; height:34px; display:flex; align-items:center; justify-content:center; font-weight:900; font-size:15px; flex-shrink:0;">${it.val}</div>
+    </div>`).join('');
+
+  const rect2 = evt.currentTarget.getBoundingClientRect();
+  const panelW2 = 320;
+  let left2 = rect2.left;
+  if (left2 + panelW2 > window.innerWidth) left2 = window.innerWidth - panelW2 - 10;
+  panel.style.top  = (rect2.bottom + 8) + 'px';
+  panel.style.left = left2 + 'px';
+  panel.style.display = 'block';
+}
+
+function closeDeathsPanel() {
+  document.getElementById('deaths-panel').style.display = 'none';
+}
+
+function openReportsModal() {
+  if (currentUser !== "المديـــــرية") { Swal.fire("تنبيه","التقارير متاحة للمديرية فقط","info"); return; }
+  // تفريغ المحتوى السابق عند كل فتح
+  document.getElementById("report-content").innerHTML = `
+    <div style="text-align:center;padding:60px;color:#999;">
+      <i class="fa-solid fa-chart-pie" style="font-size:60px;opacity:0.2;margin-bottom:15px;display:block;"></i>
+      <p style="font-size:16px;margin:0;">اختر نوع التقرير من الأعلى</p>
+    </div>`;
+  document.getElementById("rep-modal").style.display = "flex";
+  document.body.style.overflow = "hidden";
+}
+function closeReportsModal() {
+  document.getElementById("rep-modal").style.display = "none";
+  document.body.style.overflow = "";
+}
+</script>
+
   </body>
 </html>
 
